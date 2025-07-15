@@ -1,17 +1,20 @@
-import { create } from "zustand";
-import { Habit } from "../db/habits";
+import { create } from 'zustand';
+import { Habit } from '../db/habits';
 import {
   HabitCompletion,
   markHabitCompleted,
   unmarkHabitCompleted,
   getCompletionsForDate,
-} from "../db/completions";
+  incrementHabitCount,
+  decrementHabitCount,
+  getHabitCountForDate,
+} from '../db/completions';
 import {
   getAllHabits,
   insertHabit,
   updateHabit,
   deleteHabit,
-} from "../db/habits";
+} from '../db/habits';
 
 /**
  * Type representing a habit with its completion status for today.
@@ -61,6 +64,8 @@ interface HabitActions {
   markHabitCompleted: (habitId: number) => Promise<boolean>;
   unmarkHabitCompleted: (habitId: number) => Promise<boolean>;
   incrementHabitCount: (habitId: number) => Promise<boolean>;
+  decrementHabitCount: (habitId: number) => Promise<boolean>;
+  resetHabitCount: (habitId: number) => Promise<boolean>;
 
   // Utility
   clearError: () => void;
@@ -84,22 +89,28 @@ export const useHabitStore = create<HabitState & HabitActions>((set, get) => ({
       const today = new Date().toISOString().slice(0, 10);
       const completions = await getCompletionsForDate(today);
 
-      // Combine habits with completion status
-      const habitsWithCompletion: HabitWithCompletion[] = habits.map(
-        (habit) => ({
-          ...habit,
-          isCompletedToday: completions.some((c) => c.habit_id === habit.id),
-          streak: 0, // TODO: Calculate actual streak
-          currentCount: 0, // TODO: Get actual count for today
-          targetCount:
-            habit.target_count || (habit.goal_type === "count" ? 1 : undefined),
+      // Combine habits with completion status and count data
+      const habitsWithCompletion: HabitWithCompletion[] = await Promise.all(
+        habits.map(async (habit) => {
+          const completion = completions.find((c) => c.habit_id === habit.id);
+          const currentCount = completion?.count || 0;
+          const targetCount =
+            habit.target_count || (habit.goal_type === 'count' ? 1 : undefined);
+
+          return {
+            ...habit,
+            isCompletedToday: !!completion,
+            streak: 0, // TODO: Calculate actual streak
+            currentCount: currentCount,
+            targetCount: targetCount,
+          };
         })
       );
 
       set({ habits: habitsWithCompletion, isLoading: false });
     } catch (error) {
-      console.error("Error loading habits:", error);
-      set({ error: "Failed to load habits", isLoading: false });
+      console.error('Error loading habits:', error);
+      set({ error: 'Failed to load habits', isLoading: false });
     }
   },
 
@@ -111,7 +122,7 @@ export const useHabitStore = create<HabitState & HabitActions>((set, get) => ({
   addHabit: async (
     name: string,
     icon: string,
-    goalType: string = "binary",
+    goalType: string = 'binary',
     targetCount?: number
   ) => {
     try {
@@ -122,8 +133,8 @@ export const useHabitStore = create<HabitState & HabitActions>((set, get) => ({
       }
       return false;
     } catch (error) {
-      console.error("Error adding habit:", error);
-      set({ error: "Failed to add habit" });
+      console.error('Error adding habit:', error);
+      set({ error: 'Failed to add habit' });
       return false;
     }
   },
@@ -142,8 +153,8 @@ export const useHabitStore = create<HabitState & HabitActions>((set, get) => ({
       }
       return success;
     } catch (error) {
-      console.error("Error updating habit:", error);
-      set({ error: "Failed to update habit" });
+      console.error('Error updating habit:', error);
+      set({ error: 'Failed to update habit' });
       return false;
     }
   },
@@ -156,8 +167,8 @@ export const useHabitStore = create<HabitState & HabitActions>((set, get) => ({
       }
       return success;
     } catch (error) {
-      console.error("Error deleting habit:", error);
-      set({ error: "Failed to delete habit" });
+      console.error('Error deleting habit:', error);
+      set({ error: 'Failed to delete habit' });
       return false;
     }
   },
@@ -167,8 +178,17 @@ export const useHabitStore = create<HabitState & HabitActions>((set, get) => ({
     const habit = get().habits.find((h) => h.id === habitId);
     if (!habit) return false;
 
-    if (habit.goal_type === "count") {
-      return await get().incrementHabitCount(habitId);
+    if (habit.goal_type === 'count') {
+      const currentCount = habit.currentCount || 0;
+      const targetCount = habit.targetCount || 1;
+
+      // If we've reached the target, reset to 0
+      if (currentCount >= targetCount) {
+        return await get().resetHabitCount(habitId);
+      } else {
+        // Otherwise increment the count
+        return await get().incrementHabitCount(habitId);
+      }
     } else {
       if (habit.isCompletedToday) {
         return await get().unmarkHabitCompleted(habitId);
@@ -191,8 +211,8 @@ export const useHabitStore = create<HabitState & HabitActions>((set, get) => ({
       }
       return !!success;
     } catch (error) {
-      console.error("Error marking habit completed:", error);
-      set({ error: "Failed to mark habit as completed" });
+      console.error('Error marking habit completed:', error);
+      set({ error: 'Failed to mark habit as completed' });
       return false;
     }
   },
@@ -210,8 +230,8 @@ export const useHabitStore = create<HabitState & HabitActions>((set, get) => ({
       }
       return success;
     } catch (error) {
-      console.error("Error unmarking habit completed:", error);
-      set({ error: "Failed to unmark habit as completed" });
+      console.error('Error unmarking habit completed:', error);
+      set({ error: 'Failed to unmark habit as completed' });
       return false;
     }
   },
@@ -219,9 +239,9 @@ export const useHabitStore = create<HabitState & HabitActions>((set, get) => ({
   incrementHabitCount: async (habitId: number) => {
     try {
       const habit = get().habits.find((h) => h.id === habitId);
-      if (!habit || habit.goal_type !== "count") return false;
+      if (!habit || habit.goal_type !== 'count') return false;
 
-      const newCount = (habit.currentCount || 0) + 1;
+      const newCount = await incrementHabitCount(habitId);
       const targetCount = habit.targetCount || 1;
 
       // Update local state
@@ -237,15 +257,68 @@ export const useHabitStore = create<HabitState & HabitActions>((set, get) => ({
         ),
       }));
 
-      // If we've reached the target, mark as completed
-      if (newCount >= targetCount) {
-        await get().markHabitCompleted(habitId);
-      }
+      return true;
+    } catch (error) {
+      console.error('Error incrementing habit count:', error);
+      set({ error: 'Failed to increment habit count' });
+      return false;
+    }
+  },
+
+  decrementHabitCount: async (habitId: number) => {
+    try {
+      const habit = get().habits.find((h) => h.id === habitId);
+      if (!habit || habit.goal_type !== 'count') return false;
+
+      const newCount = await decrementHabitCount(habitId);
+      const targetCount = habit.targetCount || 1;
+
+      // Update local state
+      set((state) => ({
+        habits: state.habits.map((h) =>
+          h.id === habitId
+            ? {
+                ...h,
+                currentCount: newCount,
+                isCompletedToday: newCount >= targetCount,
+              }
+            : h
+        ),
+      }));
 
       return true;
     } catch (error) {
-      console.error("Error incrementing habit count:", error);
-      set({ error: "Failed to increment habit count" });
+      console.error('Error decrementing habit count:', error);
+      set({ error: 'Failed to decrement habit count' });
+      return false;
+    }
+  },
+
+  resetHabitCount: async (habitId: number) => {
+    try {
+      const habit = get().habits.find((h) => h.id === habitId);
+      if (!habit || habit.goal_type !== 'count') return false;
+
+      // Remove the completion record entirely (resets to 0)
+      await unmarkHabitCompleted(habitId);
+
+      // Update local state
+      set((state) => ({
+        habits: state.habits.map((h) =>
+          h.id === habitId
+            ? {
+                ...h,
+                currentCount: 0,
+                isCompletedToday: false,
+              }
+            : h
+        ),
+      }));
+
+      return true;
+    } catch (error) {
+      console.error('Error resetting habit count:', error);
+      set({ error: 'Failed to reset habit count' });
       return false;
     }
   },

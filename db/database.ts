@@ -41,8 +41,19 @@ export const runMigrations = async (): Promise<void> => {
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       habit_id INTEGER NOT NULL,
       date TEXT NOT NULL,
+      count INTEGER DEFAULT 1,
       UNIQUE(habit_id, date),
       FOREIGN KEY(habit_id) REFERENCES habits(id) ON DELETE CASCADE
     );
   `);
+
+  // Add count column to existing tables if it doesn't exist
+  try {
+    await db.execAsync(`
+      ALTER TABLE habit_completions ADD COLUMN count INTEGER DEFAULT 1;
+    `);
+  } catch (error) {
+    // Column already exists, ignore error
+    console.log('count column already exists or migration not needed');
+  }
 };
