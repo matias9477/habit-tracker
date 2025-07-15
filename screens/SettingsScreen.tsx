@@ -20,6 +20,8 @@ import {
   areNotificationsEnabled,
   cancelAllNotifications,
 } from '../utils/notifications';
+import { PrivacyPolicyModal } from '../components/PrivacyPolicyModal';
+import TermsOfServiceModal from '../components/TermsOfServiceModal';
 
 /**
  * Settings screen component that allows users to configure app preferences.
@@ -37,6 +39,8 @@ export const SettingsScreen: React.FC = () => {
 
   const [isNotificationsConfigured, setIsNotificationsConfigured] =
     useState(false);
+  const [showPrivacyPolicy, setShowPrivacyPolicy] = useState(false);
+  const [showTermsOfService, setShowTermsOfService] = useState(false);
 
   useEffect(() => {
     const checkNotificationStatus = async () => {
@@ -240,16 +244,28 @@ export const SettingsScreen: React.FC = () => {
             'Privacy Policy',
             'Read our privacy policy',
             'shield-outline',
-            () => console.log('Privacy policy')
+            () => setShowPrivacyPolicy(true)
           )}
           {renderSettingItem(
             'Terms of Service',
             'Read our terms of service',
             'document-text-outline',
-            () => console.log('Terms of service')
+            () => setShowTermsOfService(true)
           )}
         </View>
       </ScrollView>
+
+      {/* Privacy Policy Modal */}
+      <PrivacyPolicyModal
+        visible={showPrivacyPolicy}
+        onClose={() => setShowPrivacyPolicy(false)}
+      />
+
+      {/* Terms of Service Modal */}
+      <TermsOfServiceModal
+        visible={showTermsOfService}
+        onClose={() => setShowTermsOfService(false)}
+      />
     </SafeAreaView>
   );
 };

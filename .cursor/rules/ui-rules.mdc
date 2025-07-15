@@ -19,9 +19,27 @@
 
 ### **Safe Area Support**
 
-- Always wrap screen components with `SafeAreaView`
+**Required for All Screens:**
+
+- Wrap every screen component with `SafeAreaView` as the root container
+- Import: `import { SafeAreaView } from 'react-native-safe-area-context'`
+- Apply theme colors: `style={[styles.container, { backgroundColor: colors.background }]}`
+- Remove hardcoded top padding (SafeAreaView handles this automatically)
+
+**Safe Area Best Practices:**
+
+- Use `SafeAreaView` for screen containers
+- Use `useSafeAreaInsets()` for precise positioning of floating elements
+- Ensure modals and overlays respect safe areas
+- Test on devices with notches and dynamic islands
+
+- **Always wrap screen components with `SafeAreaView`**
 - Use `react-native-safe-area-context` for proper spacing
 - Ensure components don't overlap with device controls
+- **Import SafeAreaView**: `import { SafeAreaView } from 'react-native-safe-area-context'`
+- **Use SafeAreaView as root container** for all screen components
+- **Remove hardcoded top padding** when using SafeAreaView (it handles safe areas automatically)
+- **Apply theme colors to SafeAreaView**: `style={[styles.container, { backgroundColor: colors.background }]}`
 
 ### **Card Design**
 
