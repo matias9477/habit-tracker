@@ -39,7 +39,7 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({
 
   const steps = [
     {
-      title: 'Welcome to Habit Tracker',
+      title: 'Welcome to Consistency',
       subtitle: 'Build better habits, one day at a time',
       icon: '🎯',
       description:
@@ -63,7 +63,7 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({
       subtitle: 'Create your first habit',
       icon: '✨',
       description:
-        "You're all set! Let's create your first habit to get started.",
+        "You're all set! Let's create your first habit to build consistency.",
     },
   ];
 
@@ -89,7 +89,7 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({
       <View style={[styles.header, { backgroundColor: colors.surface }]}>
         <View style={styles.headerContent}>
           <Text style={[styles.headerTitle, { color: colors.text }]}>
-            Habit Tracker
+            Consistency
           </Text>
           {currentStep < steps.length - 1 && (
             <TouchableOpacity onPress={handleSkip}>

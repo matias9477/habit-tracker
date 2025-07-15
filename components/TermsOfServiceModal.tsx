@@ -58,18 +58,18 @@ const TermsOfServiceModal: React.FC<TermsOfServiceModalProps> = ({
             Acceptance of Terms
           </Text>
           <Text style={[styles.text, { color: colors.textSecondary }]}>
-            By downloading, installing, or using the Habit Tracker app, you
-            agree to be bound by these Terms of Service. If you do not agree to
-            these terms, please do not use the app.
+            By downloading, installing, or using the Consistency app, you agree
+            to be bound by these Terms of Service. If you do not agree to these
+            terms, please do not use the app.
           </Text>
 
           <Text style={[styles.sectionTitle, { color: colors.text }]}>
             Description of Service
           </Text>
           <Text style={[styles.text, { color: colors.textSecondary }]}>
-            Habit Tracker is a mobile application designed to help users track
-            and build positive habits. The app allows users to create, manage,
-            and monitor their daily habits and goals.
+            Consistency is a mobile application designed to help users track and
+            build positive habits. The app allows users to create, manage, and
+            monitor their daily habits and goals.
           </Text>
 
           <Text style={[styles.sectionTitle, { color: colors.text }]}>

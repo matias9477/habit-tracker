@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "Habit Tracker",
-    "slug": "habit-tracker",
+    "name": "Consistency",
+    "slug": "consistency",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -16,7 +16,7 @@
     ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.yourcompany.habittracker",
+      "bundleIdentifier": "com.matiasturra.consistency",
       "buildNumber": "1"
     },
     "android": {
@@ -24,7 +24,7 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#4CAF50"
       },
-      "package": "com.yourcompany.habittracker",
+      "package": "com.matiasturra.consistency",
       "versionCode": 1
     },
     "web": {

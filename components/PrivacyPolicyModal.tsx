@@ -58,7 +58,7 @@ export const PrivacyPolicyModal: React.FC<PrivacyPolicyModalProps> = ({
               Data Collection
             </Text>
             <Text style={[styles.text, { color: colors.text }]}>
-              Habit Tracker collects and stores your habit data locally on your
+              Consistency collects and stores your habit data locally on your
               device. This includes habit names, completion status, and
               statistics. No personal data is transmitted to external servers.
             </Text>

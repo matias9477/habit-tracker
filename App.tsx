@@ -15,7 +15,7 @@ import { OnboardingScreen } from './screens/OnboardingScreen';
 const LoadingScreen: React.FC = () => (
   <View style={styles.loadingContainer}>
     <ActivityIndicator size="large" color="#4CAF50" />
-    <Text style={styles.loadingText}>Setting up your habit tracker...</Text>
+    <Text style={styles.loadingText}>Setting up Consistency...</Text>
   </View>
 );
 
