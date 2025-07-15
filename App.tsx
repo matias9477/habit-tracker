@@ -5,6 +5,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { runMigrations } from './db/database';
 import { MainTabNavigator } from './navigation/MainTabNavigator';
+import { configureNotifications } from './utils/notifications';
 
 /**
  * Loading screen component shown while the database is being initialized.
@@ -29,6 +30,10 @@ export default function App() {
       try {
         // Run database migrations
         await runMigrations();
+
+        // Configure notifications
+        await configureNotifications();
+
         setIsInitialized(true);
       } catch (err) {
         console.error('Failed to initialize app:', err);

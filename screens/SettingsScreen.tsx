@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -14,6 +14,12 @@ import { useThemeStore } from '../store/themeStore';
 import { useHabitStore } from '../store/habitStore';
 import { getThemeColors } from '../utils/theme';
 import { exportHabitData } from '../utils/dataExport';
+import {
+  configureNotifications,
+  sendTestNotification,
+  areNotificationsEnabled,
+  cancelAllNotifications,
+} from '../utils/notifications';
 
 /**
  * Settings screen component that allows users to configure app preferences.
@@ -29,8 +35,56 @@ export const SettingsScreen: React.FC = () => {
   const { habits, deleteHabit } = useHabitStore();
   const colors = getThemeColors(isDarkMode);
 
-  const handleToggleNotifications = () => {
-    toggleNotifications();
+  const [isNotificationsConfigured, setIsNotificationsConfigured] =
+    useState(false);
+
+  useEffect(() => {
+    const checkNotificationStatus = async () => {
+      const enabled = await areNotificationsEnabled();
+      setIsNotificationsConfigured(enabled);
+    };
+
+    checkNotificationStatus();
+  }, []);
+
+  const handleToggleNotifications = async () => {
+    if (!notificationsEnabled) {
+      // Enable notifications
+      const success = await configureNotifications();
+      if (success) {
+        toggleNotifications();
+        setIsNotificationsConfigured(true);
+        Alert.alert(
+          'Success',
+          'Notifications enabled! You can now receive reminders.'
+        );
+      } else {
+        Alert.alert(
+          'Permission Denied',
+          'Please enable notifications in your device settings to receive reminders.'
+        );
+      }
+    } else {
+      // Disable notifications
+      await cancelAllNotifications();
+      toggleNotifications();
+      setIsNotificationsConfigured(false);
+    }
+  };
+
+  const handleTestNotification = async () => {
+    try {
+      await sendTestNotification();
+      Alert.alert(
+        'Test Sent',
+        'Check your notification panel for a test notification!'
+      );
+    } catch (error) {
+      Alert.alert(
+        'Error',
+        'Failed to send test notification. Please check your notification permissions.'
+      );
+    }
   };
 
   const handleToggleDarkMode = () => {
@@ -120,7 +174,9 @@ export const SettingsScreen: React.FC = () => {
           </Text>
           {renderSettingItem(
             'Daily Reminders',
-            'Get notified about your habits',
+            notificationsEnabled
+              ? 'Notifications are enabled'
+              : 'Get notified about your habits',
             'notifications-outline',
             undefined,
             <Switch
@@ -130,6 +186,13 @@ export const SettingsScreen: React.FC = () => {
               thumbColor={notificationsEnabled ? '#fff' : '#f4f3f4'}
             />
           )}
+          {notificationsEnabled &&
+            renderSettingItem(
+              'Test Notification',
+              'Send a test notification',
+              'send-outline',
+              handleTestNotification
+            )}
         </View>
 
         <View style={styles.section}>
