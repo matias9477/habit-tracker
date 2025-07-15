@@ -242,14 +242,16 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   toggleButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
+    width: 48,
+    height: 48,
+    borderRadius: 24,
     borderWidth: 2,
     borderColor: '#ddd',
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: '#fff',
+    minWidth: 48, // Ensure minimum touch target
+    minHeight: 48,
   },
   toggleButtonCompleted: {
     backgroundColor: '#4CAF50',

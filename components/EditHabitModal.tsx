@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
-  TextInput,
   TouchableOpacity,
   Modal,
   StyleSheet,
@@ -11,9 +10,14 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { HabitWithCompletion } from '../store/habitStore';
 import { useThemeStore } from '../store/themeStore';
 import { getThemeColors } from '../utils/theme';
+import { GoalTypeSelector } from './shared/GoalTypeSelector';
+import { ThemedInput } from './shared/ThemedInput';
+import { ThemedButton } from './shared/ThemedButton';
 
 /**
  * Props for the EditHabitModal component.
@@ -46,6 +50,7 @@ export const EditHabitModal: React.FC<EditHabitModalProps> = ({
 }) => {
   const { isDarkMode } = useThemeStore();
   const colors = getThemeColors(isDarkMode);
+  const insets = useSafeAreaInsets();
 
   const [name, setName] = useState('');
   const [selectedIcon, setSelectedIcon] = useState('🏃‍♂️');
@@ -88,6 +93,13 @@ export const EditHabitModal: React.FC<EditHabitModalProps> = ({
       setTargetCount(habit.targetCount?.toString() || '1');
       setCustomEmoji('');
       setUseCustomEmoji(false);
+
+      // Check if the habit icon is not in the preset list
+      const isCustomIcon = !icons.includes(habit.icon);
+      if (isCustomIcon) {
+        setCustomEmoji(habit.icon);
+        setUseCustomEmoji(true);
+      }
     }
   }, [habit]);
 
@@ -97,10 +109,14 @@ export const EditHabitModal: React.FC<EditHabitModalProps> = ({
       return;
     }
 
+    if (useCustomEmoji && !customEmoji.trim()) {
+      Alert.alert('Error', 'Please enter a custom emoji');
+      return;
+    }
+
     setIsSubmitting(true);
     try {
-      const finalIcon =
-        useCustomEmoji && customEmoji ? customEmoji : selectedIcon;
+      const finalIcon = useCustomEmoji ? customEmoji : selectedIcon;
       const finalTargetCount =
         goalType === 'count' ? parseInt(targetCount) : undefined;
 
@@ -176,10 +192,11 @@ export const EditHabitModal: React.FC<EditHabitModalProps> = ({
       >
         <View style={[styles.header, { backgroundColor: colors.surface }]}>
           <Text style={[styles.title, { color: colors.text }]}>Edit Habit</Text>
-          <TouchableOpacity onPress={handleClose} style={styles.closeButton}>
-            <Text style={[styles.closeButtonText, { color: colors.text }]}>
-              ✕
-            </Text>
+          <TouchableOpacity
+            onPress={handleClose}
+            style={[styles.closeButton, { backgroundColor: colors.border }]}
+          >
+            <Ionicons name="close" size={20} color={colors.text} />
           </TouchableOpacity>
         </View>
 
@@ -189,130 +206,123 @@ export const EditHabitModal: React.FC<EditHabitModalProps> = ({
             <Text style={[styles.sectionTitle, { color: colors.text }]}>
               Habit Name
             </Text>
-            <TextInput
-              style={[
-                styles.input,
-                {
-                  backgroundColor: colors.surface,
-                  color: colors.text,
-                  borderColor: colors.border,
-                },
-              ]}
+            <ThemedInput
               value={name}
               onChangeText={setName}
               placeholder="e.g., Exercise, Read, Drink Water"
-              placeholderTextColor={colors.textSecondary}
               maxLength={50}
             />
           </View>
 
           {/* Icon Selection */}
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Choose an Icon</Text>
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>
+              Choose an Icon
+            </Text>
 
-            {/* Custom Emoji Section */}
-            <View style={styles.customEmojiSection}>
+            <View style={styles.iconGrid}>
+              {icons.slice(0, 6).map((icon) => (
+                <TouchableOpacity
+                  key={icon}
+                  style={[
+                    styles.iconButton,
+                    {
+                      backgroundColor: colors.surface,
+                      borderColor: colors.border,
+                    },
+                    selectedIcon === icon && {
+                      backgroundColor: colors.primary,
+                    },
+                  ]}
+                  onPress={() => {
+                    setSelectedIcon(icon);
+                    setUseCustomEmoji(false);
+                  }}
+                >
+                  <Text style={styles.iconText}>{icon}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+            <View style={styles.iconGrid}>
+              {icons.slice(6, 12).map((icon) => (
+                <TouchableOpacity
+                  key={icon}
+                  style={[
+                    styles.iconButton,
+                    {
+                      backgroundColor: colors.surface,
+                      borderColor: colors.border,
+                    },
+                    selectedIcon === icon && {
+                      backgroundColor: colors.primary,
+                    },
+                  ]}
+                  onPress={() => {
+                    setSelectedIcon(icon);
+                    setUseCustomEmoji(false);
+                  }}
+                >
+                  <Text style={styles.iconText}>{icon}</Text>
+                </TouchableOpacity>
+              ))}
+              {/* Custom Emoji Button */}
               <TouchableOpacity
                 style={[
-                  styles.customEmojiToggle,
-                  useCustomEmoji && styles.customEmojiToggleActive,
+                  styles.iconButton,
+                  {
+                    backgroundColor: colors.surface,
+                    borderColor: colors.border,
+                  },
+                  useCustomEmoji && {
+                    backgroundColor: colors.primary,
+                  },
                 ]}
                 onPress={() => setUseCustomEmoji(!useCustomEmoji)}
               >
-                <Text
-                  style={[
-                    styles.customEmojiToggleText,
-                    useCustomEmoji && styles.customEmojiToggleTextActive,
-                  ]}
-                >
-                  {useCustomEmoji ? '✓' : '○'} Use Custom Emoji
-                </Text>
+                <Ionicons
+                  name="add-circle-outline"
+                  size={24}
+                  color={useCustomEmoji ? '#fff' : colors.primary}
+                />
               </TouchableOpacity>
-
-              {useCustomEmoji && (
-                <View style={styles.customEmojiInputContainer}>
-                  <TextInput
-                    style={styles.customEmojiInput}
-                    value={customEmoji}
-                    onChangeText={setCustomEmoji}
-                    placeholder="Enter emoji (e.g., 🎯)"
-                    placeholderTextColor="#999"
-                    maxLength={2}
-                    autoFocus
-                  />
-                  {customEmoji && (
-                    <Text style={styles.customEmojiPreview}>{customEmoji}</Text>
-                  )}
-                </View>
-              )}
             </View>
 
-            {!useCustomEmoji && (
-              <View style={styles.iconGrid}>
-                {icons.map((icon) => (
-                  <TouchableOpacity
-                    key={icon}
-                    style={[
-                      styles.iconButton,
-                      selectedIcon === icon && styles.selectedIconButton,
-                    ]}
-                    onPress={() => setSelectedIcon(icon)}
-                  >
-                    <Text style={styles.iconText}>{icon}</Text>
-                  </TouchableOpacity>
-                ))}
+            {useCustomEmoji && (
+              <View style={styles.customEmojiInputContainer}>
+                <Text style={[styles.customEmojiLabel, { color: colors.text }]}>
+                  Enter Custom Emoji
+                </Text>
+                <ThemedInput
+                  style={styles.customEmojiInput}
+                  value={customEmoji}
+                  onChangeText={setCustomEmoji}
+                  placeholder="🎯"
+                  maxLength={2}
+                  autoFocus
+                />
+                {customEmoji && (
+                  <Text style={styles.customEmojiPreview}>{customEmoji}</Text>
+                )}
               </View>
             )}
           </View>
 
           {/* Goal Type Selection */}
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Goal Type</Text>
-            {goalTypes.map((type) => (
-              <TouchableOpacity
-                key={type.key}
-                style={[
-                  styles.goalTypeButton,
-                  goalType === type.key && styles.selectedGoalTypeButton,
-                ]}
-                onPress={() => setGoalType(type.key)}
-              >
-                <View style={styles.goalTypeContent}>
-                  <Text
-                    style={[
-                      styles.goalTypeLabel,
-                      goalType === type.key && styles.selectedGoalTypeLabel,
-                    ]}
-                  >
-                    {type.label}
-                  </Text>
-                  <Text
-                    style={[
-                      styles.goalTypeDescription,
-                      goalType === type.key &&
-                        styles.selectedGoalTypeDescription,
-                    ]}
-                  >
-                    {type.description}
-                  </Text>
-                </View>
-                {goalType === type.key && (
-                  <Text style={styles.checkmark}>✓</Text>
-                )}
-              </TouchableOpacity>
-            ))}
-          </View>
+          <GoalTypeSelector
+            goalType={goalType}
+            onGoalTypeChange={setGoalType}
+          />
 
           {/* Target Count for Count Goals */}
           {goalType === 'count' && (
             <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Target Count</Text>
-              <TextInput
-                style={styles.input}
+              <Text style={[styles.sectionTitle, { color: colors.text }]}>
+                Target Count
+              </Text>
+              <ThemedInput
                 value={targetCount}
                 onChangeText={setTargetCount}
                 placeholder="How many times?"
-                placeholderTextColor="#999"
                 keyboardType="numeric"
                 maxLength={3}
               />
@@ -321,33 +331,30 @@ export const EditHabitModal: React.FC<EditHabitModalProps> = ({
         </ScrollView>
 
         {/* Action Buttons */}
-        <View style={styles.footer}>
-          <TouchableOpacity
-            style={styles.deleteButton}
+        <View
+          style={[
+            styles.footer,
+            {
+              backgroundColor: colors.surface,
+              paddingBottom: Math.max(20, insets.bottom),
+            },
+          ]}
+        >
+          <ThemedButton
+            title="Delete Habit"
+            variant="danger"
             onPress={handleDelete}
             disabled={isSubmitting}
-          >
-            <Text style={styles.deleteButtonText}>Delete Habit</Text>
-          </TouchableOpacity>
+            style={styles.deleteButton}
+          />
 
-          <TouchableOpacity
-            style={[
-              styles.submitButton,
-              (!name.trim() || isSubmitting) && styles.submitButtonDisabled,
-            ]}
+          <ThemedButton
+            title={isSubmitting ? 'Updating...' : 'Update Habit'}
             onPress={handleSubmit}
             disabled={!name.trim() || isSubmitting}
-          >
-            <Text
-              style={[
-                styles.submitButtonText,
-                (!name.trim() || isSubmitting) &&
-                  styles.submitButtonTextDisabled,
-              ]}
-            >
-              {isSubmitting ? 'Updating...' : 'Update Habit'}
-            </Text>
-          </TouchableOpacity>
+            loading={isSubmitting}
+            style={styles.submitButton}
+          />
         </View>
       </KeyboardAvoidingView>
     </Modal>
@@ -445,6 +452,12 @@ const styles = StyleSheet.create({
     borderColor: '#e0e0e0',
     textAlign: 'center',
     width: 80,
+  },
+  customEmojiLabel: {
+    fontSize: 14,
+    fontWeight: '500',
+    marginBottom: 8,
+    textAlign: 'center',
   },
   customEmojiPreview: {
     fontSize: 32,

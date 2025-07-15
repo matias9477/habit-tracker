@@ -8,7 +8,10 @@ import {
   Alert,
   TouchableOpacity,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from 'react-native-safe-area-context';
 import { useHabitStore } from '../store/habitStore';
 import { useThemeStore } from '../store/themeStore';
 import { getThemeColors } from '../utils/theme';
@@ -42,6 +45,7 @@ export const TodayScreen: React.FC = () => {
   } = useHabitStore();
   const { isDarkMode } = useThemeStore();
   const colors = getThemeColors(isDarkMode);
+  const insets = useSafeAreaInsets();
 
   useEffect(() => {
     loadHabits();
@@ -152,7 +156,13 @@ export const TodayScreen: React.FC = () => {
       {/* Floating Add Button */}
       {habits.length > 0 && (
         <TouchableOpacity
-          style={styles.floatingAddButton}
+          style={[
+            styles.floatingAddButton,
+            {
+              bottom: Math.max(24, insets.bottom),
+              right: Math.max(24, insets.right),
+            },
+          ]}
           onPress={() => setIsAddModalVisible(true)}
           activeOpacity={0.8}
         >
