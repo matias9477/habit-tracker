@@ -12,6 +12,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useThemeStore } from '../store/themeStore';
 import { useHabitStore } from '../store/habitStore';
+import { useOnboardingStore } from '../store/onboardingStore';
 import { getThemeColors } from '../utils/theme';
 import { exportHabitData } from '../utils/dataExport';
 import {
@@ -35,6 +36,7 @@ export const SettingsScreen: React.FC = () => {
     toggleNotifications,
   } = useThemeStore();
   const { habits, deleteHabit } = useHabitStore();
+  const { resetOnboarding } = useOnboardingStore();
   const colors = getThemeColors(isDarkMode);
 
   const [isNotificationsConfigured, setIsNotificationsConfigured] =
@@ -123,6 +125,23 @@ export const SettingsScreen: React.FC = () => {
             } catch (error) {
               Alert.alert('Error', 'Failed to clear data. Please try again.');
             }
+          },
+        },
+      ]
+    );
+  };
+
+  const handleResetOnboarding = () => {
+    Alert.alert(
+      'Reset Onboarding',
+      'This will show the onboarding screen again on the next app launch.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Reset',
+          onPress: () => {
+            resetOnboarding();
+            Alert.alert('Success', 'Onboarding will show on next app launch.');
           },
         },
       ]
@@ -251,6 +270,12 @@ export const SettingsScreen: React.FC = () => {
             'Read our terms of service',
             'document-text-outline',
             () => setShowTermsOfService(true)
+          )}
+          {renderSettingItem(
+            'Reset Onboarding',
+            'Show onboarding again on next launch',
+            'refresh-outline',
+            handleResetOnboarding
           )}
         </View>
       </ScrollView>

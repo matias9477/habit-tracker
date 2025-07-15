@@ -6,6 +6,8 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { runMigrations } from './db/database';
 import { MainTabNavigator } from './navigation/MainTabNavigator';
 import { configureNotifications } from './utils/notifications';
+import { useOnboardingStore } from './store/onboardingStore';
+import { OnboardingScreen } from './screens/OnboardingScreen';
 
 /**
  * Loading screen component shown while the database is being initialized.
@@ -16,6 +18,32 @@ const LoadingScreen: React.FC = () => (
     <Text style={styles.loadingText}>Setting up your habit tracker...</Text>
   </View>
 );
+
+/**
+ * App content wrapper that handles onboarding logic.
+ * Shows onboarding on first launch, otherwise shows the main app.
+ */
+const AppContent: React.FC = () => {
+  const { hasCompletedOnboarding, setOnboardingCompleted } =
+    useOnboardingStore();
+  const [showOnboarding, setShowOnboarding] = useState(!hasCompletedOnboarding);
+
+  const handleOnboardingComplete = () => {
+    setOnboardingCompleted();
+    setShowOnboarding(false);
+  };
+
+  if (showOnboarding) {
+    return <OnboardingScreen onComplete={handleOnboardingComplete} />;
+  }
+
+  return (
+    <NavigationContainer>
+      <StatusBar style="auto" />
+      <MainTabNavigator />
+    </NavigationContainer>
+  );
+};
 
 /**
  * Main App component that initializes the database and sets up navigation.
@@ -58,10 +86,7 @@ export default function App() {
 
   return (
     <SafeAreaProvider>
-      <NavigationContainer>
-        <StatusBar style="auto" />
-        <MainTabNavigator />
-      </NavigationContainer>
+      <AppContent />
     </SafeAreaProvider>
   );
 }

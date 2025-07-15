@@ -20,7 +20,6 @@ import { DateHeader } from '../components/DateHeader';
 import { AddHabitModal } from '../components/AddHabitModal';
 import { EditHabitModal } from '../components/EditHabitModal';
 import { HabitWithCompletion } from '../store/habitStore';
-import { OnboardingScreen } from './OnboardingScreen';
 
 /**
  * The main screen that displays today's habits and allows users to mark them as completed.
@@ -32,7 +31,6 @@ export const TodayScreen: React.FC = () => {
   const [isEditModalVisible, setIsEditModalVisible] = useState(false);
   const [selectedHabit, setSelectedHabit] =
     useState<HabitWithCompletion | null>(null);
-  const [showOnboarding, setShowOnboarding] = useState(false);
 
   const {
     habits,
@@ -138,14 +136,6 @@ export const TodayScreen: React.FC = () => {
     >
       <DateHeader />
 
-      {/* Test Onboarding Button */}
-      <TouchableOpacity
-        style={[styles.testButton, { backgroundColor: colors.primary }]}
-        onPress={() => setShowOnboarding(true)}
-      >
-        <Text style={styles.testButtonText}>Test Onboarding</Text>
-      </TouchableOpacity>
-
       <FlatList
         data={habits}
         renderItem={renderHabit}
@@ -198,11 +188,6 @@ export const TodayScreen: React.FC = () => {
         onUpdate={handleUpdateHabit}
         onDelete={handleDeleteHabit}
       />
-
-      {/* Onboarding Modal */}
-      {showOnboarding && (
-        <OnboardingScreen onComplete={() => setShowOnboarding(false)} />
-      )}
     </SafeAreaView>
   );
 };
@@ -271,18 +256,5 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 24,
     fontWeight: 'bold',
-  },
-  testButton: {
-    marginHorizontal: 16,
-    marginVertical: 8,
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  testButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
   },
 });
