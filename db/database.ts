@@ -1,10 +1,10 @@
-import * as SQLite from "expo-sqlite";
+import * as SQLite from 'expo-sqlite';
 
 /**
  * Opens (or creates) the main SQLite database for the app.
  */
 export const getDatabase = async () => {
-  return await SQLite.openDatabaseAsync("habits.db");
+  return await SQLite.openDatabaseAsync('habits.db');
 };
 
 /**
@@ -33,7 +33,7 @@ export const runMigrations = async (): Promise<void> => {
     `);
   } catch (error) {
     // Column already exists, ignore error
-    console.log("target_count column already exists or migration not needed");
+    console.log('target_count column already exists or migration not needed');
   }
 
   await db.execAsync(`

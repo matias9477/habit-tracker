@@ -1,18 +1,29 @@
 import React from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useThemeStore } from '../store/themeStore';
+import { getThemeColors } from '../utils/theme';
 
 /**
  * Stats screen component that displays habit analytics and progress.
  * Shows completion rates, streaks, and other habit statistics.
  */
 export const StatsScreen: React.FC = () => {
+  const { isDarkMode } = useThemeStore();
+  const colors = getThemeColors(isDarkMode);
+
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView
+      style={[styles.container, { backgroundColor: colors.background }]}
+    >
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.header}>
-          <Text style={styles.title}>Your Progress</Text>
-          <Text style={styles.subtitle}>Track your habit journey</Text>
+          <Text style={[styles.title, { color: colors.text }]}>
+            Your Progress
+          </Text>
+          <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
+            Track your habit journey
+          </Text>
         </View>
 
         <View style={styles.statsContainer}>

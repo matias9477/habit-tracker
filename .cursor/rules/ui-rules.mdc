@@ -1,0 +1,212 @@
+# UI Design Rules – Habit Tracker App
+
+## 🎨 Design Philosophy
+
+- **Clean & Modern**: Minimalist design with plenty of white space and clear hierarchy
+- **Consistent Theming**: All components must support both light and dark modes
+- **Material Design**: Use Material Design principles for spacing, typography, and interactions
+- **Accessibility First**: Ensure proper contrast ratios and touch targets
+
+## 🌙 Dark Mode Requirements
+
+- **Mandatory Dark Mode**: Every component MUST support dark mode
+- **Theme Store Integration**: Use `useThemeStore()` and `getThemeColors()` in all components
+- **Dynamic Styling**: Apply theme colors using style arrays: `[baseStyle, { color: colors.text }]`
+- **Proper Contrast**: Ensure text remains readable in both themes
+- **Consistent Colors**: Use the established color palette from `utils/theme.ts`
+
+## 📱 Component Patterns
+
+### **Safe Area Support**
+
+- Always wrap screen components with `SafeAreaView`
+- Use `react-native-safe-area-context` for proper spacing
+- Ensure components don't overlap with device controls
+
+### **Card Design**
+
+- Use rounded corners (12px border radius)
+- Apply subtle shadows with proper elevation
+- Use surface colors for card backgrounds
+- Include proper padding (16px standard)
+
+### **Button Patterns**
+
+- Primary buttons: Use theme primary color with white text
+- Secondary buttons: Use surface color with border
+- Disabled states: Use textSecondary color
+- Active states: Use success color for completed items
+
+### **Input Fields**
+
+- Use surface background with border
+- Apply proper placeholder colors
+- Include proper padding and border radius
+- Support both light and dark themes
+
+## 🎯 Icon & Navigation
+
+### **Icon System**
+
+- Use `@expo/vector-icons` (Ionicons) for all icons
+- Avoid emoji-based icons in production
+- Maintain consistent icon sizes (24px standard)
+- Use theme colors for icon tinting
+
+### **Navigation**
+
+- Bottom tab navigation with proper safe area
+- Use theme colors for active/inactive states
+- Include proper spacing and padding
+- Support both light and dark themes
+
+## 📊 Data Visualization
+
+### **Progress Indicators**
+
+- Use theme colors for progress bars
+- Include proper contrast for accessibility
+- Show clear visual feedback for completion states
+- Use consistent styling across all progress elements
+
+### **Stats & Metrics**
+
+- Use card-based layouts for statistics
+- Apply proper spacing between elements
+- Use theme colors for all text and backgrounds
+- Include visual hierarchy with typography
+
+## 🎨 Color Usage
+
+### **Primary Colors**
+
+- Light theme: `#4CAF50` (green)
+- Dark theme: `#81C784` (lighter green)
+- Use for primary actions and active states
+
+### **Surface Colors**
+
+- Light theme: `#ffffff` (white)
+- Dark theme: `#1e1e1e` (dark gray)
+- Use for cards, modals, and input backgrounds
+
+### **Text Colors**
+
+- Primary text: `colors.text`
+- Secondary text: `colors.textSecondary`
+- Ensure proper contrast in both themes
+
+### **Border Colors**
+
+- Light theme: `#e0e0e0`
+- Dark theme: `#333333`
+- Use for subtle separators and input borders
+
+## 📝 Typography
+
+### **Text Hierarchy**
+
+- Titles: 28px, bold, primary text color
+- Section headers: 18px, semibold, primary text color
+- Body text: 16px, regular, primary text color
+- Caption text: 14px, regular, secondary text color
+
+### **Font Weights**
+
+- Bold: For titles and important labels
+- Semibold: For section headers
+- Regular: For body text
+- Light: For subtle information
+
+## 🔧 Component Structure
+
+### **Required Imports**
+
+```typescript
+import { useThemeStore } from '../store/themeStore';
+import { getThemeColors } from '../utils/theme';
+```
+
+### **Theme Integration Pattern**
+
+```typescript
+const { isDarkMode } = useThemeStore();
+const colors = getThemeColors(isDarkMode);
+```
+
+### **Style Application Pattern**
+
+```typescript
+style={[baseStyle, { backgroundColor: colors.surface, color: colors.text }]}
+```
+
+## 🎭 Modal & Overlay Design
+
+### **Modal Patterns**
+
+- Use `pageSheet` presentation style
+- Include proper header with close button
+- Apply theme colors to all elements
+- Use KeyboardAvoidingView for forms
+
+### **Form Elements**
+
+- Group related inputs in sections
+- Use consistent spacing (16px padding)
+- Apply theme colors to all form elements
+- Include proper validation states
+
+## 📱 Responsive Design
+
+### **Spacing System**
+
+- Standard padding: 16px
+- Card padding: 16px
+- Section spacing: 24px
+- Small spacing: 8px
+
+### **Touch Targets**
+
+- Minimum 44px height for buttons
+- Proper spacing between interactive elements
+- Include activeOpacity for better feedback
+
+## 🎨 Animation & Interaction
+
+### **Micro-interactions**
+
+- Use `activeOpacity={0.7}` for touch feedback
+- Include proper loading states
+- Apply smooth transitions for theme changes
+- Use haptic feedback where appropriate
+
+### **State Management**
+
+- Show loading indicators during async operations
+- Display error states with proper messaging
+- Include success feedback for completed actions
+
+## 🧪 Quality Standards
+
+### **Code Organization**
+
+- Separate styles from component logic
+- Use descriptive style names
+- Include proper TypeScript types
+- Add JSDoc comments for complex components
+
+### **Performance**
+
+- Use `React.memo` for expensive components
+- Optimize re-renders with proper dependencies
+- Avoid inline styles for performance
+- Use proper key props for lists
+
+---
+
+Following these UI rules ensures a consistent, professional, and accessible user experience across all themes and devices.
+description:
+globs:
+alwaysApply: false
+
+---

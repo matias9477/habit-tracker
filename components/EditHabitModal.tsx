@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -10,8 +10,10 @@ import {
   Alert,
   KeyboardAvoidingView,
   Platform,
-} from "react-native";
-import { HabitWithCompletion } from "../store/habitStore";
+} from 'react-native';
+import { HabitWithCompletion } from '../store/habitStore';
+import { useThemeStore } from '../store/themeStore';
+import { getThemeColors } from '../utils/theme';
 
 /**
  * Props for the EditHabitModal component.
@@ -33,6 +35,7 @@ interface EditHabitModalProps {
 /**
  * A modal component for editing existing habits.
  * Provides a form with pre-filled values and delete functionality with confirmation.
+ * Supports both light and dark themes.
  */
 export const EditHabitModal: React.FC<EditHabitModalProps> = ({
   visible,
@@ -41,36 +44,39 @@ export const EditHabitModal: React.FC<EditHabitModalProps> = ({
   onUpdate,
   onDelete,
 }) => {
-  const [name, setName] = useState("");
-  const [selectedIcon, setSelectedIcon] = useState("🏃‍♂️");
-  const [goalType, setGoalType] = useState("binary");
-  const [targetCount, setTargetCount] = useState("1");
+  const { isDarkMode } = useThemeStore();
+  const colors = getThemeColors(isDarkMode);
+
+  const [name, setName] = useState('');
+  const [selectedIcon, setSelectedIcon] = useState('🏃‍♂️');
+  const [goalType, setGoalType] = useState('binary');
+  const [targetCount, setTargetCount] = useState('1');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [customEmoji, setCustomEmoji] = useState("");
+  const [customEmoji, setCustomEmoji] = useState('');
   const [useCustomEmoji, setUseCustomEmoji] = useState(false);
 
   const icons = [
-    "🏃‍♂️", // Exercise
-    "💪", // Strength
-    "🧠", // Learning
-    "📚", // Reading
-    "💧", // Hydration
-    "🥗", // Healthy eating
-    "😴", // Sleep
-    "🧘‍♀️", // Meditation
-    "🎯", // Focus
-    "⭐", // Achievement
-    "🔥", // Motivation
-    "💎", // Consistency
+    '🏃‍♂️', // Exercise
+    '💪', // Strength
+    '🧠', // Learning
+    '📚', // Reading
+    '💧', // Hydration
+    '🥗', // Healthy eating
+    '😴', // Sleep
+    '🧘‍♀️', // Meditation
+    '🎯', // Focus
+    '⭐', // Achievement
+    '🔥', // Motivation
+    '💎', // Consistency
   ];
 
   const goalTypes = [
     {
-      key: "binary",
-      label: "Daily Goal",
-      description: "Complete or not complete",
+      key: 'binary',
+      label: 'Daily Goal',
+      description: 'Complete or not complete',
     },
-    { key: "count", label: "Count Goal", description: "Track number of times" },
+    { key: 'count', label: 'Count Goal', description: 'Track number of times' },
   ];
 
   // Pre-fill form when habit changes
@@ -79,15 +85,15 @@ export const EditHabitModal: React.FC<EditHabitModalProps> = ({
       setName(habit.name);
       setSelectedIcon(habit.icon);
       setGoalType(habit.goal_type);
-      setTargetCount(habit.targetCount?.toString() || "1");
-      setCustomEmoji("");
+      setTargetCount(habit.targetCount?.toString() || '1');
+      setCustomEmoji('');
       setUseCustomEmoji(false);
     }
   }, [habit]);
 
   const handleSubmit = async () => {
     if (!habit || !name.trim()) {
-      Alert.alert("Error", "Please enter a habit name");
+      Alert.alert('Error', 'Please enter a habit name');
       return;
     }
 
@@ -96,7 +102,7 @@ export const EditHabitModal: React.FC<EditHabitModalProps> = ({
       const finalIcon =
         useCustomEmoji && customEmoji ? customEmoji : selectedIcon;
       const finalTargetCount =
-        goalType === "count" ? parseInt(targetCount) : undefined;
+        goalType === 'count' ? parseInt(targetCount) : undefined;
 
       const success = await onUpdate(
         habit.id,
@@ -109,7 +115,7 @@ export const EditHabitModal: React.FC<EditHabitModalProps> = ({
         handleClose();
       }
     } catch (error) {
-      Alert.alert("Error", "Failed to update habit. Please try again.");
+      Alert.alert('Error', 'Failed to update habit. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
@@ -119,13 +125,13 @@ export const EditHabitModal: React.FC<EditHabitModalProps> = ({
     if (!habit) return;
 
     Alert.alert(
-      "Delete Habit",
+      'Delete Habit',
       `Are you sure you want to delete "${habit.name}"? This action cannot be undone.`,
       [
-        { text: "Cancel", style: "cancel" },
+        { text: 'Cancel', style: 'cancel' },
         {
-          text: "Delete",
-          style: "destructive",
+          text: 'Delete',
+          style: 'destructive',
           onPress: async () => {
             setIsSubmitting(true);
             try {
@@ -134,7 +140,7 @@ export const EditHabitModal: React.FC<EditHabitModalProps> = ({
                 handleClose();
               }
             } catch (error) {
-              Alert.alert("Error", "Failed to delete habit. Please try again.");
+              Alert.alert('Error', 'Failed to delete habit. Please try again.');
             } finally {
               setIsSubmitting(false);
             }
@@ -145,11 +151,11 @@ export const EditHabitModal: React.FC<EditHabitModalProps> = ({
   };
 
   const handleClose = () => {
-    setName("");
-    setSelectedIcon("🏃‍♂️");
-    setGoalType("binary");
-    setTargetCount("1");
-    setCustomEmoji("");
+    setName('');
+    setSelectedIcon('🏃‍♂️');
+    setGoalType('binary');
+    setTargetCount('1');
+    setCustomEmoji('');
     setUseCustomEmoji(false);
     setIsSubmitting(false);
     onClose();
@@ -165,26 +171,37 @@ export const EditHabitModal: React.FC<EditHabitModalProps> = ({
       onRequestClose={handleClose}
     >
       <KeyboardAvoidingView
-        style={styles.container}
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        style={[styles.container, { backgroundColor: colors.background }]}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
-        <View style={styles.header}>
-          <Text style={styles.title}>Edit Habit</Text>
+        <View style={[styles.header, { backgroundColor: colors.surface }]}>
+          <Text style={[styles.title, { color: colors.text }]}>Edit Habit</Text>
           <TouchableOpacity onPress={handleClose} style={styles.closeButton}>
-            <Text style={styles.closeButtonText}>✕</Text>
+            <Text style={[styles.closeButtonText, { color: colors.text }]}>
+              ✕
+            </Text>
           </TouchableOpacity>
         </View>
 
         <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
           {/* Habit Name Input */}
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Habit Name</Text>
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>
+              Habit Name
+            </Text>
             <TextInput
-              style={styles.input}
+              style={[
+                styles.input,
+                {
+                  backgroundColor: colors.surface,
+                  color: colors.text,
+                  borderColor: colors.border,
+                },
+              ]}
               value={name}
               onChangeText={setName}
               placeholder="e.g., Exercise, Read, Drink Water"
-              placeholderTextColor="#999"
+              placeholderTextColor={colors.textSecondary}
               maxLength={50}
             />
           </View>
@@ -208,7 +225,7 @@ export const EditHabitModal: React.FC<EditHabitModalProps> = ({
                     useCustomEmoji && styles.customEmojiToggleTextActive,
                   ]}
                 >
-                  {useCustomEmoji ? "✓" : "○"} Use Custom Emoji
+                  {useCustomEmoji ? '✓' : '○'} Use Custom Emoji
                 </Text>
               </TouchableOpacity>
 
@@ -287,7 +304,7 @@ export const EditHabitModal: React.FC<EditHabitModalProps> = ({
           </View>
 
           {/* Target Count for Count Goals */}
-          {goalType === "count" && (
+          {goalType === 'count' && (
             <View style={styles.section}>
               <Text style={styles.sectionTitle}>Target Count</Text>
               <TextInput
@@ -328,7 +345,7 @@ export const EditHabitModal: React.FC<EditHabitModalProps> = ({
                   styles.submitButtonTextDisabled,
               ]}
             >
-              {isSubmitting ? "Updating..." : "Update Habit"}
+              {isSubmitting ? 'Updating...' : 'Update Habit'}
             </Text>
           </TouchableOpacity>
         </View>
@@ -340,34 +357,34 @@ export const EditHabitModal: React.FC<EditHabitModalProps> = ({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f5f5f5",
+    backgroundColor: '#f5f5f5',
   },
   header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     paddingHorizontal: 20,
     paddingVertical: 16,
-    backgroundColor: "#fff",
+    backgroundColor: '#fff',
     borderBottomWidth: 1,
-    borderBottomColor: "#e0e0e0",
+    borderBottomColor: '#e0e0e0',
   },
   title: {
     fontSize: 20,
-    fontWeight: "bold",
-    color: "#333",
+    fontWeight: 'bold',
+    color: '#333',
   },
   closeButton: {
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: "#f0f0f0",
-    justifyContent: "center",
-    alignItems: "center",
+    backgroundColor: '#f0f0f0',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   closeButtonText: {
     fontSize: 16,
-    color: "#666",
+    color: '#666',
   },
   content: {
     flex: 1,
@@ -378,18 +395,18 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 16,
-    fontWeight: "600",
-    color: "#333",
+    fontWeight: '600',
+    color: '#333',
     marginBottom: 12,
   },
   input: {
-    backgroundColor: "#fff",
+    backgroundColor: '#fff',
     borderRadius: 8,
     paddingHorizontal: 16,
     paddingVertical: 12,
     fontSize: 16,
     borderWidth: 1,
-    borderColor: "#e0e0e0",
+    borderColor: '#e0e0e0',
   },
   customEmojiSection: {
     marginBottom: 12,
@@ -399,34 +416,34 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     paddingHorizontal: 12,
     borderRadius: 6,
-    backgroundColor: "#f8f8f8",
+    backgroundColor: '#f8f8f8',
   },
   customEmojiToggleActive: {
-    backgroundColor: "#e8f5e8",
-    borderColor: "#4CAF50",
+    backgroundColor: '#e8f5e8',
+    borderColor: '#4CAF50',
     borderWidth: 1,
   },
   customEmojiToggleText: {
     fontSize: 14,
-    color: "#666",
+    color: '#666',
   },
   customEmojiToggleTextActive: {
-    color: "#4CAF50",
-    fontWeight: "600",
+    color: '#4CAF50',
+    fontWeight: '600',
   },
   customEmojiInputContainer: {
     marginTop: 8,
-    alignItems: "center",
+    alignItems: 'center',
   },
   customEmojiInput: {
-    backgroundColor: "#fff",
+    backgroundColor: '#fff',
     borderRadius: 8,
     paddingHorizontal: 16,
     paddingVertical: 12,
     fontSize: 24,
     borderWidth: 1,
-    borderColor: "#e0e0e0",
-    textAlign: "center",
+    borderColor: '#e0e0e0',
+    textAlign: 'center',
     width: 80,
   },
   customEmojiPreview: {
@@ -434,103 +451,103 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   iconGrid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    justifyContent: "space-between",
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
   },
   iconButton: {
     width: 50,
     height: 50,
     borderRadius: 25,
-    backgroundColor: "#fff",
-    justifyContent: "center",
-    alignItems: "center",
+    backgroundColor: '#fff',
+    justifyContent: 'center',
+    alignItems: 'center',
     marginBottom: 8,
     borderWidth: 2,
-    borderColor: "#e0e0e0",
+    borderColor: '#e0e0e0',
   },
   selectedIconButton: {
-    borderColor: "#4CAF50",
-    backgroundColor: "#e8f5e8",
+    borderColor: '#4CAF50',
+    backgroundColor: '#e8f5e8',
   },
   iconText: {
     fontSize: 24,
   },
   goalTypeButton: {
-    backgroundColor: "#fff",
+    backgroundColor: '#fff',
     borderRadius: 8,
     padding: 16,
     marginBottom: 8,
     borderWidth: 1,
-    borderColor: "#e0e0e0",
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
+    borderColor: '#e0e0e0',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
   selectedGoalTypeButton: {
-    borderColor: "#4CAF50",
-    backgroundColor: "#e8f5e8",
+    borderColor: '#4CAF50',
+    backgroundColor: '#e8f5e8',
   },
   goalTypeContent: {
     flex: 1,
   },
   goalTypeLabel: {
     fontSize: 16,
-    fontWeight: "600",
-    color: "#333",
+    fontWeight: '600',
+    color: '#333',
     marginBottom: 4,
   },
   selectedGoalTypeLabel: {
-    color: "#4CAF50",
+    color: '#4CAF50',
   },
   goalTypeDescription: {
     fontSize: 14,
-    color: "#666",
+    color: '#666',
   },
   selectedGoalTypeDescription: {
-    color: "#4CAF50",
+    color: '#4CAF50',
   },
   checkmark: {
     fontSize: 18,
-    color: "#4CAF50",
-    fontWeight: "bold",
+    color: '#4CAF50',
+    fontWeight: 'bold',
   },
   footer: {
     padding: 20,
-    backgroundColor: "#fff",
+    backgroundColor: '#fff',
     borderTopWidth: 1,
-    borderTopColor: "#e0e0e0",
-    flexDirection: "row",
+    borderTopColor: '#e0e0e0',
+    flexDirection: 'row',
     gap: 12,
   },
   deleteButton: {
     flex: 1,
-    backgroundColor: "#f44336",
+    backgroundColor: '#f44336',
     borderRadius: 8,
     paddingVertical: 16,
-    alignItems: "center",
+    alignItems: 'center',
   },
   deleteButtonText: {
-    color: "#fff",
+    color: '#fff',
     fontSize: 16,
-    fontWeight: "600",
+    fontWeight: '600',
   },
   submitButton: {
     flex: 2,
-    backgroundColor: "#4CAF50",
+    backgroundColor: '#4CAF50',
     borderRadius: 8,
     paddingVertical: 16,
-    alignItems: "center",
+    alignItems: 'center',
   },
   submitButtonDisabled: {
-    backgroundColor: "#ccc",
+    backgroundColor: '#ccc',
   },
   submitButtonText: {
-    color: "#fff",
+    color: '#fff',
     fontSize: 16,
-    fontWeight: "600",
+    fontWeight: '600',
   },
   submitButtonTextDisabled: {
-    color: "#999",
+    color: '#999',
   },
 });

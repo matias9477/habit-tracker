@@ -1,6 +1,8 @@
-import React from "react";
-import { View, Text, TouchableOpacity, StyleSheet, Alert } from "react-native";
-import { HabitWithCompletion } from "../store/habitStore";
+import React from 'react';
+import { View, Text, TouchableOpacity, StyleSheet, Alert } from 'react-native';
+import { HabitWithCompletion } from '../store/habitStore';
+import { useThemeStore } from '../store/themeStore';
+import { getThemeColors } from '../utils/theme';
 
 /**
  * Props for the HabitCard component.
@@ -16,6 +18,7 @@ interface HabitCardProps {
  * A card component that displays a habit with its completion status and toggle functionality.
  * Shows the habit's icon, name, completion status, and provides a toggle button.
  * Supports long press for edit functionality and displays count progress for count goals.
+ * Supports both light and dark themes.
  */
 export const HabitCard: React.FC<HabitCardProps> = ({
   habit,
@@ -23,6 +26,9 @@ export const HabitCard: React.FC<HabitCardProps> = ({
   onEdit,
   onPress,
 }) => {
+  const { isDarkMode } = useThemeStore();
+  const colors = getThemeColors(isDarkMode);
+
   const handleToggle = () => {
     onToggle(habit.id);
   };
@@ -40,7 +46,7 @@ export const HabitCard: React.FC<HabitCardProps> = ({
   };
 
   const renderCountProgress = () => {
-    if (habit.goal_type !== "count") return null;
+    if (habit.goal_type !== 'count') return null;
 
     const currentCount = habit.currentCount || 0;
     const targetCount = habit.targetCount || 1;
@@ -50,19 +56,24 @@ export const HabitCard: React.FC<HabitCardProps> = ({
     return (
       <View style={styles.countContainer}>
         <View style={styles.countTextContainer}>
-          <Text style={styles.countText}>
+          <Text style={[styles.countText, { color: colors.textSecondary }]}>
             {currentCount}/{targetCount}
           </Text>
         </View>
-        <View style={styles.progressBar}>
-          <View style={[styles.progressFill, { width: `${progressWidth}%` }]} />
+        <View style={[styles.progressBar, { backgroundColor: colors.border }]}>
+          <View
+            style={[
+              styles.progressFill,
+              { width: `${progressWidth}%`, backgroundColor: colors.primary },
+            ]}
+          />
         </View>
       </View>
     );
   };
 
   const renderToggleButton = () => {
-    if (habit.goal_type === "count") {
+    if (habit.goal_type === 'count') {
       const currentCount = habit.currentCount || 0;
       const targetCount = habit.targetCount || 1;
       const isCompleted = currentCount >= targetCount;
@@ -71,8 +82,10 @@ export const HabitCard: React.FC<HabitCardProps> = ({
         <TouchableOpacity
           style={[
             styles.toggleButton,
-            isCompleted && styles.toggleButtonCompleted,
-            currentCount > 0 && !isCompleted && styles.toggleButtonPartial,
+            { backgroundColor: colors.surface, borderColor: colors.border },
+            isCompleted && { backgroundColor: colors.success },
+            currentCount > 0 &&
+              !isCompleted && { backgroundColor: colors.primary },
           ]}
           onPress={handleToggle}
           activeOpacity={0.8}
@@ -80,15 +93,16 @@ export const HabitCard: React.FC<HabitCardProps> = ({
           <Text
             style={[
               styles.toggleText,
-              isCompleted && styles.toggleTextCompleted,
-              currentCount > 0 && !isCompleted && styles.toggleTextPartial,
+              { color: colors.text },
+              isCompleted && { color: '#fff' },
+              currentCount > 0 && !isCompleted && { color: '#fff' },
             ]}
           >
             {isCompleted
-              ? "✓"
+              ? '✓'
               : currentCount > 0
-              ? currentCount.toString()
-              : "○"}
+                ? currentCount.toString()
+                : '○'}
           </Text>
         </TouchableOpacity>
       );
@@ -98,7 +112,8 @@ export const HabitCard: React.FC<HabitCardProps> = ({
       <TouchableOpacity
         style={[
           styles.toggleButton,
-          habit.isCompletedToday && styles.toggleButtonCompleted,
+          { backgroundColor: colors.surface, borderColor: colors.border },
+          habit.isCompletedToday && { backgroundColor: colors.success },
         ]}
         onPress={handleToggle}
         activeOpacity={0.8}
@@ -106,10 +121,11 @@ export const HabitCard: React.FC<HabitCardProps> = ({
         <Text
           style={[
             styles.toggleText,
-            habit.isCompletedToday && styles.toggleTextCompleted,
+            { color: colors.text },
+            habit.isCompletedToday && { color: '#fff' },
           ]}
         >
-          {habit.isCompletedToday ? "✓" : "○"}
+          {habit.isCompletedToday ? '✓' : '○'}
         </Text>
       </TouchableOpacity>
     );
@@ -117,7 +133,15 @@ export const HabitCard: React.FC<HabitCardProps> = ({
 
   return (
     <TouchableOpacity
-      style={[styles.card, habit.isCompletedToday && styles.completedCard]}
+      style={[
+        styles.card,
+        { backgroundColor: colors.surface, shadowColor: colors.shadow },
+        habit.isCompletedToday && {
+          backgroundColor: colors.primaryLight + '20',
+          borderColor: colors.success,
+          borderWidth: 1,
+        },
+      ]}
       onPress={handlePress}
       onLongPress={handleLongPress}
       activeOpacity={0.7}
@@ -129,18 +153,25 @@ export const HabitCard: React.FC<HabitCardProps> = ({
             <Text
               style={[
                 styles.name,
+                { color: colors.text },
                 habit.isCompletedToday && styles.completedText,
               ]}
             >
               {habit.name}
             </Text>
-            <Text style={styles.streak}>
-              {habit.streak} day{habit.streak !== 1 ? "s" : ""} streak
+            <Text style={[styles.streak, { color: colors.textSecondary }]}>
+              {habit.streak} day{habit.streak !== 1 ? 's' : ''} streak
             </Text>
-            {habit.goal_type === "count" && (
-              <Text style={styles.goalType}>Count Goal</Text>
+            {habit.goal_type === 'count' && (
+              <Text style={[styles.goalType, { color: colors.textSecondary }]}>
+                Count Goal
+              </Text>
             )}
-            {onEdit && <Text style={styles.editHint}>Long press to edit</Text>}
+            {onEdit && (
+              <Text style={[styles.editHint, { color: colors.textSecondary }]}>
+                Long press to edit
+              </Text>
+            )}
           </View>
         </View>
 
@@ -154,12 +185,12 @@ export const HabitCard: React.FC<HabitCardProps> = ({
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: "#ffffff",
+    backgroundColor: '#ffffff',
     borderRadius: 12,
     padding: 16,
     marginVertical: 6,
     marginHorizontal: 16,
-    shadowColor: "#000",
+    shadowColor: '#000',
     shadowOffset: {
       width: 0,
       height: 2,
@@ -169,18 +200,18 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   completedCard: {
-    backgroundColor: "#f0f8ff",
-    borderColor: "#4CAF50",
+    backgroundColor: '#f0f8ff',
+    borderColor: '#4CAF50',
     borderWidth: 1,
   },
   content: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
   },
   leftSection: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     flex: 1,
   },
   icon: {
@@ -192,22 +223,22 @@ const styles = StyleSheet.create({
   },
   name: {
     fontSize: 18,
-    fontWeight: "600",
-    color: "#333",
+    fontWeight: '600',
+    color: '#333',
     marginBottom: 4,
   },
   completedText: {
-    textDecorationLine: "line-through",
-    color: "#666",
+    textDecorationLine: 'line-through',
+    color: '#666',
   },
   streak: {
     fontSize: 14,
-    color: "#666",
+    color: '#666',
   },
   goalType: {
     fontSize: 12,
-    color: "#4CAF50",
-    fontWeight: "500",
+    color: '#4CAF50',
+    fontWeight: '500',
     marginTop: 2,
   },
   toggleButton: {
@@ -215,59 +246,59 @@ const styles = StyleSheet.create({
     height: 44,
     borderRadius: 22,
     borderWidth: 2,
-    borderColor: "#ddd",
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "#fff",
+    borderColor: '#ddd',
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#fff',
   },
   toggleButtonCompleted: {
-    backgroundColor: "#4CAF50",
-    borderColor: "#4CAF50",
+    backgroundColor: '#4CAF50',
+    borderColor: '#4CAF50',
   },
   toggleButtonPartial: {
-    backgroundColor: "#FF9800",
-    borderColor: "#FF9800",
+    backgroundColor: '#FF9800',
+    borderColor: '#FF9800',
   },
   toggleText: {
     fontSize: 20,
-    color: "#999",
-    fontWeight: "bold",
+    color: '#999',
+    fontWeight: 'bold',
   },
   toggleTextCompleted: {
-    color: "#fff",
+    color: '#fff',
   },
   toggleTextPartial: {
-    color: "#fff",
+    color: '#fff',
     fontSize: 16,
   },
   countContainer: {
     marginTop: 12,
   },
   countTextContainer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     marginBottom: 6,
   },
   countText: {
     fontSize: 12,
-    color: "#666",
-    fontWeight: "500",
+    color: '#666',
+    fontWeight: '500',
   },
   progressBar: {
     height: 4,
-    backgroundColor: "#e0e0e0",
+    backgroundColor: '#e0e0e0',
     borderRadius: 2,
-    overflow: "hidden",
+    overflow: 'hidden',
   },
   progressFill: {
-    height: "100%",
-    backgroundColor: "#4CAF50",
+    height: '100%',
+    backgroundColor: '#4CAF50',
     borderRadius: 2,
   },
   editHint: {
     fontSize: 10,
-    color: "#999",
-    fontStyle: "italic",
+    color: '#999',
+    fontStyle: 'italic',
     marginTop: 2,
   },
 });

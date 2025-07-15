@@ -10,6 +10,8 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useHabitStore } from '../store/habitStore';
+import { useThemeStore } from '../store/themeStore';
+import { getThemeColors } from '../utils/theme';
 import { HabitCard } from '../components/HabitCard';
 import { DateHeader } from '../components/DateHeader';
 import { AddHabitModal } from '../components/AddHabitModal';
@@ -38,6 +40,8 @@ export const TodayScreen: React.FC = () => {
     deleteHabit,
     clearError,
   } = useHabitStore();
+  const { isDarkMode } = useThemeStore();
+  const colors = getThemeColors(isDarkMode);
 
   useEffect(() => {
     loadHabits();
@@ -123,7 +127,9 @@ export const TodayScreen: React.FC = () => {
   );
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView
+      style={[styles.container, { backgroundColor: colors.background }]}
+    >
       <DateHeader />
 
       <FlatList

@@ -6,39 +6,95 @@ import {
   ScrollView,
   TouchableOpacity,
   Switch,
+  Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { Ionicons } from '@expo/vector-icons';
+import { useThemeStore } from '../store/themeStore';
+import { useHabitStore } from '../store/habitStore';
+import { getThemeColors } from '../utils/theme';
+import { exportHabitData } from '../utils/dataExport';
 
 /**
  * Settings screen component that allows users to configure app preferences.
  * Includes notification settings, data management, and app information.
  */
 export const SettingsScreen: React.FC = () => {
-  const [notificationsEnabled, setNotificationsEnabled] = React.useState(false);
-  const [darkModeEnabled, setDarkModeEnabled] = React.useState(false);
+  const {
+    isDarkMode,
+    notificationsEnabled,
+    toggleDarkMode,
+    toggleNotifications,
+  } = useThemeStore();
+  const { habits, deleteHabit } = useHabitStore();
+  const colors = getThemeColors(isDarkMode);
 
   const handleToggleNotifications = () => {
-    setNotificationsEnabled(!notificationsEnabled);
+    toggleNotifications();
   };
 
   const handleToggleDarkMode = () => {
-    setDarkModeEnabled(!darkModeEnabled);
+    toggleDarkMode();
+  };
+
+  const handleExportData = async () => {
+    const success = await exportHabitData(habits);
+    if (success) {
+      Alert.alert('Success', 'Data exported successfully!');
+    } else {
+      Alert.alert('Error', 'Failed to export data. Please try again.');
+    }
+  };
+
+  const handleClearData = () => {
+    Alert.alert(
+      'Clear All Data',
+      'This will delete all your habits and progress. This action cannot be undone.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Clear All',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              // Delete all habits
+              for (const habit of habits) {
+                await deleteHabit(habit.id);
+              }
+              Alert.alert('Success', 'All data has been cleared.');
+            } catch (error) {
+              Alert.alert('Error', 'Failed to clear data. Please try again.');
+            }
+          },
+        },
+      ]
+    );
   };
 
   const renderSettingItem = (
     title: string,
     subtitle: string,
+    iconName: string,
     onPress?: () => void,
     rightComponent?: React.ReactNode
   ) => (
     <TouchableOpacity
-      style={styles.settingItem}
+      style={[styles.settingItem, { backgroundColor: colors.surface }]}
       onPress={onPress}
       activeOpacity={0.7}
     >
-      <View style={styles.settingContent}>
-        <Text style={styles.settingTitle}>{title}</Text>
-        <Text style={styles.settingSubtitle}>{subtitle}</Text>
+      <View style={styles.settingLeft}>
+        <Ionicons name={iconName as any} size={24} color={colors.primary} />
+        <View style={styles.settingContent}>
+          <Text style={[styles.settingTitle, { color: colors.text }]}>
+            {title}
+          </Text>
+          <Text
+            style={[styles.settingSubtitle, { color: colors.textSecondary }]}
+          >
+            {subtitle}
+          </Text>
+        </View>
       </View>
       {rightComponent && (
         <View style={styles.settingRight}>{rightComponent}</View>
@@ -47,18 +103,25 @@ export const SettingsScreen: React.FC = () => {
   );
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView
+      style={[styles.container, { backgroundColor: colors.background }]}
+    >
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.header}>
-          <Text style={styles.title}>Settings</Text>
-          <Text style={styles.subtitle}>Customize your experience</Text>
+          <Text style={[styles.title, { color: colors.text }]}>Settings</Text>
+          <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
+            Customize your experience
+          </Text>
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Notifications</Text>
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>
+            Notifications
+          </Text>
           {renderSettingItem(
             'Daily Reminders',
             'Get notified about your habits',
+            'notifications-outline',
             undefined,
             <Switch
               value={notificationsEnabled}
@@ -70,43 +133,56 @@ export const SettingsScreen: React.FC = () => {
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Appearance</Text>
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>
+            Appearance
+          </Text>
           {renderSettingItem(
             'Dark Mode',
             'Switch to dark theme',
+            'moon-outline',
             undefined,
             <Switch
-              value={darkModeEnabled}
+              value={isDarkMode}
               onValueChange={handleToggleDarkMode}
               trackColor={{ false: '#e0e0e0', true: '#4CAF50' }}
-              thumbColor={darkModeEnabled ? '#fff' : '#f4f3f4'}
+              thumbColor={isDarkMode ? '#fff' : '#f4f3f4'}
             />
           )}
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Data</Text>
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>
+            Data
+          </Text>
           {renderSettingItem(
             'Export Data',
             'Download your habit data as CSV',
-            () => console.log('Export data')
+            'download-outline',
+            handleExportData
           )}
           {renderSettingItem(
             'Clear All Data',
             'Delete all habits and progress',
-            () => console.log('Clear data')
+            'trash-outline',
+            handleClearData
           )}
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>About</Text>
-          {renderSettingItem('Version', '1.0.0', undefined)}
-          {renderSettingItem('Privacy Policy', 'Read our privacy policy', () =>
-            console.log('Privacy policy')
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>
+            About
+          </Text>
+          {renderSettingItem('Version', '1.0.0', 'information-circle-outline')}
+          {renderSettingItem(
+            'Privacy Policy',
+            'Read our privacy policy',
+            'shield-outline',
+            () => console.log('Privacy policy')
           )}
           {renderSettingItem(
             'Terms of Service',
             'Read our terms of service',
+            'document-text-outline',
             () => console.log('Terms of service')
           )}
         </View>
@@ -162,8 +238,14 @@ const styles = StyleSheet.create({
     shadowRadius: 2,
     elevation: 2,
   },
+  settingLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
   settingContent: {
     flex: 1,
+    marginLeft: 12,
   },
   settingTitle: {
     fontSize: 16,
