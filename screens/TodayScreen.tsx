@@ -145,8 +145,8 @@ export const TodayScreen: React.FC = () => {
           <RefreshControl
             refreshing={isLoading}
             onRefresh={handleRefresh}
-            colors={['#4CAF50']}
-            tintColor="#4CAF50"
+            colors={[colors.primary]}
+            tintColor={colors.primary}
           />
         }
         ListEmptyComponent={renderEmptyState}
@@ -159,6 +159,7 @@ export const TodayScreen: React.FC = () => {
           style={[
             styles.floatingAddButton,
             {
+              backgroundColor: colors.primary,
               bottom: Math.max(24, insets.bottom),
               right: Math.max(24, insets.right),
             },
@@ -240,7 +241,6 @@ const styles = StyleSheet.create({
     width: 56,
     height: 56,
     borderRadius: 28,
-    backgroundColor: '#4CAF50',
     justifyContent: 'center',
     alignItems: 'center',
     shadowColor: '#000',

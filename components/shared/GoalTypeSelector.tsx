@@ -52,7 +52,10 @@ export const GoalTypeSelector: React.FC<GoalTypeSelectorProps> = ({
               backgroundColor: colors.surface,
               borderColor: colors.border,
             },
-            goalType === type.key && { backgroundColor: colors.primary },
+            goalType === type.key && {
+              backgroundColor: colors.primary,
+              borderColor: colors.primary,
+            },
           ]}
           onPress={() => onGoalTypeChange(type.key)}
         >

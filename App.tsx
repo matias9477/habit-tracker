@@ -8,16 +8,27 @@ import { MainTabNavigator } from './navigation/MainTabNavigator';
 import { configureNotifications } from './utils/notifications';
 import { useOnboardingStore } from './store/onboardingStore';
 import { OnboardingScreen } from './screens/OnboardingScreen';
+import { useThemeStore } from './store/themeStore';
+import { getThemeColors } from './utils/theme';
 
 /**
  * Loading screen component shown while the database is being initialized.
  */
-const LoadingScreen: React.FC = () => (
-  <View style={styles.loadingContainer}>
-    <ActivityIndicator size="large" color="#4CAF50" />
-    <Text style={styles.loadingText}>Setting up Consistency...</Text>
-  </View>
-);
+const LoadingScreen: React.FC = () => {
+  const { isDarkMode } = useThemeStore();
+  const colors = getThemeColors(isDarkMode);
+
+  return (
+    <View
+      style={[styles.loadingContainer, { backgroundColor: colors.background }]}
+    >
+      <ActivityIndicator size="large" color={colors.loading} />
+      <Text style={[styles.loadingText, { color: colors.textSecondary }]}>
+        Setting up Consistency...
+      </Text>
+    </View>
+  );
+};
 
 /**
  * App content wrapper that handles onboarding logic.
@@ -73,9 +84,14 @@ export default function App() {
   }, []);
 
   if (error) {
+    const { isDarkMode } = useThemeStore();
+    const colors = getThemeColors(isDarkMode);
+
     return (
-      <View style={styles.errorContainer}>
-        <Text style={styles.errorText}>{error}</Text>
+      <View
+        style={[styles.errorContainer, { backgroundColor: colors.background }]}
+      >
+        <Text style={[styles.errorText, { color: colors.error }]}>{error}</Text>
       </View>
     );
   }
@@ -96,23 +112,19 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#f5f5f5',
   },
   loadingText: {
     marginTop: 16,
     fontSize: 16,
-    color: '#666',
   },
   errorContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#f5f5f5',
     padding: 20,
   },
   errorText: {
     fontSize: 16,
-    color: '#d32f2f',
     textAlign: 'center',
   },
 });

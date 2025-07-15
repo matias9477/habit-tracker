@@ -8,7 +8,10 @@ import {
   Switch,
   Alert,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useThemeStore } from '../store/themeStore';
 import { useHabitStore } from '../store/habitStore';
@@ -38,6 +41,7 @@ export const SettingsScreen: React.FC = () => {
   const { habits, deleteHabit } = useHabitStore();
   const { resetOnboarding } = useOnboardingStore();
   const colors = getThemeColors(isDarkMode);
+  const insets = useSafeAreaInsets();
 
   const [isNotificationsConfigured, setIsNotificationsConfigured] =
     useState(false);
@@ -183,7 +187,12 @@ export const SettingsScreen: React.FC = () => {
     <SafeAreaView
       style={[styles.container, { backgroundColor: colors.background }]}
     >
-      <ScrollView contentContainerStyle={styles.scrollContent}>
+      <ScrollView
+        contentContainerStyle={[
+          styles.scrollContent,
+          { paddingBottom: Math.max(16, insets.bottom) },
+        ]}
+      >
         <View style={styles.header}>
           <Text style={[styles.title, { color: colors.text }]}>Settings</Text>
           <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
@@ -205,8 +214,12 @@ export const SettingsScreen: React.FC = () => {
             <Switch
               value={notificationsEnabled}
               onValueChange={handleToggleNotifications}
-              trackColor={{ false: '#e0e0e0', true: '#4CAF50' }}
-              thumbColor={notificationsEnabled ? '#fff' : '#f4f3f4'}
+              trackColor={{ false: colors.switchTrack, true: colors.primary }}
+              thumbColor={
+                notificationsEnabled
+                  ? colors.switchThumb
+                  : colors.switchThumbDisabled
+              }
             />
           )}
           {notificationsEnabled &&
@@ -230,8 +243,10 @@ export const SettingsScreen: React.FC = () => {
             <Switch
               value={isDarkMode}
               onValueChange={handleToggleDarkMode}
-              trackColor={{ false: '#e0e0e0', true: '#4CAF50' }}
-              thumbColor={isDarkMode ? '#fff' : '#f4f3f4'}
+              trackColor={{ false: colors.switchTrack, true: colors.primary }}
+              thumbColor={
+                isDarkMode ? colors.switchThumb : colors.switchThumbDisabled
+              }
             />
           )}
         </View>
@@ -302,6 +317,7 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     padding: 16,
+    flexGrow: 1,
   },
   header: {
     marginBottom: 24,

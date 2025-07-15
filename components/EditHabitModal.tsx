@@ -278,6 +278,7 @@ export const EditHabitModal: React.FC<EditHabitModalProps> = ({
                       selectedIcon === icon &&
                         !useCustomEmoji && {
                           backgroundColor: colors.primary,
+                          borderColor: colors.primary,
                         },
                     ]}
                     onPress={() => {
@@ -285,7 +286,15 @@ export const EditHabitModal: React.FC<EditHabitModalProps> = ({
                       setUseCustomEmoji(false);
                     }}
                   >
-                    <Text style={styles.iconText}>{icon}</Text>
+                    <Text
+                      style={[
+                        styles.iconText,
+                        selectedIcon === icon &&
+                          !useCustomEmoji && { color: '#fff' },
+                      ]}
+                    >
+                      {icon}
+                    </Text>
                   </TouchableOpacity>
                 ))}
                 {/* Custom Emoji Button */}
@@ -298,6 +307,7 @@ export const EditHabitModal: React.FC<EditHabitModalProps> = ({
                     },
                     useCustomEmoji && {
                       backgroundColor: colors.primary,
+                      borderColor: colors.primary,
                     },
                   ]}
                   onPress={handleCustomEmojiPress}
