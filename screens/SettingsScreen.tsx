@@ -224,7 +224,7 @@ export const SettingsScreen: React.FC = () => {
           )}
           {notificationsEnabled &&
             renderSettingItem(
-              'Test Notification',
+              'Consistency Notification',
               'Send a test notification',
               'send-outline',
               handleTestNotification

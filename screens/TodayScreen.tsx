@@ -256,5 +256,8 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 24,
     fontWeight: 'bold',
+    textAlign: 'center',
+    lineHeight: 24,
+    includeFontPadding: false,
   },
 });

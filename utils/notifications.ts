@@ -19,10 +19,9 @@ const isExpoGo = () => {
  * Sets up how notifications are displayed and handled.
  */
 export const configureNotifications = async () => {
-  // Skip notification setup in Expo Go to avoid warnings
+  // Allow notifications in Expo Go but log a warning
   if (isExpoGo()) {
-    console.log('Notifications disabled in Expo Go');
-    return false;
+    console.log('Notifications enabled in Expo Go (may have limitations)');
   }
 
   try {
@@ -64,15 +63,14 @@ export const configureNotifications = async () => {
  */
 export const sendTestNotification = async (): Promise<string> => {
   if (isExpoGo()) {
-    console.log('Test notification skipped in Expo Go');
-    return '';
+    console.log('Test notification enabled in Expo Go');
   }
 
   try {
     const identifier = await Notifications.scheduleNotificationAsync({
       content: {
-        title: 'Test Notification',
-        body: 'This is a test notification from your habit tracker!',
+        title: 'Consistency',
+        body: 'This is a test notification from Consistency!',
         data: { type: 'test' },
       },
       trigger: null, // Send immediately
@@ -93,7 +91,7 @@ export const getScheduledNotifications = async (): Promise<
   Notifications.NotificationRequest[]
 > => {
   if (isExpoGo()) {
-    return [];
+    console.log('Get scheduled notifications enabled in Expo Go');
   }
 
   try {
@@ -109,8 +107,7 @@ export const getScheduledNotifications = async (): Promise<
  */
 export const cancelAllNotifications = async () => {
   if (isExpoGo()) {
-    console.log('Cancel notifications skipped in Expo Go');
-    return;
+    console.log('Cancel notifications enabled in Expo Go');
   }
 
   try {
@@ -126,7 +123,7 @@ export const cancelAllNotifications = async () => {
  */
 export const areNotificationsEnabled = async (): Promise<boolean> => {
   if (isExpoGo()) {
-    return false;
+    console.log('Check notifications enabled in Expo Go');
   }
 
   try {
