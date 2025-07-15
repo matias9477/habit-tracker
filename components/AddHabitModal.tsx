@@ -9,6 +9,7 @@ import {
   Alert,
   KeyboardAvoidingView,
   Platform,
+  TextInput,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -122,180 +123,199 @@ export const AddHabitModal: React.FC<AddHabitModalProps> = ({
     onClose();
   };
 
+  const handleCustomEmojiPress = () => {
+    console.log('Custom emoji button pressed');
+    setUseCustomEmoji(!useCustomEmoji);
+    if (!useCustomEmoji) {
+      setCustomEmoji('');
+    }
+  };
+
   return (
-    <Modal
-      visible={visible}
-      animationType="slide"
-      presentationStyle="pageSheet"
-      onRequestClose={handleClose}
-    >
-      <KeyboardAvoidingView
-        style={[styles.container, { backgroundColor: colors.background }]}
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+    <>
+      <Modal
+        visible={visible}
+        animationType="slide"
+        presentationStyle="pageSheet"
+        onRequestClose={handleClose}
       >
-        <View style={[styles.header, { backgroundColor: colors.surface }]}>
-          <Text style={[styles.title, { color: colors.text }]}>
-            Add New Habit
-          </Text>
-          <TouchableOpacity
-            onPress={handleClose}
-            style={[styles.closeButton, { backgroundColor: colors.border }]}
+        <KeyboardAvoidingView
+          style={[styles.container, { backgroundColor: colors.background }]}
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        >
+          <View style={[styles.header, { backgroundColor: colors.surface }]}>
+            <Text style={[styles.title, { color: colors.text }]}>
+              Add New Habit
+            </Text>
+            <TouchableOpacity
+              onPress={handleClose}
+              style={[styles.closeButton, { backgroundColor: colors.border }]}
+            >
+              <Ionicons name="close" size={20} color={colors.text} />
+            </TouchableOpacity>
+          </View>
+
+          <ScrollView
+            style={styles.content}
+            showsVerticalScrollIndicator={false}
           >
-            <Ionicons name="close" size={20} color={colors.text} />
-          </TouchableOpacity>
-        </View>
-
-        <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-          {/* Habit Name Input */}
-          <View style={styles.section}>
-            <Text style={[styles.sectionTitle, { color: colors.text }]}>
-              Habit Name
-            </Text>
-            <ThemedInput
-              value={name}
-              onChangeText={setName}
-              placeholder="e.g., Exercise, Read, Drink Water"
-              autoFocus
-              maxLength={50}
-            />
-          </View>
-
-          {/* Icon Selection */}
-          <View style={styles.section}>
-            <Text style={[styles.sectionTitle, { color: colors.text }]}>
-              Choose an Icon
-            </Text>
-
-            <View style={styles.iconGrid}>
-              {icons.slice(0, 6).map((icon) => (
-                <TouchableOpacity
-                  key={icon}
-                  style={[
-                    styles.iconButton,
-                    {
-                      backgroundColor: colors.surface,
-                      borderColor: colors.border,
-                    },
-                    selectedIcon === icon && {
-                      backgroundColor: colors.primary,
-                    },
-                  ]}
-                  onPress={() => {
-                    setSelectedIcon(icon);
-                    setUseCustomEmoji(false);
-                  }}
-                >
-                  <Text style={styles.iconText}>{icon}</Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-            <View style={styles.iconGrid}>
-              {icons.slice(6, 12).map((icon) => (
-                <TouchableOpacity
-                  key={icon}
-                  style={[
-                    styles.iconButton,
-                    {
-                      backgroundColor: colors.surface,
-                      borderColor: colors.border,
-                    },
-                    selectedIcon === icon && {
-                      backgroundColor: colors.primary,
-                    },
-                  ]}
-                  onPress={() => {
-                    setSelectedIcon(icon);
-                    setUseCustomEmoji(false);
-                  }}
-                >
-                  <Text style={styles.iconText}>{icon}</Text>
-                </TouchableOpacity>
-              ))}
-              {/* Custom Emoji Button */}
-              <TouchableOpacity
-                style={[
-                  styles.iconButton,
-                  {
-                    backgroundColor: colors.surface,
-                    borderColor: colors.border,
-                  },
-                  useCustomEmoji && {
-                    backgroundColor: colors.primary,
-                  },
-                ]}
-                onPress={() => setUseCustomEmoji(!useCustomEmoji)}
-              >
-                <Ionicons
-                  name="add-circle-outline"
-                  size={24}
-                  color={useCustomEmoji ? '#fff' : colors.primary}
-                />
-              </TouchableOpacity>
-            </View>
-
-            {useCustomEmoji && (
-              <View style={styles.customEmojiInputContainer}>
-                <Text style={[styles.customEmojiLabel, { color: colors.text }]}>
-                  Enter Custom Emoji
-                </Text>
-                <ThemedInput
-                  style={styles.customEmojiInput}
-                  value={customEmoji}
-                  onChangeText={setCustomEmoji}
-                  placeholder="🎯"
-                  maxLength={2}
-                  autoFocus
-                />
-                {customEmoji && (
-                  <Text style={styles.customEmojiPreview}>{customEmoji}</Text>
-                )}
-              </View>
-            )}
-          </View>
-
-          {/* Goal Type Selection */}
-          <GoalTypeSelector
-            goalType={goalType}
-            onGoalTypeChange={setGoalType}
-          />
-
-          {/* Target Count for Count Goals */}
-          {goalType === 'count' && (
+            {/* Habit Name Input */}
             <View style={styles.section}>
               <Text style={[styles.sectionTitle, { color: colors.text }]}>
-                Target Count
+                Habit Name
               </Text>
               <ThemedInput
-                value={targetCount}
-                onChangeText={setTargetCount}
-                placeholder="How many times?"
-                keyboardType="numeric"
-                maxLength={3}
+                value={name}
+                onChangeText={setName}
+                placeholder="e.g., Exercise, Read, Drink Water"
+                autoFocus
+                maxLength={50}
               />
             </View>
-          )}
-        </ScrollView>
 
-        {/* Submit Button */}
-        <View
-          style={[
-            styles.footer,
-            {
-              backgroundColor: colors.surface,
-              paddingBottom: Math.max(20, insets.bottom),
-            },
-          ]}
-        >
-          <ThemedButton
-            title={isSubmitting ? 'Adding...' : 'Add Habit'}
-            onPress={handleSubmit}
-            disabled={!name.trim() || isSubmitting}
-            loading={isSubmitting}
-            style={styles.submitButton}
-          />
-        </View>
-      </KeyboardAvoidingView>
-    </Modal>
+            {/* Icon Selection */}
+            <View style={styles.section}>
+              <Text style={[styles.sectionTitle, { color: colors.text }]}>
+                Choose an Icon
+              </Text>
+
+              <View style={styles.iconGrid}>
+                {icons.slice(0, 6).map((icon) => (
+                  <TouchableOpacity
+                    key={icon}
+                    style={[
+                      styles.iconButton,
+                      {
+                        backgroundColor: colors.surface,
+                        borderColor: colors.border,
+                      },
+                      selectedIcon === icon &&
+                        !useCustomEmoji && {
+                          backgroundColor: colors.primary,
+                        },
+                    ]}
+                    onPress={() => {
+                      setSelectedIcon(icon);
+                      setUseCustomEmoji(false);
+                    }}
+                  >
+                    <Text style={styles.iconText}>{icon}</Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+              <View style={styles.iconGrid}>
+                {icons.slice(6, 12).map((icon) => (
+                  <TouchableOpacity
+                    key={icon}
+                    style={[
+                      styles.iconButton,
+                      {
+                        backgroundColor: colors.surface,
+                        borderColor: colors.border,
+                      },
+                      selectedIcon === icon &&
+                        !useCustomEmoji && {
+                          backgroundColor: colors.primary,
+                        },
+                    ]}
+                    onPress={() => {
+                      setSelectedIcon(icon);
+                      setUseCustomEmoji(false);
+                    }}
+                  >
+                    <Text style={styles.iconText}>{icon}</Text>
+                  </TouchableOpacity>
+                ))}
+                {/* Custom Emoji Button */}
+                <TouchableOpacity
+                  style={[
+                    styles.iconButton,
+                    {
+                      backgroundColor: colors.surface,
+                      borderColor: colors.border,
+                    },
+                    useCustomEmoji && {
+                      backgroundColor: colors.primary,
+                    },
+                  ]}
+                  onPress={handleCustomEmojiPress}
+                >
+                  <Ionicons
+                    name="add-circle-outline"
+                    size={24}
+                    color={useCustomEmoji ? '#fff' : colors.primary}
+                  />
+                </TouchableOpacity>
+              </View>
+
+              {useCustomEmoji && (
+                <View style={styles.customEmojiInputContainer}>
+                  <TextInput
+                    style={[
+                      styles.customEmojiInput,
+                      {
+                        backgroundColor: colors.surface,
+                        borderColor: colors.border,
+                        color: colors.text,
+                      },
+                    ]}
+                    value={customEmoji}
+                    onChangeText={setCustomEmoji}
+                    maxLength={2}
+                    autoFocus
+                    autoCapitalize="none"
+                    autoCorrect={false}
+                    returnKeyType="done"
+                    placeholder=""
+                  />
+                </View>
+              )}
+            </View>
+
+            {/* Goal Type Selection */}
+            <GoalTypeSelector
+              goalType={goalType}
+              onGoalTypeChange={setGoalType}
+            />
+
+            {/* Target Count for Count Goals */}
+            {goalType === 'count' && (
+              <View style={styles.section}>
+                <Text style={[styles.sectionTitle, { color: colors.text }]}>
+                  Target Count
+                </Text>
+                <ThemedInput
+                  value={targetCount}
+                  onChangeText={setTargetCount}
+                  placeholder="How many times?"
+                  keyboardType="numeric"
+                  maxLength={3}
+                />
+              </View>
+            )}
+          </ScrollView>
+
+          {/* Submit Button */}
+          <View
+            style={[
+              styles.footer,
+              {
+                backgroundColor: colors.surface,
+                paddingBottom: Math.max(20, insets.bottom),
+              },
+            ]}
+          >
+            <ThemedButton
+              title={isSubmitting ? 'Adding...' : 'Add Habit'}
+              onPress={handleSubmit}
+              disabled={!name.trim() || isSubmitting}
+              loading={isSubmitting}
+              style={styles.submitButton}
+            />
+          </View>
+        </KeyboardAvoidingView>
+      </Modal>
+    </>
   );
 };
 
@@ -382,14 +402,19 @@ const styles = StyleSheet.create({
   },
   customEmojiInput: {
     backgroundColor: '#fff',
-    borderRadius: 8,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+    borderRadius: 20,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
     fontSize: 24,
     borderWidth: 1,
     borderColor: '#e0e0e0',
     textAlign: 'center',
     width: 80,
+    height: 40,
+  },
+  customEmojiPreviewContainer: {
+    marginTop: 8,
+    alignItems: 'center',
   },
   customEmojiLabel: {
     fontSize: 14,

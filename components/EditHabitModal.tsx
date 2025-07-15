@@ -9,15 +9,16 @@ import {
   Alert,
   KeyboardAvoidingView,
   Platform,
+  TextInput,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { HabitWithCompletion } from '../store/habitStore';
 import { useThemeStore } from '../store/themeStore';
 import { getThemeColors } from '../utils/theme';
 import { GoalTypeSelector } from './shared/GoalTypeSelector';
 import { ThemedInput } from './shared/ThemedInput';
 import { ThemedButton } from './shared/ThemedButton';
+import { HabitWithCompletion } from '../store/habitStore';
 
 /**
  * Props for the EditHabitModal component.
@@ -38,7 +39,7 @@ interface EditHabitModalProps {
 
 /**
  * A modal component for editing existing habits.
- * Provides a form with pre-filled values and delete functionality with confirmation.
+ * Provides a form with name input, icon selection (including custom emoji), and goal type selection.
  * Supports both light and dark themes.
  */
 export const EditHabitModal: React.FC<EditHabitModalProps> = ({
@@ -84,27 +85,34 @@ export const EditHabitModal: React.FC<EditHabitModalProps> = ({
     { key: 'count', label: 'Count Goal', description: 'Track number of times' },
   ];
 
-  // Pre-fill form when habit changes
+  // Check if the current icon is a custom emoji (not in the preset list)
+  const isCustomEmoji = (icon: string) => {
+    return !icons.includes(icon);
+  };
+
   useEffect(() => {
     if (habit) {
       setName(habit.name);
-      setSelectedIcon(habit.icon);
       setGoalType(habit.goal_type);
       setTargetCount(habit.targetCount?.toString() || '1');
-      setCustomEmoji('');
-      setUseCustomEmoji(false);
 
-      // Check if the habit icon is not in the preset list
-      const isCustomIcon = !icons.includes(habit.icon);
-      if (isCustomIcon) {
+      // Check if the habit's icon is a custom emoji
+      if (isCustomEmoji(habit.icon)) {
         setCustomEmoji(habit.icon);
         setUseCustomEmoji(true);
+        setSelectedIcon('🏃‍♂️'); // Reset to default
+      } else {
+        setSelectedIcon(habit.icon);
+        setCustomEmoji('');
+        setUseCustomEmoji(false);
       }
     }
   }, [habit]);
 
   const handleSubmit = async () => {
-    if (!habit || !name.trim()) {
+    if (!habit) return;
+
+    if (!name.trim()) {
       Alert.alert('Error', 'Please enter a habit name');
       return;
     }
@@ -177,187 +185,207 @@ export const EditHabitModal: React.FC<EditHabitModalProps> = ({
     onClose();
   };
 
+  const handleCustomEmojiPress = () => {
+    setUseCustomEmoji(!useCustomEmoji);
+    if (!useCustomEmoji) {
+      setCustomEmoji('');
+    }
+  };
+
   if (!habit) return null;
 
   return (
-    <Modal
-      visible={visible}
-      animationType="slide"
-      presentationStyle="pageSheet"
-      onRequestClose={handleClose}
-    >
-      <KeyboardAvoidingView
-        style={[styles.container, { backgroundColor: colors.background }]}
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+    <>
+      <Modal
+        visible={visible}
+        animationType="slide"
+        presentationStyle="pageSheet"
+        onRequestClose={handleClose}
       >
-        <View style={[styles.header, { backgroundColor: colors.surface }]}>
-          <Text style={[styles.title, { color: colors.text }]}>Edit Habit</Text>
-          <TouchableOpacity
-            onPress={handleClose}
-            style={[styles.closeButton, { backgroundColor: colors.border }]}
+        <KeyboardAvoidingView
+          style={[styles.container, { backgroundColor: colors.background }]}
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        >
+          <View style={[styles.header, { backgroundColor: colors.surface }]}>
+            <Text style={[styles.title, { color: colors.text }]}>
+              Edit Habit
+            </Text>
+            <TouchableOpacity
+              onPress={handleClose}
+              style={[styles.closeButton, { backgroundColor: colors.border }]}
+            >
+              <Ionicons name="close" size={20} color={colors.text} />
+            </TouchableOpacity>
+          </View>
+
+          <ScrollView
+            style={styles.content}
+            showsVerticalScrollIndicator={false}
           >
-            <Ionicons name="close" size={20} color={colors.text} />
-          </TouchableOpacity>
-        </View>
-
-        <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-          {/* Habit Name Input */}
-          <View style={styles.section}>
-            <Text style={[styles.sectionTitle, { color: colors.text }]}>
-              Habit Name
-            </Text>
-            <ThemedInput
-              value={name}
-              onChangeText={setName}
-              placeholder="e.g., Exercise, Read, Drink Water"
-              maxLength={50}
-            />
-          </View>
-
-          {/* Icon Selection */}
-          <View style={styles.section}>
-            <Text style={[styles.sectionTitle, { color: colors.text }]}>
-              Choose an Icon
-            </Text>
-
-            <View style={styles.iconGrid}>
-              {icons.slice(0, 6).map((icon) => (
-                <TouchableOpacity
-                  key={icon}
-                  style={[
-                    styles.iconButton,
-                    {
-                      backgroundColor: colors.surface,
-                      borderColor: colors.border,
-                    },
-                    selectedIcon === icon && {
-                      backgroundColor: colors.primary,
-                    },
-                  ]}
-                  onPress={() => {
-                    setSelectedIcon(icon);
-                    setUseCustomEmoji(false);
-                  }}
-                >
-                  <Text style={styles.iconText}>{icon}</Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-            <View style={styles.iconGrid}>
-              {icons.slice(6, 12).map((icon) => (
-                <TouchableOpacity
-                  key={icon}
-                  style={[
-                    styles.iconButton,
-                    {
-                      backgroundColor: colors.surface,
-                      borderColor: colors.border,
-                    },
-                    selectedIcon === icon && {
-                      backgroundColor: colors.primary,
-                    },
-                  ]}
-                  onPress={() => {
-                    setSelectedIcon(icon);
-                    setUseCustomEmoji(false);
-                  }}
-                >
-                  <Text style={styles.iconText}>{icon}</Text>
-                </TouchableOpacity>
-              ))}
-              {/* Custom Emoji Button */}
-              <TouchableOpacity
-                style={[
-                  styles.iconButton,
-                  {
-                    backgroundColor: colors.surface,
-                    borderColor: colors.border,
-                  },
-                  useCustomEmoji && {
-                    backgroundColor: colors.primary,
-                  },
-                ]}
-                onPress={() => setUseCustomEmoji(!useCustomEmoji)}
-              >
-                <Ionicons
-                  name="add-circle-outline"
-                  size={24}
-                  color={useCustomEmoji ? '#fff' : colors.primary}
-                />
-              </TouchableOpacity>
-            </View>
-
-            {useCustomEmoji && (
-              <View style={styles.customEmojiInputContainer}>
-                <Text style={[styles.customEmojiLabel, { color: colors.text }]}>
-                  Enter Custom Emoji
-                </Text>
-                <ThemedInput
-                  style={styles.customEmojiInput}
-                  value={customEmoji}
-                  onChangeText={setCustomEmoji}
-                  placeholder="🎯"
-                  maxLength={2}
-                  autoFocus
-                />
-                {customEmoji && (
-                  <Text style={styles.customEmojiPreview}>{customEmoji}</Text>
-                )}
-              </View>
-            )}
-          </View>
-
-          {/* Goal Type Selection */}
-          <GoalTypeSelector
-            goalType={goalType}
-            onGoalTypeChange={setGoalType}
-          />
-
-          {/* Target Count for Count Goals */}
-          {goalType === 'count' && (
+            {/* Habit Name Input */}
             <View style={styles.section}>
               <Text style={[styles.sectionTitle, { color: colors.text }]}>
-                Target Count
+                Habit Name
               </Text>
               <ThemedInput
-                value={targetCount}
-                onChangeText={setTargetCount}
-                placeholder="How many times?"
-                keyboardType="numeric"
-                maxLength={3}
+                value={name}
+                onChangeText={setName}
+                placeholder="e.g., Exercise, Read, Drink Water"
+                maxLength={50}
               />
             </View>
-          )}
-        </ScrollView>
 
-        {/* Action Buttons */}
-        <View
-          style={[
-            styles.footer,
-            {
-              backgroundColor: colors.surface,
-              paddingBottom: Math.max(20, insets.bottom),
-            },
-          ]}
-        >
-          <ThemedButton
-            title="Delete Habit"
-            variant="danger"
-            onPress={handleDelete}
-            disabled={isSubmitting}
-            style={styles.deleteButton}
-          />
+            {/* Icon Selection */}
+            <View style={styles.section}>
+              <Text style={[styles.sectionTitle, { color: colors.text }]}>
+                Choose an Icon
+              </Text>
 
-          <ThemedButton
-            title={isSubmitting ? 'Updating...' : 'Update Habit'}
-            onPress={handleSubmit}
-            disabled={!name.trim() || isSubmitting}
-            loading={isSubmitting}
-            style={styles.submitButton}
-          />
-        </View>
-      </KeyboardAvoidingView>
-    </Modal>
+              <View style={styles.iconGrid}>
+                {icons.slice(0, 6).map((icon) => (
+                  <TouchableOpacity
+                    key={icon}
+                    style={[
+                      styles.iconButton,
+                      {
+                        backgroundColor: colors.surface,
+                        borderColor: colors.border,
+                      },
+                      selectedIcon === icon &&
+                        !useCustomEmoji && {
+                          backgroundColor: colors.primary,
+                        },
+                    ]}
+                    onPress={() => {
+                      setSelectedIcon(icon);
+                      setUseCustomEmoji(false);
+                    }}
+                  >
+                    <Text style={styles.iconText}>{icon}</Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+              <View style={styles.iconGrid}>
+                {icons.slice(6, 12).map((icon) => (
+                  <TouchableOpacity
+                    key={icon}
+                    style={[
+                      styles.iconButton,
+                      {
+                        backgroundColor: colors.surface,
+                        borderColor: colors.border,
+                      },
+                      selectedIcon === icon &&
+                        !useCustomEmoji && {
+                          backgroundColor: colors.primary,
+                        },
+                    ]}
+                    onPress={() => {
+                      setSelectedIcon(icon);
+                      setUseCustomEmoji(false);
+                    }}
+                  >
+                    <Text style={styles.iconText}>{icon}</Text>
+                  </TouchableOpacity>
+                ))}
+                {/* Custom Emoji Button */}
+                <TouchableOpacity
+                  style={[
+                    styles.iconButton,
+                    {
+                      backgroundColor: colors.surface,
+                      borderColor: colors.border,
+                    },
+                    useCustomEmoji && {
+                      backgroundColor: colors.primary,
+                    },
+                  ]}
+                  onPress={handleCustomEmojiPress}
+                >
+                  <Ionicons
+                    name="add-circle-outline"
+                    size={24}
+                    color={useCustomEmoji ? '#fff' : colors.primary}
+                  />
+                </TouchableOpacity>
+              </View>
+
+              {useCustomEmoji && (
+                <View style={styles.customEmojiInputContainer}>
+                  <TextInput
+                    style={[
+                      styles.customEmojiInput,
+                      {
+                        backgroundColor: colors.surface,
+                        borderColor: colors.border,
+                        color: colors.text,
+                      },
+                    ]}
+                    value={customEmoji}
+                    onChangeText={setCustomEmoji}
+                    maxLength={2}
+                    autoFocus
+                    autoCapitalize="none"
+                    autoCorrect={false}
+                    returnKeyType="done"
+                    placeholder=""
+                  />
+                </View>
+              )}
+            </View>
+
+            {/* Goal Type Selection */}
+            <GoalTypeSelector
+              goalType={goalType}
+              onGoalTypeChange={setGoalType}
+            />
+
+            {/* Target Count for Count Goals */}
+            {goalType === 'count' && (
+              <View style={styles.section}>
+                <Text style={[styles.sectionTitle, { color: colors.text }]}>
+                  Target Count
+                </Text>
+                <ThemedInput
+                  value={targetCount}
+                  onChangeText={setTargetCount}
+                  placeholder="How many times?"
+                  keyboardType="numeric"
+                  maxLength={3}
+                />
+              </View>
+            )}
+          </ScrollView>
+
+          {/* Action Buttons */}
+          <View
+            style={[
+              styles.footer,
+              {
+                backgroundColor: colors.surface,
+                paddingBottom: Math.max(20, insets.bottom),
+              },
+            ]}
+          >
+            <ThemedButton
+              title="Delete Habit"
+              variant="danger"
+              onPress={handleDelete}
+              disabled={isSubmitting}
+              style={styles.deleteButton}
+            />
+
+            <ThemedButton
+              title={isSubmitting ? 'Updating...' : 'Update Habit'}
+              onPress={handleSubmit}
+              disabled={!name.trim() || isSubmitting}
+              loading={isSubmitting}
+              style={styles.submitButton}
+            />
+          </View>
+        </KeyboardAvoidingView>
+      </Modal>
+    </>
   );
 };
 
@@ -444,14 +472,19 @@ const styles = StyleSheet.create({
   },
   customEmojiInput: {
     backgroundColor: '#fff',
-    borderRadius: 8,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+    borderRadius: 20,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
     fontSize: 24,
     borderWidth: 1,
     borderColor: '#e0e0e0',
     textAlign: 'center',
     width: 80,
+    height: 40,
+  },
+  customEmojiPreviewContainer: {
+    marginTop: 8,
+    alignItems: 'center',
   },
   customEmojiLabel: {
     fontSize: 14,
@@ -467,6 +500,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'space-between',
+    marginBottom: 12,
   },
   iconButton: {
     width: 50,
@@ -530,23 +564,8 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     borderTopWidth: 1,
     borderTopColor: '#e0e0e0',
-    flexDirection: 'row',
-    gap: 12,
-  },
-  deleteButton: {
-    flex: 1,
-    backgroundColor: '#f44336',
-    borderRadius: 8,
-    paddingVertical: 16,
-    alignItems: 'center',
-  },
-  deleteButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
   },
   submitButton: {
-    flex: 2,
     backgroundColor: '#4CAF50',
     borderRadius: 8,
     paddingVertical: 16,
@@ -562,5 +581,17 @@ const styles = StyleSheet.create({
   },
   submitButtonTextDisabled: {
     color: '#999',
+  },
+  deleteButton: {
+    backgroundColor: '#f44336',
+    borderRadius: 8,
+    paddingVertical: 16,
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  deleteButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
   },
 });
