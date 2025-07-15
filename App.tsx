@@ -10,6 +10,7 @@ import { useOnboardingStore } from './store/onboardingStore';
 import { OnboardingScreen } from './screens/OnboardingScreen';
 import { useThemeStore } from './store/themeStore';
 import { getThemeColors } from './utils/theme';
+import { ErrorBoundary } from './components/ErrorBoundary';
 
 /**
  * Loading screen component shown while the database is being initialized.
@@ -101,9 +102,11 @@ export default function App() {
   }
 
   return (
-    <SafeAreaProvider>
-      <AppContent />
-    </SafeAreaProvider>
+    <ErrorBoundary>
+      <SafeAreaProvider>
+        <AppContent />
+      </SafeAreaProvider>
+    </ErrorBoundary>
   );
 }
 

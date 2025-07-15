@@ -1,3 +1,10 @@
+---
+Following these UI rules ensures a consistent, professional, and accessible user experience across all themes and devices.
+description:
+globs:
+alwaysApply: false
+---
+
 # UI Design Rules – Habit Tracker App
 
 ## 🎨 Design Philosophy
@@ -219,12 +226,3 @@ style={[baseStyle, { backgroundColor: colors.surface, color: colors.text }]}
 - Optimize re-renders with proper dependencies
 - Avoid inline styles for performance
 - Use proper key props for lists
-
----
-
-Following these UI rules ensures a consistent, professional, and accessible user experience across all themes and devices.
-description:
-globs:
-alwaysApply: false
-
----

@@ -6,18 +6,22 @@
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
-"splash": {
-  "image": "./assets/splash.png",
-  "resizeMode": "cover",
-  "backgroundColor": "#4CAF50"
-},
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "cover",
+      "backgroundColor": "#4CAF50"
+    },
     "assetBundlePatterns": [
       "**/*"
     ],
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.matiasturra.consistency",
-      "buildNumber": "1"
+      "buildNumber": "1",
+      "infoPlist": {
+        "NSUserNotificationUsageDescription": "This app uses notifications to remind you about your daily habits.",
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -25,7 +29,10 @@
         "backgroundColor": "#4CAF50"
       },
       "package": "com.matiasturra.consistency",
-      "versionCode": 1
+      "versionCode": 1,
+      "permissions": [
+        "NOTIFICATIONS"
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -41,8 +48,9 @@
     ],
     "extra": {
       "eas": {
-        "projectId": "your-project-id"
+        "projectId": "5560a7a3-b43d-4ab9-a47b-c9da50e49725"
       }
-    }
+    },
+    "owner": "matias.turra"
   }
 }

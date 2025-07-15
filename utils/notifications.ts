@@ -84,6 +84,59 @@ export const sendTestNotification = async (): Promise<string> => {
 };
 
 /**
+ * Schedule a daily reminder notification for a habit.
+ * @param habitName - Name of the habit
+ * @param time - Time in HH:MM format (e.g., "09:00")
+ * @returns Promise<string> - Notification identifier
+ */
+export const scheduleHabitReminder = async (
+  habitName: string,
+  time: string
+): Promise<string> => {
+  if (isExpoGo()) {
+    console.log('Schedule habit reminder enabled in Expo Go');
+  }
+
+  try {
+    const [hour, minute] = time.split(':').map(Number);
+
+    const identifier = await Notifications.scheduleNotificationAsync({
+      content: {
+        title: 'Consistency Reminder',
+        body: `Time to work on your habit: ${habitName}`,
+        data: { type: 'habit_reminder', habitName },
+      },
+      trigger: {
+        hour,
+        minute,
+        repeats: true,
+      } as any,
+    });
+
+    return identifier;
+  } catch (error) {
+    console.log('Schedule habit reminder failed:', error);
+    return '';
+  }
+};
+
+/**
+ * Cancel a specific notification by identifier.
+ * @param identifier - Notification identifier to cancel
+ */
+export const cancelNotification = async (identifier: string): Promise<void> => {
+  if (isExpoGo()) {
+    console.log('Cancel notification enabled in Expo Go');
+  }
+
+  try {
+    await Notifications.cancelScheduledNotificationAsync(identifier);
+  } catch (error) {
+    console.log('Cancel notification failed:', error);
+  }
+};
+
+/**
  * Get all scheduled notifications.
  * @returns Promise<Notifications.NotificationRequest[]> - Array of scheduled notifications
  */
