@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -7,13 +7,14 @@ import {
   RefreshControl,
   Alert,
   TouchableOpacity,
-} from "react-native";
-import { useHabitStore } from "../store/habitStore";
-import { HabitCard } from "../components/HabitCard";
-import { DateHeader } from "../components/DateHeader";
-import { AddHabitModal } from "../components/AddHabitModal";
-import { EditHabitModal } from "../components/EditHabitModal";
-import { HabitWithCompletion } from "../store/habitStore";
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { useHabitStore } from '../store/habitStore';
+import { HabitCard } from '../components/HabitCard';
+import { DateHeader } from '../components/DateHeader';
+import { AddHabitModal } from '../components/AddHabitModal';
+import { EditHabitModal } from '../components/EditHabitModal';
+import { HabitWithCompletion } from '../store/habitStore';
 
 /**
  * The main screen that displays today's habits and allows users to mark them as completed.
@@ -44,7 +45,7 @@ export const TodayScreen: React.FC = () => {
 
   useEffect(() => {
     if (error) {
-      Alert.alert("Error", error, [{ text: "OK", onPress: clearError }]);
+      Alert.alert('Error', error, [{ text: 'OK', onPress: clearError }]);
     }
   }, [error, clearError]);
 
@@ -122,7 +123,7 @@ export const TodayScreen: React.FC = () => {
   );
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       <DateHeader />
 
       <FlatList
@@ -134,7 +135,7 @@ export const TodayScreen: React.FC = () => {
           <RefreshControl
             refreshing={isLoading}
             onRefresh={handleRefresh}
-            colors={["#4CAF50"]}
+            colors={['#4CAF50']}
             tintColor="#4CAF50"
           />
         }
@@ -171,14 +172,14 @@ export const TodayScreen: React.FC = () => {
         onUpdate={handleUpdateHabit}
         onDelete={handleDeleteHabit}
       />
-    </View>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f5f5f5",
+    backgroundColor: '#f5f5f5',
   },
   listContainer: {
     paddingVertical: 8,
@@ -186,47 +187,47 @@ const styles = StyleSheet.create({
   },
   emptyContainer: {
     flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
+    justifyContent: 'center',
+    alignItems: 'center',
     paddingHorizontal: 40,
     paddingVertical: 60,
   },
   emptyTitle: {
     fontSize: 24,
-    fontWeight: "bold",
-    color: "#666",
+    fontWeight: 'bold',
+    color: '#666',
     marginBottom: 12,
-    textAlign: "center",
+    textAlign: 'center',
   },
   emptySubtitle: {
     fontSize: 16,
-    color: "#999",
-    textAlign: "center",
+    color: '#999',
+    textAlign: 'center',
     lineHeight: 24,
     marginBottom: 24,
   },
   addFirstHabitButton: {
-    backgroundColor: "#4CAF50",
+    backgroundColor: '#4CAF50',
     paddingHorizontal: 24,
     paddingVertical: 12,
     borderRadius: 8,
   },
   addFirstHabitButtonText: {
-    color: "#fff",
+    color: '#fff',
     fontSize: 16,
-    fontWeight: "600",
+    fontWeight: '600',
   },
   floatingAddButton: {
-    position: "absolute",
+    position: 'absolute',
     bottom: 24,
     right: 24,
     width: 56,
     height: 56,
     borderRadius: 28,
-    backgroundColor: "#4CAF50",
-    justifyContent: "center",
-    alignItems: "center",
-    shadowColor: "#000",
+    backgroundColor: '#4CAF50',
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
     shadowOffset: {
       width: 0,
       height: 2,
@@ -236,8 +237,8 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   floatingAddButtonText: {
-    color: "#fff",
+    color: '#fff',
     fontSize: 24,
-    fontWeight: "bold",
+    fontWeight: 'bold',
   },
 });

@@ -1,12 +1,10 @@
-import React, { useEffect, useState } from "react";
-import { StatusBar } from "expo-status-bar";
-import { View, Text, StyleSheet, ActivityIndicator } from "react-native";
-import { NavigationContainer } from "@react-navigation/native";
-import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import { runMigrations } from "./db/database";
-import { TodayScreen } from "./screens/TodayScreen";
-
-const Stack = createNativeStackNavigator();
+import React, { useEffect, useState } from 'react';
+import { StatusBar } from 'expo-status-bar';
+import { View, Text, StyleSheet, ActivityIndicator } from 'react-native';
+import { NavigationContainer } from '@react-navigation/native';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { runMigrations } from './db/database';
+import { MainTabNavigator } from './navigation/MainTabNavigator';
 
 /**
  * Loading screen component shown while the database is being initialized.
@@ -33,8 +31,8 @@ export default function App() {
         await runMigrations();
         setIsInitialized(true);
       } catch (err) {
-        console.error("Failed to initialize app:", err);
-        setError("Failed to initialize the app. Please restart.");
+        console.error('Failed to initialize app:', err);
+        setError('Failed to initialize the app. Please restart.');
       }
     };
 
@@ -54,54 +52,37 @@ export default function App() {
   }
 
   return (
-    <NavigationContainer>
-      <StatusBar style="auto" />
-      <Stack.Navigator
-        initialRouteName="Today"
-        screenOptions={{
-          headerStyle: {
-            backgroundColor: "#4CAF50",
-          },
-          headerTintColor: "#fff",
-          headerTitleStyle: {
-            fontWeight: "bold",
-          },
-        }}
-      >
-        <Stack.Screen
-          name="Today"
-          component={TodayScreen}
-          options={{
-            title: "Today",
-          }}
-        />
-      </Stack.Navigator>
-    </NavigationContainer>
+    <SafeAreaProvider>
+      <NavigationContainer>
+        <StatusBar style="auto" />
+        <MainTabNavigator />
+      </NavigationContainer>
+    </SafeAreaProvider>
   );
 }
 
 const styles = StyleSheet.create({
   loadingContainer: {
     flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "#f5f5f5",
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#f5f5f5',
   },
   loadingText: {
     marginTop: 16,
     fontSize: 16,
-    color: "#666",
+    color: '#666',
   },
   errorContainer: {
     flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "#f5f5f5",
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#f5f5f5',
     padding: 20,
   },
   errorText: {
     fontSize: 16,
-    color: "#d32f2f",
-    textAlign: "center",
+    color: '#d32f2f',
+    textAlign: 'center',
   },
 });
