@@ -1,20 +1,107 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import React, { useEffect, useState } from "react";
+import { StatusBar } from "expo-status-bar";
+import { View, Text, StyleSheet, ActivityIndicator } from "react-native";
+import { NavigationContainer } from "@react-navigation/native";
+import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import { runMigrations } from "./db/database";
+import { TodayScreen } from "./screens/TodayScreen";
 
+const Stack = createNativeStackNavigator();
+
+/**
+ * Loading screen component shown while the database is being initialized.
+ */
+const LoadingScreen: React.FC = () => (
+  <View style={styles.loadingContainer}>
+    <ActivityIndicator size="large" color="#4CAF50" />
+    <Text style={styles.loadingText}>Setting up your habit tracker...</Text>
+  </View>
+);
+
+/**
+ * Main App component that initializes the database and sets up navigation.
+ * Handles database migrations on app startup and provides the main navigation structure.
+ */
 export default function App() {
+  const [isInitialized, setIsInitialized] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const initializeApp = async () => {
+      try {
+        // Run database migrations
+        await runMigrations();
+        setIsInitialized(true);
+      } catch (err) {
+        console.error("Failed to initialize app:", err);
+        setError("Failed to initialize the app. Please restart.");
+      }
+    };
+
+    initializeApp();
+  }, []);
+
+  if (error) {
+    return (
+      <View style={styles.errorContainer}>
+        <Text style={styles.errorText}>{error}</Text>
+      </View>
+    );
+  }
+
+  if (!isInitialized) {
+    return <LoadingScreen />;
+  }
+
   return (
-    <View style={styles.container}>
-      <Text>Open up App.tsx to start working on your app!</Text>
+    <NavigationContainer>
       <StatusBar style="auto" />
-    </View>
+      <Stack.Navigator
+        initialRouteName="Today"
+        screenOptions={{
+          headerStyle: {
+            backgroundColor: "#4CAF50",
+          },
+          headerTintColor: "#fff",
+          headerTitleStyle: {
+            fontWeight: "bold",
+          },
+        }}
+      >
+        <Stack.Screen
+          name="Today"
+          component={TodayScreen}
+          options={{
+            title: "Today",
+          }}
+        />
+      </Stack.Navigator>
+    </NavigationContainer>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  loadingContainer: {
     flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#f5f5f5",
+  },
+  loadingText: {
+    marginTop: 16,
+    fontSize: 16,
+    color: "#666",
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#f5f5f5",
+    padding: 20,
+  },
+  errorText: {
+    fontSize: 16,
+    color: "#d32f2f",
+    textAlign: "center",
   },
 });
