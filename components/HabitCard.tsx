@@ -10,7 +10,6 @@ import { getThemeColors } from '../utils/theme';
 interface HabitCardProps {
   habit: HabitWithCompletion;
   onToggle: (habitId: number) => void;
-  onEdit?: (habit: HabitWithCompletion) => void;
   onPress?: (habit: HabitWithCompletion) => void;
 }
 
@@ -23,7 +22,6 @@ interface HabitCardProps {
 export const HabitCard: React.FC<HabitCardProps> = ({
   habit,
   onToggle,
-  onEdit,
   onPress,
 }) => {
   const { isDarkMode } = useThemeStore();
@@ -38,10 +36,9 @@ export const HabitCard: React.FC<HabitCardProps> = ({
   };
 
   const handleLongPress = () => {
-    if (onEdit) {
-      // Add haptic feedback for better UX
-      // You can add expo-haptics later if needed
-      onEdit(habit);
+    // Long press now shows details instead of edit
+    if (onPress) {
+      onPress(habit);
     }
   };
 
@@ -167,9 +164,9 @@ export const HabitCard: React.FC<HabitCardProps> = ({
                 Count Goal
               </Text>
             )}
-            {onEdit && (
+            {onPress && (
               <Text style={[styles.editHint, { color: colors.textSecondary }]}>
-                Long press to edit
+                Tap to view details
               </Text>
             )}
           </View>

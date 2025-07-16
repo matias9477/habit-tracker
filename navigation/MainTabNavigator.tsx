@@ -1,21 +1,25 @@
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { createStackNavigator } from '@react-navigation/stack';
 import { Ionicons } from '@expo/vector-icons';
 import { useThemeStore } from '../store/themeStore';
 import { getThemeColors } from '../utils/theme';
 import { TodayScreen } from '../screens/TodayScreen';
 import { StatsScreen } from '../screens/StatsScreen';
 import { SettingsScreen } from '../screens/SettingsScreen';
+import { HabitDetailsScreen } from '../screens/HabitDetailsScreen';
+import { HabitWithCompletion } from '../store/habitStore';
 
 const Tab = createBottomTabNavigator();
+const Stack = createStackNavigator();
 
 /**
- * Main tab navigator component that provides bottom tab navigation.
+ * Tab navigator component that provides bottom tab navigation.
  * Uses SafeAreaView to ensure proper spacing on devices with home indicators.
  * Includes Today, Stats, and Settings tabs with appropriate icons and labels.
  * Supports both light and dark themes.
  */
-export const MainTabNavigator: React.FC = () => {
+const TabNavigator: React.FC = () => {
   const { isDarkMode } = useThemeStore();
   const colors = getThemeColors(isDarkMode);
 
@@ -73,5 +77,48 @@ export const MainTabNavigator: React.FC = () => {
         }}
       />
     </Tab.Navigator>
+  );
+};
+
+/**
+ * Main stack navigator component that provides navigation between screens.
+ * Includes the tab navigator and the habit details screen.
+ * Supports both light and dark themes.
+ */
+export const MainStackNavigator: React.FC = () => {
+  const { isDarkMode } = useThemeStore();
+  const colors = getThemeColors(isDarkMode);
+
+  return (
+    <Stack.Navigator
+      screenOptions={{
+        headerShown: false,
+        cardStyle: { backgroundColor: colors.background },
+      }}
+    >
+      <Stack.Screen
+        name="MainTabs"
+        component={TabNavigator}
+        options={{
+          headerShown: false,
+        }}
+      />
+      <Stack.Screen
+        name="HabitDetails"
+        component={HabitDetailsScreen}
+        options={({ route }) => ({
+          headerShown: true,
+          headerStyle: {
+            backgroundColor: colors.surface,
+          },
+          headerTintColor: colors.text,
+          headerTitleStyle: {
+            fontWeight: '600',
+          },
+          title: 'Habit Overview',
+          headerBackTitle: 'Today',
+        })}
+      />
+    </Stack.Navigator>
   );
 };

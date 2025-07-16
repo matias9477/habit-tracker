@@ -20,6 +20,18 @@ import { DateHeader } from '../components/DateHeader';
 import { AddHabitModal } from '../components/AddHabitModal';
 import { EditHabitModal } from '../components/EditHabitModal';
 import { HabitWithCompletion } from '../store/habitStore';
+import { useNavigation } from '@react-navigation/native';
+import { StackNavigationProp } from '@react-navigation/stack';
+
+type RootStackParamList = {
+  MainTabs: undefined;
+  HabitDetails: { habit: HabitWithCompletion };
+};
+
+type TodayScreenNavigationProp = StackNavigationProp<
+  RootStackParamList,
+  'MainTabs'
+>;
 
 /**
  * The main screen that displays today's habits and allows users to mark them as completed.
@@ -32,6 +44,7 @@ export const TodayScreen: React.FC = () => {
   const [selectedHabit, setSelectedHabit] =
     useState<HabitWithCompletion | null>(null);
 
+  const navigation = useNavigation<TodayScreenNavigationProp>();
   const {
     habits,
     isLoading,
@@ -78,9 +91,8 @@ export const TodayScreen: React.FC = () => {
     return success;
   };
 
-  const handleEditHabit = (habit: HabitWithCompletion) => {
-    setSelectedHabit(habit);
-    setIsEditModalVisible(true);
+  const handleShowDetails = (habit: HabitWithCompletion) => {
+    navigation.navigate('HabitDetails', { habit });
   };
 
   const handleUpdateHabit = async (
@@ -111,7 +123,7 @@ export const TodayScreen: React.FC = () => {
     <HabitCard
       habit={item}
       onToggle={handleToggleHabit}
-      onEdit={handleEditHabit}
+      onPress={handleShowDetails}
     />
   );
 

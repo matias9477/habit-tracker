@@ -4,7 +4,7 @@ import { View, Text, StyleSheet, ActivityIndicator } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { runMigrations } from './db/database';
-import { MainTabNavigator } from './navigation/MainTabNavigator';
+import { MainStackNavigator } from './navigation/MainTabNavigator';
 import { configureNotifications } from './utils/notifications';
 import { useOnboardingStore } from './store/onboardingStore';
 import { OnboardingScreen } from './screens/OnboardingScreen';
@@ -53,7 +53,7 @@ const AppContent: React.FC = () => {
   return (
     <NavigationContainer>
       <StatusBar style="auto" />
-      <MainTabNavigator />
+      <MainStackNavigator />
     </NavigationContainer>
   );
 };

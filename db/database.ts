@@ -19,7 +19,7 @@ export const runMigrations = async (): Promise<void> => {
     CREATE TABLE IF NOT EXISTS habits (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       name TEXT NOT NULL,
-      icon TEXT NOT NULL,
+      icon TEXT NOT NULL,git s
       goal_type TEXT DEFAULT 'binary',
       target_count INTEGER DEFAULT 1,
       created_at TEXT NOT NULL
