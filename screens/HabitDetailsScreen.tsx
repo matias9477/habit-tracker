@@ -14,6 +14,7 @@ import { useHabitStore } from '../store/habitStore';
 import { getThemeColors, useTheme } from '../utils/theme';
 import { HabitWithCompletion } from '../store/habitStore';
 import { EditHabitModal } from '../components/EditHabitModal';
+import { ProgressWidget } from '../components/ProgressWidget';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 // import { LineChart } from 'react-native-chart-kit';
@@ -218,45 +219,8 @@ export const HabitDetailsScreen: React.FC = () => {
     </View>
   );
 
-  const renderChartSection = () => (
-    <View style={[styles.section, { backgroundColor: colors.surface }]}>
-      <Text style={[styles.sectionTitle, { color: colors.text }]}>
-        Weekly Progress
-      </Text>
-
-      <View style={styles.weeklyChart}>
-        {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day, index) => {
-          const value = weeklyData[index] || 0;
-          const maxValue =
-            habit.goal_type === 'count' ? habit.targetCount || 1 : 1;
-          const height = (value / maxValue) * 100;
-
-          return (
-            <View key={day} style={styles.chartBar}>
-              <View style={styles.chartBarContainer}>
-                <View
-                  style={[
-                    styles.chartBarFill,
-                    {
-                      height: `${height}%`,
-                      backgroundColor: colors.primary,
-                    },
-                  ]}
-                />
-              </View>
-              <Text
-                style={[styles.chartLabel, { color: colors.textSecondary }]}
-              >
-                {day}
-              </Text>
-              <Text style={[styles.chartValue, { color: colors.text }]}>
-                {value}
-              </Text>
-            </View>
-          );
-        })}
-      </View>
-    </View>
+  const renderProgressWidget = () => (
+    <ProgressWidget habit={habit} weeklyData={weeklyData} />
   );
 
   return (
@@ -352,7 +316,7 @@ export const HabitDetailsScreen: React.FC = () => {
 
         {renderProgressSection()}
         {renderStatsSection()}
-        {renderChartSection()}
+        {renderProgressWidget()}
       </ScrollView>
 
       {/* Edit Modal */}
@@ -512,42 +476,5 @@ const styles = StyleSheet.create({
   statsGrid: {
     flexDirection: 'row',
     justifyContent: 'space-around',
-  },
-  chart: {
-    marginVertical: 8,
-    borderRadius: 16,
-  },
-  weeklyChart: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    alignItems: 'flex-end',
-    height: 120,
-    marginTop: 16,
-  },
-  chartBar: {
-    alignItems: 'center',
-    flex: 1,
-  },
-  chartBarContainer: {
-    width: 20,
-    height: 80,
-    backgroundColor: '#f0f0f0',
-    borderRadius: 10,
-    overflow: 'hidden',
-    marginBottom: 8,
-  },
-  chartBarFill: {
-    position: 'absolute',
-    bottom: 0,
-    width: '100%',
-    borderRadius: 10,
-  },
-  chartLabel: {
-    fontSize: 12,
-    marginBottom: 4,
-  },
-  chartValue: {
-    fontSize: 10,
-    fontWeight: '500',
   },
 });
