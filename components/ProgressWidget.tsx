@@ -1,13 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-} from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { getThemeColors, useTheme } from '@/utils/theme';
 import { HabitWithCompletion } from '@/store/habitStore';
+import { getCompletionsForDate } from '@/db/completions';
 
 type ProgressView = 'weekly' | 'monthly';
 
@@ -35,32 +31,56 @@ export const ProgressWidget: React.FC<ProgressWidgetProps> = ({
     }[]
   >([]);
 
-  // Generate monthly data
+  // Generate monthly data with real completion data
   useEffect(() => {
-    const generateMonthlyData = () => {
+    const generateMonthlyData = async () => {
       const data = [];
       const today = new Date();
       const currentMonth = today.getMonth();
       const currentYear = today.getFullYear();
       const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+      const habitCreatedAt = new Date(habit.created_at);
 
       for (let day = 1; day <= daysInMonth; day++) {
         const date = new Date(currentYear, currentMonth, day);
         const isToday = date.toDateString() === today.toDateString();
         const isPast = date <= today;
+        const isAfterCreation = date >= habitCreatedAt;
 
-        // Simulate completion data
-        const completed = isPast && Math.random() > 0.3; // 70% completion rate
-        const count =
-          habit.goal_type === 'count'
-            ? Math.floor(Math.random() * (habit.targetCount || 1) + 1)
-            : undefined;
+        // Only show completion data for dates on or after the habit was created
+        if (isPast && isAfterCreation) {
+          const dateString = date.toISOString().slice(0, 10);
+          const completions = await getCompletionsForDate(dateString);
+          const completion = completions.find(c => c.habit_id === habit.id);
 
-        data.push({
-          date,
-          completed,
-          count,
-        });
+          const completed = !!completion;
+          const count = completion?.count;
+
+          const dayData: {
+            date: Date;
+            completed: boolean;
+            count?: number;
+          } = {
+            date,
+            completed,
+          };
+          if (count !== undefined) {
+            dayData.count = count;
+          }
+          data.push(dayData);
+        } else if (isPast) {
+          // For dates before habit creation, show as not available
+          data.push({
+            date,
+            completed: false,
+          });
+        } else {
+          // For future dates, show as not completed
+          data.push({
+            date,
+            completed: false,
+          });
+        }
       }
       setMonthlyData(data);
     };
@@ -135,7 +155,7 @@ export const ProgressWidget: React.FC<ProgressWidgetProps> = ({
 
         <View style={styles.calendarGrid}>
           {/* Day headers */}
-          {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
+          {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
             <View key={day} style={styles.calendarHeader}>
               <Text
                 style={[

@@ -4,6 +4,7 @@ import {
   Text,
   StyleSheet,
   ScrollView,
+  TouchableOpacity,
 } from 'react-native';
 
 import { Ionicons } from '@expo/vector-icons';
@@ -20,9 +21,8 @@ import {
 } from '../utils/statsCalculator';
 
 /**
- * Stats screen component that displays habit analytics and progress.
- * Shows completion rates, streaks, and other habit statistics.
- * Displays real data from the habit store with comprehensive analytics.
+ * Enhanced Stats screen that provides actionable insights and clear explanations.
+ * Focuses on helping users understand their habit patterns and improve their routines.
  */
 export const StatsScreen: React.FC = () => {
   const { isDarkMode } = useTheme();
@@ -66,83 +66,176 @@ export const StatsScreen: React.FC = () => {
     loadStats();
   }, [habits]);
 
-  const renderStatCard = (
+  const renderInsightCard = (
+    title: string,
     value: string | number,
-    label: string,
-    icon: string
+    description: string,
+    icon: string,
+    color?: string
   ) => (
-    <View style={[styles.statCard, { backgroundColor: colors.surface }]}>
-      <Ionicons
-        name={icon as any}
-        size={24}
-        color={colors.primary}
-        style={styles.statIcon}
-      />
-      <Text style={[styles.statNumber, { color: colors.primary }]}>
+    <View style={[styles.insightCard, { backgroundColor: colors.surface }]}>
+      <View style={styles.insightHeader}>
+        <Ionicons
+          name={icon as any}
+          size={20}
+          color={color || colors.primary}
+          style={styles.insightIcon}
+        />
+        <Text style={[styles.insightTitle, { color: colors.text }]}>
+          {title}
+        </Text>
+      </View>
+      <Text style={[styles.insightValue, { color: color || colors.primary }]}>
         {value}
       </Text>
-      <Text style={[styles.statLabel, { color: colors.textSecondary }]}>
-        {label}
+      <Text
+        style={[styles.insightDescription, { color: colors.textSecondary }]}
+      >
+        {description}
       </Text>
     </View>
   );
 
-  const renderTrendItem = (trend: HabitTrend) => (
-    <View
-      key={trend.habitId}
-      style={[styles.trendItem, { backgroundColor: colors.surface }]}
-    >
-      <View style={styles.trendHeader}>
-        <Text style={[styles.trendName, { color: colors.text }]}>
-          {trend.habitName}
-        </Text>
-        <Text style={[styles.trendStreak, { color: colors.primary }]}>
-          {trend.currentStreak} days
-        </Text>
-      </View>
-      <View style={styles.trendProgress}>
-        <View style={[styles.progressBar, { backgroundColor: colors.border }]}>
-          <View
-            style={[
-              styles.progressFill,
-              {
-                width: `${trend.completionRate}%`,
-                backgroundColor: colors.primary,
-              },
-            ]}
-          />
+  const renderHabitInsight = (trend: HabitTrend) => {
+    const getInsightMessage = () => {
+      if (trend.completionRate >= 80) {
+        return "Excellent! You're building a strong habit.";
+      } else if (trend.completionRate >= 60) {
+        return 'Good progress! Keep up the consistency.';
+      } else if (trend.completionRate >= 40) {
+        return "You're getting started. Try to be more consistent.";
+      } else {
+        return 'This habit needs more attention. Start small and build up.';
+      }
+    };
+
+    const getInsightColor = () => {
+      if (trend.completionRate >= 80) return colors.success;
+      if (trend.completionRate >= 60) return colors.primary;
+      if (trend.completionRate >= 40) return '#FFA726'; // Orange
+      return colors.error || '#F44336';
+    };
+
+    return (
+      <View
+        key={trend.habitId}
+        style={[styles.habitInsightCard, { backgroundColor: colors.surface }]}
+      >
+        <View style={styles.habitInsightHeader}>
+          <Text style={[styles.habitName, { color: colors.text }]}>
+            {trend.habitName}
+          </Text>
+          <View style={styles.habitStats}>
+            <Text style={[styles.streakText, { color: colors.primary }]}>
+              {trend.currentStreak} day streak
+            </Text>
+            <Text style={[styles.completionText, { color: getInsightColor() }]}>
+              {trend.completionRate}% completion
+            </Text>
+          </View>
         </View>
-        <Text style={[styles.trendRate, { color: colors.textSecondary }]}>
-          {trend.completionRate}% completion
+
+        <View style={styles.progressContainer}>
+          <View
+            style={[styles.progressBar, { backgroundColor: colors.border }]}
+          >
+            <View
+              style={[
+                styles.progressFill,
+                {
+                  width: `${trend.completionRate}%`,
+                  backgroundColor: getInsightColor(),
+                },
+              ]}
+            />
+          </View>
+        </View>
+
+        <Text style={[styles.insightMessage, { color: colors.textSecondary }]}>
+          {getInsightMessage()}
         </Text>
       </View>
-    </View>
-  );
+    );
+  };
 
-  const renderCategoryItem = (category: {
-    category: string;
-    count: number;
-    completed: number;
-  }) => (
-    <View
-      key={category.category}
-      style={[styles.categoryItem, { backgroundColor: colors.surface }]}
-    >
-      <Text style={[styles.categoryName, { color: colors.text }]}>
-        {category.category}
-      </Text>
-      <Text style={[styles.categoryCount, { color: colors.textSecondary }]}>
-        {category.completed}/{category.count} completed
-      </Text>
-    </View>
-  );
+  const renderWeeklyProgress = () => {
+    if (weeklyData.length === 0) return null;
+
+    const todayCompleted = weeklyData[weeklyData.length - 1]?.completed || 0;
+    const totalHabits = habits.length;
+    const weeklyAverage = Math.round(
+      weeklyData.reduce((sum, day) => sum + day.completed, 0) /
+        weeklyData.length
+    );
+
+    return (
+      <View style={styles.section}>
+        <Text style={[styles.sectionTitle, { color: colors.text }]}>
+          This Week's Progress
+        </Text>
+        <View style={styles.weeklyContainer}>
+          {weeklyData.map((day, index) => (
+            <View key={index} style={styles.weeklyDay}>
+              <Text
+                style={[styles.weeklyDayLabel, { color: colors.textSecondary }]}
+              >
+                {day.date}
+              </Text>
+              <View
+                style={[styles.weeklyBar, { backgroundColor: colors.border }]}
+              >
+                <View
+                  style={[
+                    styles.weeklyBarFill,
+                    {
+                      height: `${(day.completed / totalHabits) * 100}%`,
+                      backgroundColor: colors.primary,
+                    },
+                  ]}
+                />
+              </View>
+              <Text style={[styles.weeklyCount, { color: colors.text }]}>
+                {day.completed}/{totalHabits}
+              </Text>
+            </View>
+          ))}
+        </View>
+        <Text style={[styles.weeklySummary, { color: colors.textSecondary }]}>
+          Average: {weeklyAverage}/{totalHabits} habits completed per day
+        </Text>
+      </View>
+    );
+  };
 
   if (isLoading) {
     return (
       <View style={[styles.container, { backgroundColor: colors.background }]}>
         <View style={styles.loadingContainer}>
           <Text style={[styles.loadingText, { color: colors.text }]}>
-            Loading stats...
+            Analyzing your habits...
+          </Text>
+        </View>
+      </View>
+    );
+  }
+
+  if (!stats || habits.length === 0) {
+    return (
+      <View style={[styles.container, { backgroundColor: colors.background }]}>
+        <View style={styles.emptyContainer}>
+          <Ionicons
+            name="analytics-outline"
+            size={64}
+            color={colors.textSecondary}
+          />
+          <Text style={[styles.emptyTitle, { color: colors.text }]}>
+            No Habits Yet
+          </Text>
+          <Text
+            style={[styles.emptyDescription, { color: colors.textSecondary }]}
+          >
+            Create your first habit to see detailed insights and progress
+            tracking.
           </Text>
         </View>
       </View>
@@ -160,67 +253,171 @@ export const StatsScreen: React.FC = () => {
       >
         <View style={styles.header}>
           <Text style={[styles.title, { color: colors.text }]}>
-            Your Progress
+            Habit Insights
           </Text>
           <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
-            Track your habit journey
+            Understand your patterns and improve your routine
           </Text>
         </View>
 
-        {stats && (
-          <View style={styles.statsContainer}>
-            {renderStatCard(
-              stats.completedToday,
+        {/* Key Metrics */}
+        <View style={styles.section}>
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>
+            Today's Summary
+          </Text>
+          <View style={styles.metricsGrid}>
+            {renderInsightCard(
               'Completed Today',
-              'checkmark-circle-outline'
+              `${stats.completedToday}/${stats.totalHabits}`,
+              'Habits you finished today',
+              'checkmark-circle-outline',
+              colors.success
             )}
-            {renderStatCard(
+            {renderInsightCard(
+              'Daily Success Rate',
               `${stats.completionRate}%`,
-              'Completion Rate',
-              'trending-up-outline'
+              'Percentage of habits completed today',
+              'trending-up-outline',
+              stats.completionRate >= 80 ? colors.success : colors.primary
             )}
-            {renderStatCard(stats.totalHabits, 'Total Habits', 'list-outline')}
-            {renderStatCard(stats.averageStreak, 'Avg Streak', 'flame-outline')}
           </View>
-        )}
+        </View>
 
+        {/* Habit Insights */}
         {trends.length > 0 && (
           <View style={styles.section}>
             <Text style={[styles.sectionTitle, { color: colors.text }]}>
-              Habit Trends
+              Individual Habit Analysis
             </Text>
-            {trends.slice(0, 3).map(renderTrendItem)}
+            <Text
+              style={[
+                styles.sectionDescription,
+                { color: colors.textSecondary },
+              ]}
+            >
+              See how each habit is performing and get personalized insights
+            </Text>
+            {trends.map(renderHabitInsight)}
           </View>
         )}
 
+        {/* Weekly Progress */}
+        {renderWeeklyProgress()}
+
+        {/* Categories */}
         {categoryStats.length > 0 && (
           <View style={styles.section}>
             <Text style={[styles.sectionTitle, { color: colors.text }]}>
-              Categories
+              Category Performance
             </Text>
-            {categoryStats.map(renderCategoryItem)}
+            <Text
+              style={[
+                styles.sectionDescription,
+                { color: colors.textSecondary },
+              ]}
+            >
+              See which areas of your life are getting the most attention
+            </Text>
+            {categoryStats.map(category => (
+              <View
+                key={category.category}
+                style={[
+                  styles.categoryCard,
+                  { backgroundColor: colors.surface },
+                ]}
+              >
+                <Text style={[styles.categoryName, { color: colors.text }]}>
+                  {category.category}
+                </Text>
+                <View style={styles.categoryProgress}>
+                  <View
+                    style={[
+                      styles.categoryBar,
+                      { backgroundColor: colors.border },
+                    ]}
+                  >
+                    <View
+                      style={[
+                        styles.categoryBarFill,
+                        {
+                          width: `${(category.completed / category.count) * 100}%`,
+                          backgroundColor: colors.primary,
+                        },
+                      ]}
+                    />
+                  </View>
+                  <Text
+                    style={[
+                      styles.categoryStats,
+                      { color: colors.textSecondary },
+                    ]}
+                  >
+                    {category.completed}/{category.count} completed
+                  </Text>
+                </View>
+              </View>
+            ))}
           </View>
         )}
 
-        {stats?.needsAttention && stats.needsAttention.length > 0 && (
+        {/* Action Items */}
+        {stats.needsAttention && stats.needsAttention.length > 0 && (
           <View style={styles.section}>
             <Text style={[styles.sectionTitle, { color: colors.text }]}>
-              Needs Attention
+              Habits Needing Attention
             </Text>
             <View
-              style={[
-                styles.attentionCard,
-                { backgroundColor: colors.surface },
-              ]}
+              style={[styles.actionCard, { backgroundColor: colors.surface }]}
             >
+              <Ionicons
+                name="warning-outline"
+                size={20}
+                color={colors.error || '#F44336'}
+              />
               <Text
-                style={[styles.attentionText, { color: colors.textSecondary }]}
+                style={[styles.actionText, { color: colors.textSecondary }]}
               >
-                {stats.needsAttention.join(', ')}
+                Focus on: {stats.needsAttention.join(', ')}
+              </Text>
+              <Text style={[styles.actionTip, { color: colors.textSecondary }]}>
+                Tip: Start with just one habit and build momentum
               </Text>
             </View>
           </View>
         )}
+
+        {/* Tips Section */}
+        <View style={styles.section}>
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>
+            Tips for Success
+          </Text>
+          <View style={[styles.tipsCard, { backgroundColor: colors.surface }]}>
+            <View style={styles.tipItem}>
+              <Ionicons name="bulb-outline" size={16} color={colors.primary} />
+              <Text style={[styles.tipText, { color: colors.textSecondary }]}>
+                Consistency beats perfection. Even small daily actions build
+                powerful habits.
+              </Text>
+            </View>
+            <View style={styles.tipItem}>
+              <Ionicons name="time-outline" size={16} color={colors.primary} />
+              <Text style={[styles.tipText, { color: colors.textSecondary }]}>
+                Stack new habits onto existing routines for better success
+                rates.
+              </Text>
+            </View>
+            <View style={styles.tipItem}>
+              <Ionicons
+                name="trophy-outline"
+                size={16}
+                color={colors.primary}
+              />
+              <Text style={[styles.tipText, { color: colors.textSecondary }]}>
+                Celebrate small wins to reinforce positive behavior patterns.
+              </Text>
+            </View>
+          </View>
+        </View>
       </ScrollView>
     </View>
   );
@@ -233,7 +430,7 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     padding: 16,
-    paddingBottom: 100, // Add extra padding to account for the tab bar
+    paddingBottom: 100,
   },
   header: {
     marginBottom: 24,
@@ -241,114 +438,143 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: '#333',
     marginBottom: 8,
   },
   subtitle: {
     fontSize: 16,
-    color: '#666',
   },
-  statsContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
+  section: {
     marginBottom: 32,
   },
-  statCard: {
-    backgroundColor: '#fff',
+  sectionTitle: {
+    fontSize: 20,
+    fontWeight: '600',
+    marginBottom: 8,
+  },
+  sectionDescription: {
+    fontSize: 14,
+    marginBottom: 16,
+    lineHeight: 20,
+  },
+  metricsGrid: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  insightCard: {
     borderRadius: 12,
     padding: 16,
     width: '48%',
-    marginBottom: 12,
-    alignItems: 'center',
     shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 3.84,
     elevation: 5,
   },
-  statIcon: {
+  insightHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
     marginBottom: 8,
   },
-  statNumber: {
-    fontSize: 32,
+  insightIcon: {
+    marginRight: 8,
+  },
+  insightTitle: {
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  insightValue: {
+    fontSize: 24,
     fontWeight: 'bold',
-    color: '#4CAF50',
     marginBottom: 4,
   },
-  statLabel: {
-    fontSize: 14,
-    color: '#666',
-    textAlign: 'center',
+  insightDescription: {
+    fontSize: 12,
+    lineHeight: 16,
   },
-  section: {
-    marginBottom: 24,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#333',
-    marginBottom: 12,
-  },
-  trendItem: {
+  habitInsightCard: {
     borderRadius: 12,
     padding: 16,
-    marginBottom: 8,
+    marginBottom: 12,
     shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 1,
-    },
+    shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
     shadowRadius: 2,
     elevation: 2,
   },
-  trendHeader: {
+  habitInsightHeader: {
+    marginBottom: 12,
+  },
+  habitName: {
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 4,
+  },
+  habitStats: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 8,
   },
-  trendName: {
-    fontSize: 16,
-    fontWeight: '500',
-    color: '#333',
-  },
-  trendStreak: {
+  streakText: {
     fontSize: 14,
-    fontWeight: '600',
-    color: '#4CAF50',
+    fontWeight: '500',
   },
-  trendProgress: {
-    marginTop: 8,
+  completionText: {
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  progressContainer: {
+    marginBottom: 8,
   },
   progressBar: {
     height: 6,
     borderRadius: 3,
-    backgroundColor: '#e0e0e0',
-    marginBottom: 4,
   },
   progressFill: {
     height: '100%',
     borderRadius: 3,
-    backgroundColor: '#4CAF50',
   },
-  trendRate: {
+  insightMessage: {
+    fontSize: 13,
+    lineHeight: 18,
+  },
+  weeklyContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 12,
+  },
+  weeklyDay: {
+    alignItems: 'center',
+    flex: 1,
+  },
+  weeklyDayLabel: {
     fontSize: 12,
-    color: '#666',
+    marginBottom: 8,
   },
-  categoryItem: {
+  weeklyBar: {
+    width: 20,
+    height: 60,
+    borderRadius: 10,
+    marginBottom: 4,
+  },
+  weeklyBarFill: {
+    position: 'absolute',
+    bottom: 0,
+    width: '100%',
+    borderRadius: 10,
+  },
+  weeklyCount: {
+    fontSize: 10,
+    fontWeight: '500',
+  },
+  weeklySummary: {
+    fontSize: 14,
+    textAlign: 'center',
+  },
+  categoryCard: {
     borderRadius: 12,
     padding: 16,
     marginBottom: 8,
     shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 1,
-    },
+    shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
     shadowRadius: 2,
     elevation: 2,
@@ -356,28 +582,65 @@ const styles = StyleSheet.create({
   categoryName: {
     fontSize: 16,
     fontWeight: '500',
-    color: '#333',
-    marginBottom: 4,
+    marginBottom: 8,
   },
-  categoryCount: {
+  categoryProgress: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  categoryBar: {
+    flex: 1,
+    height: 6,
+    borderRadius: 3,
+    marginRight: 12,
+  },
+  categoryBarFill: {
+    height: '100%',
+    borderRadius: 3,
+  },
+  categoryStats: {
     fontSize: 14,
-    color: '#666',
   },
-  attentionCard: {
+  actionCard: {
     borderRadius: 12,
     padding: 16,
+    flexDirection: 'row',
+    alignItems: 'flex-start',
     shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 1,
-    },
+    shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
     shadowRadius: 2,
     elevation: 2,
   },
-  attentionText: {
+  actionText: {
     fontSize: 14,
-    color: '#666',
+    flex: 1,
+    marginLeft: 8,
+    lineHeight: 20,
+  },
+  actionTip: {
+    fontSize: 12,
+    marginTop: 8,
+    fontStyle: 'italic',
+  },
+  tipsCard: {
+    borderRadius: 12,
+    padding: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  tipItem: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    marginBottom: 12,
+  },
+  tipText: {
+    fontSize: 14,
+    flex: 1,
+    marginLeft: 8,
     lineHeight: 20,
   },
   loadingContainer: {
@@ -387,6 +650,23 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     fontSize: 16,
-    color: '#666',
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 40,
+  },
+  emptyTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginTop: 16,
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  emptyDescription: {
+    fontSize: 16,
+    textAlign: 'center',
+    lineHeight: 24,
   },
 });

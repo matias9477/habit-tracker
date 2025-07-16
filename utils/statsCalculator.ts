@@ -103,12 +103,30 @@ export const calculateHabitTrends = async (
   const trends: HabitTrend[] = [];
 
   for (const habit of habits) {
-    // Calculate completion rate based on streak (simplified but realistic)
-    // A 30-day streak would be 100%, 15-day would be 50%, etc.
-    const completionRate = Math.min(Math.round((habit.streak / 30) * 100), 100);
-
-    // Get total completions for this habit
+    // Calculate completion rate based on actual completion data
     const totalCompletions = await getTotalCompletionsForHabit(habit.id);
+
+    // Get the habit's creation date
+    const habitCreatedAt = new Date(habit.created_at);
+    const today = new Date();
+
+    // Calculate days since habit creation
+    const daysSinceCreation = Math.ceil(
+      (today.getTime() - habitCreatedAt.getTime()) / (1000 * 60 * 60 * 24)
+    );
+
+    // Calculate completion rate as: (total completions / days since creation) * 100
+    // But cap it at 100% and ensure it's meaningful for new habits
+    let completionRate = 0;
+    if (daysSinceCreation > 0) {
+      completionRate = Math.min(
+        Math.round((totalCompletions / daysSinceCreation) * 100),
+        100
+      );
+    } else {
+      // For habits created today, use a simple indicator
+      completionRate = habit.isCompletedToday ? 100 : 0;
+    }
 
     trends.push({
       habitId: habit.id,
