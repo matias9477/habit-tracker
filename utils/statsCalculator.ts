@@ -46,23 +46,24 @@ export const calculateHabitStats = async (
   const completedToday = habits.filter((h) => h.isCompletedToday).length;
   const completionRate = Math.round((completedToday / habits.length) * 100);
 
-  // Calculate total completions (this would need to be enhanced with actual DB queries)
+  // Calculate total completions for today
   const totalCompletions = habits.reduce(
     (sum, habit) => sum + (habit.currentCount || 0),
     0
   );
 
-  // Calculate streaks (simplified for now)
+  // Calculate streaks using actual streak data
+  const streaks = habits.map((h) => h.streak || 0);
   const averageStreak = Math.round(
-    habits.reduce((sum, habit) => sum + (habit.streak || 0), 0) / habits.length
+    streaks.reduce((sum, streak) => sum + streak, 0) / habits.length
   );
-  const longestStreak = Math.max(...habits.map((h) => h.streak || 0));
+  const longestStreak = Math.max(...streaks);
 
-  // Find most consistent habit (highest completion rate)
+  // Find most consistent habit (highest streak)
   const mostConsistentHabit = habits.reduce((best, current) => {
-    const currentRate = current.streak || 0;
-    const bestRate = best.streak || 0;
-    return currentRate > bestRate ? current : best;
+    const currentStreak = current.streak || 0;
+    const bestStreak = best.streak || 0;
+    return currentStreak > bestStreak ? current : best;
   }).name;
 
   // Find habits that need attention (not completed today)
@@ -94,9 +95,9 @@ export const calculateHabitTrends = async (
   const trends: HabitTrend[] = [];
 
   for (const habit of habits) {
-    // Calculate completion rate (simplified - would need more DB queries for accuracy)
-    const completionRate =
-      habit.streak > 0 ? Math.min(habit.streak * 10, 100) : 0;
+    // Calculate completion rate based on streak (simplified but realistic)
+    // A 30-day streak would be 100%, 15-day would be 50%, etc.
+    const completionRate = Math.min(Math.round((habit.streak / 30) * 100), 100);
 
     trends.push({
       habitId: habit.id,
@@ -152,32 +153,54 @@ export const getWeeklyData = async (
 export const getCategoryStats = async (
   habits: HabitWithCompletion[]
 ): Promise<{ category: string; count: number; completed: number }[]> => {
-  // For now, we'll categorize by icon (simplified approach)
+  // Categorize habits based on their icons and names
   const categories = {
-    Exercise: habits.filter(
-      (h) => h.icon.includes('🏃') || h.icon.includes('💪')
-    ),
-    Learning: habits.filter(
-      (h) => h.icon.includes('🧠') || h.icon.includes('📚')
-    ),
     Health: habits.filter(
       (h) =>
-        h.icon.includes('💧') || h.icon.includes('🥗') || h.icon.includes('😴')
+        h.icon.includes('💧') ||
+        h.icon.includes('💊') ||
+        h.name.toLowerCase().includes('water') ||
+        h.name.toLowerCase().includes('vitamin')
+    ),
+    Exercise: habits.filter(
+      (h) =>
+        h.icon.includes('🏃') ||
+        h.icon.includes('👟') ||
+        h.name.toLowerCase().includes('exercise') ||
+        h.name.toLowerCase().includes('walk')
+    ),
+    Learning: habits.filter(
+      (h) =>
+        h.icon.includes('📚') ||
+        h.icon.includes('🎸') ||
+        h.name.toLowerCase().includes('read') ||
+        h.name.toLowerCase().includes('practice')
     ),
     Wellness: habits.filter(
-      (h) => h.icon.includes('🧘') || h.icon.includes('⭐')
+      (h) =>
+        h.icon.includes('🧘') ||
+        h.icon.includes('📝') ||
+        h.name.toLowerCase().includes('meditate') ||
+        h.name.toLowerCase().includes('journal')
     ),
     Other: habits.filter(
       (h) =>
-        !h.icon.includes('🏃') &&
-        !h.icon.includes('💪') &&
-        !h.icon.includes('🧠') &&
-        !h.icon.includes('📚') &&
         !h.icon.includes('💧') &&
-        !h.icon.includes('🥗') &&
-        !h.icon.includes('😴') &&
+        !h.icon.includes('💊') &&
+        !h.icon.includes('🏃') &&
+        !h.icon.includes('👟') &&
+        !h.icon.includes('📚') &&
+        !h.icon.includes('🎸') &&
         !h.icon.includes('🧘') &&
-        !h.icon.includes('⭐')
+        !h.icon.includes('📝') &&
+        !h.name.toLowerCase().includes('water') &&
+        !h.name.toLowerCase().includes('vitamin') &&
+        !h.name.toLowerCase().includes('exercise') &&
+        !h.name.toLowerCase().includes('walk') &&
+        !h.name.toLowerCase().includes('read') &&
+        !h.name.toLowerCase().includes('practice') &&
+        !h.name.toLowerCase().includes('meditate') &&
+        !h.name.toLowerCase().includes('journal')
     ),
   };
 

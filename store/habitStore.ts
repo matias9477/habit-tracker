@@ -8,6 +8,7 @@ import {
   incrementHabitCount,
   decrementHabitCount,
   getHabitCountForDate,
+  getStreakForHabit,
 } from '../db/completions';
 import {
   getAllHabits,
@@ -96,11 +97,12 @@ export const useHabitStore = create<HabitState & HabitActions>((set, get) => ({
           const currentCount = completion?.count || 0;
           const targetCount =
             habit.target_count || (habit.goal_type === 'count' ? 1 : undefined);
+          const streak = await getStreakForHabit(habit.id);
 
           return {
             ...habit,
             isCompletedToday: !!completion,
-            streak: 0, // TODO: Calculate actual streak
+            streak: streak,
             currentCount: currentCount,
             targetCount: targetCount,
           };

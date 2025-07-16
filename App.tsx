@@ -11,6 +11,7 @@ import { OnboardingScreen } from './screens/OnboardingScreen';
 import { useThemeStore } from './store/themeStore';
 import { getThemeColors } from './utils/theme';
 import { ErrorBoundary } from './components/ErrorBoundary';
+import { seedFakeData } from './utils/seedData';
 
 /**
  * Loading screen component shown while the database is being initialized.
@@ -73,6 +74,9 @@ export default function App() {
 
         // Configure notifications
         await configureNotifications();
+
+        // Uncomment the line below to seed fake data (for testing)
+        // await seedFakeData();
 
         setIsInitialized(true);
       } catch (err) {
