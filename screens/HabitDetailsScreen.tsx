@@ -267,23 +267,86 @@ export const HabitDetailsScreen: React.FC = () => {
         contentContainerStyle={styles.contentContainer}
         showsVerticalScrollIndicator={false}
       >
-        {/* Habit Header */}
-        <View style={styles.habitHeader}>
-          <Text style={styles.icon}>{habit.icon}</Text>
-          <Text style={[styles.title, { color: colors.text }]}>
-            {habit.name}
-          </Text>
+        {/* Enhanced Habit Header */}
+        <View
+          style={[styles.habitHeaderCard, { backgroundColor: colors.surface }]}
+        >
+          <View style={styles.habitHeaderContent}>
+            <View style={styles.habitInfo}>
+              <View
+                style={[
+                  styles.iconContainer,
+                  { backgroundColor: colors.primary + '20' },
+                ]}
+              >
+                <Text style={styles.icon}>{habit.icon}</Text>
+              </View>
+              <View style={styles.textContainer}>
+                <Text style={[styles.title, { color: colors.text }]}>
+                  {habit.name}
+                </Text>
+                <Text
+                  style={[styles.subtitle, { color: colors.textSecondary }]}
+                >
+                  {habit.goal_type === 'count' ? 'Count Goal' : 'Daily Goal'}
+                </Text>
+              </View>
+            </View>
 
-          <View style={styles.headerActions}>
-            <TouchableOpacity onPress={handleEdit} style={styles.actionButton}>
-              <Ionicons name="pencil" size={20} color={colors.primary} />
-            </TouchableOpacity>
-            <TouchableOpacity
-              onPress={handleDelete}
-              style={styles.actionButton}
-            >
-              <Ionicons name="trash" size={20} color={colors.error} />
-            </TouchableOpacity>
+            <View style={styles.headerActions}>
+              <TouchableOpacity
+                onPress={handleEdit}
+                style={[
+                  styles.actionButton,
+                  { backgroundColor: colors.primary + '20' },
+                ]}
+              >
+                <Ionicons name="pencil" size={18} color={colors.primary} />
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={handleDelete}
+                style={[
+                  styles.actionButton,
+                  { backgroundColor: colors.error + '20' },
+                ]}
+              >
+                <Ionicons name="trash" size={18} color={colors.error} />
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          {/* Quick Stats Row */}
+          <View style={styles.quickStats}>
+            <View style={styles.statItem}>
+              <Text style={[styles.statNumber, { color: colors.primary }]}>
+                {habit.streak}
+              </Text>
+              <Text style={[styles.statLabel, { color: colors.textSecondary }]}>
+                Day Streak
+              </Text>
+            </View>
+            <View style={styles.statDivider} />
+            <View style={styles.statItem}>
+              <Text style={[styles.statNumber, { color: colors.primary }]}>
+                {habit.goal_type === 'count'
+                  ? habit.currentCount || 0
+                  : habit.isCompletedToday
+                    ? 1
+                    : 0}
+              </Text>
+              <Text style={[styles.statLabel, { color: colors.textSecondary }]}>
+                Today
+              </Text>
+            </View>
+            <View style={styles.statDivider} />
+            <View style={styles.statItem}>
+              <Text style={[styles.statNumber, { color: colors.primary }]}>
+                {habit.goal_type === 'count' ? habit.targetCount || 1 : '1'}
+              </Text>
+              <Text style={[styles.statLabel, { color: colors.textSecondary }]}>
+                Target
+              </Text>
+            </View>
           </View>
         </View>
 
@@ -311,28 +374,89 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  habitHeader: {
+  habitHeaderCard: {
+    borderRadius: 16,
+    marginBottom: 20,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 5,
+  },
+  habitHeaderContent: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingVertical: 12,
-    marginBottom: 16,
+    justifyContent: 'space-between',
+    padding: 20,
+  },
+  habitInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
+  iconContainer: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 16,
   },
   icon: {
-    fontSize: 32,
-    marginRight: 12,
+    fontSize: 28,
+  },
+  textContainer: {
+    flex: 1,
   },
   title: {
     fontSize: 20,
-    fontWeight: '600',
-    flex: 1,
+    fontWeight: '700',
+    marginBottom: 4,
+  },
+  subtitle: {
+    fontSize: 14,
+    fontWeight: '500',
   },
   headerActions: {
     flexDirection: 'row',
+    gap: 8,
   },
   actionButton: {
-    padding: 8,
-    marginLeft: 8,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  quickStats: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-around',
+    paddingHorizontal: 20,
+    paddingBottom: 20,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(0,0,0,0.1)',
+  },
+  statItem: {
+    alignItems: 'center',
+    flex: 1,
+  },
+  statNumber: {
+    fontSize: 20,
+    fontWeight: '700',
+    marginBottom: 2,
+  },
+  statLabel: {
+    fontSize: 12,
+    fontWeight: '500',
+  },
+  statDivider: {
+    width: 1,
+    height: 30,
+    backgroundColor: 'rgba(0,0,0,0.1)',
   },
   content: {
     flex: 1,
@@ -388,17 +512,6 @@ const styles = StyleSheet.create({
   statsGrid: {
     flexDirection: 'row',
     justifyContent: 'space-around',
-  },
-  statItem: {
-    alignItems: 'center',
-  },
-  statNumber: {
-    fontSize: 24,
-    fontWeight: 'bold',
-  },
-  statLabel: {
-    fontSize: 14,
-    marginTop: 4,
   },
   chart: {
     marginVertical: 8,
