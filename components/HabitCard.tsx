@@ -132,7 +132,9 @@ export const HabitCard: React.FC<HabitCardProps> = ({
       style={[
         styles.card,
         { backgroundColor: colors.surface, shadowColor: colors.shadow },
-        habit.isCompletedToday && {
+        (habit.goal_type === 'count'
+          ? (habit.currentCount || 0) >= (habit.targetCount || 1)
+          : habit.isCompletedToday) && {
           backgroundColor: colors.primaryLight + '20',
           borderColor: colors.success,
           borderWidth: 1,
@@ -150,7 +152,9 @@ export const HabitCard: React.FC<HabitCardProps> = ({
               style={[
                 styles.name,
                 { color: colors.text },
-                habit.isCompletedToday && styles.completedText,
+                (habit.goal_type === 'count'
+                  ? (habit.currentCount || 0) >= (habit.targetCount || 1)
+                  : habit.isCompletedToday) && styles.completedText,
               ]}
             >
               {habit.name}

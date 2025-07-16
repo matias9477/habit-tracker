@@ -10,6 +10,7 @@ import {
 } from '@/db/completions';
 import {
   getAllHabits,
+  getHabitsForDate,
   insertHabit,
   updateHabit,
   deleteHabit,
@@ -145,7 +146,8 @@ export const useHabitStore = create<HabitState & HabitActions>((set, get) => ({
   loadHabitsForDate: async (date: Date) => {
     set({ isLoading: true, error: null });
     try {
-      const habits = await getAllHabits();
+      // Use getHabitsForDate to only get habits created on or before the selected date
+      const habits = await getHabitsForDate(date);
       const dateString = date.toISOString().slice(0, 10);
       const completions = await getCompletionsForDate(dateString);
 
@@ -220,13 +222,14 @@ export const useHabitStore = create<HabitState & HabitActions>((set, get) => ({
               ? {
                   ...h,
                   currentCount: newCount,
+                  // Only mark as completed when target is reached
                   isCompletedToday: newCount >= targetCount,
                 }
               : h
           ),
         }));
 
-        return true;
+        return newCount > 0; // Return true if count was successfully incremented
       }
     } else {
       const isCompleted = habit.isCompletedToday;
@@ -242,7 +245,8 @@ export const useHabitStore = create<HabitState & HabitActions>((set, get) => ({
         }
         return success;
       } else {
-        const success = await markHabitCompleted(habitId, dateString);
+        const result = await markHabitCompleted(habitId, dateString);
+        const success = result !== null;
         if (success) {
           // Update local state
           set(state => ({
@@ -313,6 +317,7 @@ export const useHabitStore = create<HabitState & HabitActions>((set, get) => ({
             ? {
                 ...h,
                 currentCount: newCount,
+                // Only mark as completed when target is reached
                 isCompletedToday: newCount >= targetCount,
               }
             : h
@@ -343,6 +348,7 @@ export const useHabitStore = create<HabitState & HabitActions>((set, get) => ({
             ? {
                 ...h,
                 currentCount: newCount,
+                // Only mark as completed when target is reached
                 isCompletedToday: newCount >= targetCount,
               }
             : h

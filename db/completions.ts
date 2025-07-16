@@ -182,11 +182,30 @@ export const getStreakForHabit = async (habitId: number): Promise<number> => {
     const dateStr = date.toISOString().slice(0, 10);
     // eslint-disable-next-line no-await-in-loop
     const completions = await getCompletionsForDate(dateStr);
-    if (completions.some((c) => c.habit_id === habitId)) {
+    if (completions.some(c => c.habit_id === habitId)) {
       streak++;
     } else {
       break;
     }
   }
   return streak;
+};
+
+/**
+ * Gets the total number of completions for a habit across all time.
+ */
+export const getTotalCompletionsForHabit = async (
+  habitId: number
+): Promise<number> => {
+  try {
+    const db = await getDatabase();
+    const result = await db.getFirstAsync<{ total: number }>(
+      'SELECT SUM(count) as total FROM habit_completions WHERE habit_id = ?',
+      [habitId]
+    );
+    return result?.total || 0;
+  } catch (error) {
+    console.error('Get total completions error', error);
+    return 0;
+  }
 };

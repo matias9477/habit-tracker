@@ -15,6 +15,7 @@ import { useHabitStore } from '@/store/habitStore';
 import { useOnboardingStore } from '@/store/onboardingStore';
 import { getThemeColors, useTheme } from '@/utils/theme';
 import { exportHabitData } from '@/utils/dataExport';
+import { testSeedData } from '@/utils/testSeed';
 import {
   configureNotifications,
   sendTestNotification,
@@ -153,6 +154,30 @@ export const SettingsScreen: React.FC = () => {
     );
   };
 
+  const handleTestSeedData = () => {
+    Alert.alert(
+      'Test Seed Data',
+      'This will clear all data and seed with test habits having different creation dates.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Test',
+          onPress: async () => {
+            try {
+              await testSeedData();
+              Alert.alert(
+                'Success',
+                'Test data seeded! Navigate to July 1-17 to see different habits.'
+              );
+            } catch (error) {
+              Alert.alert('Error', 'Failed to seed test data.');
+            }
+          },
+        },
+      ]
+    );
+  };
+
   const renderSettingItem = (
     title: string,
     subtitle: string,
@@ -262,6 +287,12 @@ export const SettingsScreen: React.FC = () => {
             'Delete all habits and progress',
             'trash-outline',
             handleClearData
+          )}
+          {renderSettingItem(
+            'Test Seed Data',
+            'Seed with test habits (different creation dates)',
+            'flask-outline',
+            handleTestSeedData
           )}
         </View>
 

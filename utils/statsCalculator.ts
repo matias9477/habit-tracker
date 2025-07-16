@@ -1,4 +1,5 @@
 import { HabitWithCompletion } from '@/store/habitStore';
+import { getTotalCompletionsForHabit } from '@/db/completions';
 
 export interface HabitStats {
   totalHabits: number;
@@ -42,17 +43,21 @@ export const calculateHabitStats = async (
     };
   }
 
-  const completedToday = habits.filter((h) => h.isCompletedToday).length;
+  const completedToday = habits.filter(h => h.isCompletedToday).length;
   const completionRate = Math.round((completedToday / habits.length) * 100);
 
-  // Calculate total completions for today
-  const totalCompletions = habits.reduce(
-    (sum, habit) => sum + (habit.currentCount || 0),
+  // Calculate total completions across all time
+  const totalCompletionsPromises = habits.map(async habit => {
+    return await getTotalCompletionsForHabit(habit.id);
+  });
+  const totalCompletionsArray = await Promise.all(totalCompletionsPromises);
+  const totalCompletions = totalCompletionsArray.reduce(
+    (sum, count) => sum + count,
     0
   );
 
   // Calculate streaks using actual streak data
-  const streaks = habits.map((h) => h.streak || 0);
+  const streaks = habits.map(h => h.streak || 0);
   const averageStreak = Math.round(
     streaks.reduce((sum, streak) => sum + streak, 0) / habits.length
   );
@@ -67,8 +72,8 @@ export const calculateHabitStats = async (
 
   // Find habits that need attention (not completed today)
   const needsAttention = habits
-    .filter((h) => !h.isCompletedToday)
-    .map((h) => h.name)
+    .filter(h => !h.isCompletedToday)
+    .map(h => h.name)
     .slice(0, 3); // Top 3
 
   return {
@@ -98,13 +103,16 @@ export const calculateHabitTrends = async (
     // A 30-day streak would be 100%, 15-day would be 50%, etc.
     const completionRate = Math.min(Math.round((habit.streak / 30) * 100), 100);
 
+    // Get total completions for this habit
+    const totalCompletions = await getTotalCompletionsForHabit(habit.id);
+
     trends.push({
       habitId: habit.id,
       habitName: habit.name,
       currentStreak: habit.streak || 0,
       longestStreak: habit.streak || 0, // Would need separate calculation
       completionRate,
-      totalCompletions: habit.currentCount || 0,
+      totalCompletions,
       lastCompleted: habit.isCompletedToday ? 'Today' : 'Not today',
     });
   }
@@ -131,7 +139,7 @@ export const getWeeklyData = async (
     // This is a simplified calculation - in a real app, you'd query the DB
     const completed =
       i === 0
-        ? habits.filter((h) => h.isCompletedToday).length
+        ? habits.filter(h => h.isCompletedToday).length
         : Math.floor(Math.random() * habits.length);
 
     weekData.push({
@@ -155,35 +163,35 @@ export const getCategoryStats = async (
   // Categorize habits based on their icons and names
   const categories = {
     Health: habits.filter(
-      (h) =>
+      h =>
         h.icon.includes('💧') ||
         h.icon.includes('💊') ||
         h.name.toLowerCase().includes('water') ||
         h.name.toLowerCase().includes('vitamin')
     ),
     Exercise: habits.filter(
-      (h) =>
+      h =>
         h.icon.includes('🏃') ||
         h.icon.includes('👟') ||
         h.name.toLowerCase().includes('exercise') ||
         h.name.toLowerCase().includes('walk')
     ),
     Learning: habits.filter(
-      (h) =>
+      h =>
         h.icon.includes('📚') ||
         h.icon.includes('🎸') ||
         h.name.toLowerCase().includes('read') ||
         h.name.toLowerCase().includes('practice')
     ),
     Wellness: habits.filter(
-      (h) =>
+      h =>
         h.icon.includes('🧘') ||
         h.icon.includes('📝') ||
         h.name.toLowerCase().includes('meditate') ||
         h.name.toLowerCase().includes('journal')
     ),
     Other: habits.filter(
-      (h) =>
+      h =>
         !h.icon.includes('💧') &&
         !h.icon.includes('💊') &&
         !h.icon.includes('🏃') &&
@@ -207,7 +215,7 @@ export const getCategoryStats = async (
     .map(([category, habitList]) => ({
       category,
       count: habitList.length,
-      completed: habitList.filter((h) => h.isCompletedToday).length,
+      completed: habitList.filter(h => h.isCompletedToday).length,
     }))
-    .filter((cat) => cat.count > 0);
+    .filter(cat => cat.count > 0);
 };

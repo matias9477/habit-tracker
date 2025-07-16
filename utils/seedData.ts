@@ -1,83 +1,102 @@
-import { insertHabit } from '@/db/habits';
+import { insertHabitWithDate } from '@/db/habits';
 import { markHabitCompleted, incrementHabitCount } from '@/db/completions';
 
 /**
  * Seeds the database with fake habit data and completion history.
  * This simulates a user who has been using the app for a while.
+ * Habits are created with different dates to test date filtering.
  */
 export const seedFakeData = async () => {
   try {
     console.log('🌱 Seeding database with fake data...');
 
-    // Create some realistic habits
+    // Create some realistic habits with different creation dates
     const habits = [
       {
         name: 'Drink Water',
         icon: '💧',
         goalType: 'count',
         targetCount: 8,
+        createdAt: new Date(2025, 6, 1), // July 1st
       },
       {
         name: 'Exercise',
         icon: '🏃‍♂️',
         goalType: 'binary',
+        createdAt: new Date(2025, 6, 5), // July 5th
       },
       {
         name: 'Read',
         icon: '📚',
         goalType: 'count',
         targetCount: 30, // minutes
+        createdAt: new Date(2025, 6, 10), // July 10th
       },
       {
         name: 'Meditate',
         icon: '🧘‍♀️',
         goalType: 'binary',
+        createdAt: new Date(2025, 6, 12), // July 12th
       },
       {
         name: 'Take Vitamins',
         icon: '💊',
         goalType: 'binary',
+        createdAt: new Date(2025, 6, 15), // July 15th
       },
       {
         name: 'Walk 10k Steps',
         icon: '👟',
         goalType: 'count',
         targetCount: 10000,
+        createdAt: new Date(2025, 6, 16), // July 16th
       },
       {
         name: 'Practice Guitar',
         icon: '🎸',
         goalType: 'count',
         targetCount: 20, // minutes
+        createdAt: new Date(2025, 6, 17), // July 17th
       },
       {
         name: 'Journal',
         icon: '📝',
         goalType: 'binary',
+        createdAt: new Date(2025, 6, 18), // July 18th
       },
     ];
 
     // Insert habits and get their IDs
     const habitIds: number[] = [];
     for (const habit of habits) {
-      const id = await insertHabit(
+      const id = await insertHabitWithDate(
         habit.name,
         habit.icon,
+        habit.createdAt,
+        'general', // category
         habit.goalType,
+        undefined, // customEmoji
         habit.targetCount
       );
       if (id) {
         habitIds.push(id);
-        console.log(`✅ Created habit: ${habit.name}`);
+        console.log(
+          `✅ Created habit: ${habit.name} (created: ${habit.createdAt.toISOString().slice(0, 10)})`
+        );
       }
     }
+
+    // Filter out any undefined IDs
+    const validHabitIds = habitIds.filter(
+      (id): id is number => id !== undefined
+    );
 
     // Generate completion data for the last 30 days
     const today = new Date();
     const completionData = [
-      // Water drinking - varies daily
+      // Water drinking - varies daily (created July 1st)
       {
-        habitId: habitIds[0],
+        habitId: validHabitIds[0],
         days: [
           1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
           21, 22, 23, 24, 25, 26, 27, 28, 29, 30,
@@ -88,18 +107,18 @@ export const seedFakeData = async () => {
         ],
       },
 
-      // Exercise - mostly consistent
+      // Exercise - mostly consistent (created July 5th)
       {
-        habitId: habitIds[1],
+        habitId: validHabitIds[1],
         days: [
           1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
           21, 22, 23, 24, 25, 26, 27, 28, 29, 30,
         ],
       },
 
-      // Reading - some missed days
+      // Reading - some missed days (created July 10th)
       {
-        habitId: habitIds[2],
+        habitId: validHabitIds[2],
         days: [
           1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
           21, 22, 23, 24, 25, 26, 27, 28, 29, 30,
@@ -110,27 +129,27 @@ export const seedFakeData = async () => {
         ],
       },
 
-      // Meditation - good streak
+      // Meditation - good streak (created July 12th)
       {
-        habitId: habitIds[3],
+        habitId: validHabitIds[3],
         days: [
           1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
           21, 22, 23, 24, 25, 26, 27, 28, 29, 30,
         ],
       },
 
-      // Vitamins - perfect streak
+      // Vitamins - perfect streak (created July 15th)
       {
-        habitId: habitIds[4],
+        habitId: validHabitIds[4],
         days: [
           1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
           21, 22, 23, 24, 25, 26, 27, 28, 29, 30,
         ],
       },
 
-      // Walking - some missed days
+      // Walking - some missed days (created July 16th)
       {
-        habitId: habitIds[5],
+        habitId: validHabitIds[5],
         days: [
           1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
           21, 22, 23, 24, 25, 26, 27, 28, 29, 30,
@@ -142,9 +161,9 @@ export const seedFakeData = async () => {
         ],
       },
 
-      // Guitar - inconsistent
+      // Guitar - inconsistent (created July 17th)
       {
-        habitId: habitIds[6],
+        habitId: validHabitIds[6],
         days: [
           1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
           21, 22, 23, 24, 25, 26, 27, 28, 29, 30,
@@ -155,9 +174,9 @@ export const seedFakeData = async () => {
         ],
       },
 
-      // Journal - some missed days
+      // Journal - some missed days (created July 18th)
       {
-        habitId: habitIds[7],
+        habitId: validHabitIds[7],
         days: [
           1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
           21, 22, 23, 24, 25, 26, 27, 28, 29, 30,
@@ -169,14 +188,19 @@ export const seedFakeData = async () => {
     for (const data of completionData) {
       for (let i = 0; i < data.days.length; i++) {
         const daysAgo = data.days[i];
+        if (daysAgo === undefined) continue;
+
         const date = new Date(today);
         date.setDate(today.getDate() - daysAgo);
         const dateStr = date.toISOString().slice(0, 10);
 
-        if (data.counts && data.counts[i]) {
+        if (data.counts && data.counts[i] !== undefined) {
           // For count-based habits, add the specific count
-          for (let count = 0; count < data.counts[i]; count++) {
-            await incrementHabitCount(data.habitId, dateStr);
+          const count = data.counts[i];
+          if (count !== undefined) {
+            for (let j = 0; j < count; j++) {
+              await incrementHabitCount(data.habitId, dateStr);
+            }
           }
         } else {
           // For binary habits, just mark as completed
@@ -190,32 +214,40 @@ export const seedFakeData = async () => {
     const todayStr = today.toISOString().slice(0, 10);
 
     // Water: 5/8 glasses today
-    for (let i = 0; i < 5; i++) {
-      await incrementHabitCount(habitIds[0], todayStr);
+    if (validHabitIds.length > 0) {
+      for (let i = 0; i < 5; i++) {
+        await incrementHabitCount(validHabitIds[0]!, todayStr);
+      }
     }
 
     // Reading: 15/30 minutes today
-    for (let i = 0; i < 15; i++) {
-      await incrementHabitCount(habitIds[2], todayStr);
+    if (validHabitIds.length > 2) {
+      for (let i = 0; i < 15; i++) {
+        await incrementHabitCount(validHabitIds[2]!, todayStr);
+      }
     }
 
     // Walking: 6500/10000 steps today
-    for (let i = 0; i < 6500; i++) {
-      await incrementHabitCount(habitIds[5], todayStr);
+    if (validHabitIds.length > 5) {
+      for (let i = 0; i < 6500; i++) {
+        await incrementHabitCount(validHabitIds[5]!, todayStr);
+      }
     }
 
     // Guitar: 10/20 minutes today
-    for (let i = 0; i < 10; i++) {
-      await incrementHabitCount(habitIds[6], todayStr);
+    if (validHabitIds.length > 6) {
+      for (let i = 0; i < 10; i++) {
+        await incrementHabitCount(validHabitIds[6]!, todayStr);
+      }
     }
 
     console.log('🎉 Fake data seeding completed!');
     console.log('📊 You now have:');
-    console.log('   • 8 habits with 30 days of history');
+    console.log('   • 8 habits with different creation dates (July 1-18)');
+    console.log('   • 30 days of completion history');
     console.log(
-      '   • Various completion patterns (perfect streaks, missed days, etc.)'
+      '   • Date filtering test: navigate to July 1-17 to see different habits'
     );
-    console.log('   • Partial progress for today on count-based habits');
     console.log('   • Realistic data to test all app features');
   } catch (error) {
     console.error('❌ Error seeding fake data:', error);
@@ -227,7 +259,7 @@ export const seedFakeData = async () => {
  */
 export const clearAllData = async () => {
   try {
-    const db = await import('../db/database').then((m) => m.getDatabase());
+    const db = await import('../db/database').then(m => m.getDatabase());
 
     console.log('🗑️ Clearing all data...');
 

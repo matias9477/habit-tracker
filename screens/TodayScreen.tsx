@@ -185,8 +185,26 @@ export const TodayScreen: React.FC = () => {
   };
 
   // Separate habits by completion status
-  const completedHabits = habits.filter(habit => habit.isCompletedToday);
-  const pendingHabits = habits.filter(habit => !habit.isCompletedToday);
+  const completedHabits = habits.filter(habit => {
+    if (habit.goal_type === 'count') {
+      // For count goals, only mark as completed when target is reached
+      const currentCount = habit.currentCount || 0;
+      const targetCount = habit.targetCount || 1;
+      return currentCount >= targetCount;
+    }
+    // For binary goals, use the isCompletedToday flag
+    return habit.isCompletedToday;
+  });
+  const pendingHabits = habits.filter(habit => {
+    if (habit.goal_type === 'count') {
+      // For count goals, mark as pending when target is not reached
+      const currentCount = habit.currentCount || 0;
+      const targetCount = habit.targetCount || 1;
+      return currentCount < targetCount;
+    }
+    // For binary goals, use the inverse of isCompletedToday flag
+    return !habit.isCompletedToday;
+  });
 
   type ListItem =
     | { type: 'header'; title: string; count: number }
