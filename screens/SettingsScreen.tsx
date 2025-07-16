@@ -8,10 +8,7 @@ import {
   Switch,
   Alert,
 } from 'react-native';
-import {
-  SafeAreaView,
-  useSafeAreaInsets,
-} from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useThemeStore } from '../store/themeStore';
 import { useHabitStore } from '../store/habitStore';
@@ -184,14 +181,13 @@ export const SettingsScreen: React.FC = () => {
   );
 
   return (
-    <SafeAreaView
-      style={[styles.container, { backgroundColor: colors.background }]}
-    >
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
       <ScrollView
         contentContainerStyle={[
           styles.scrollContent,
-          { paddingBottom: Math.max(16, insets.bottom) },
+          { paddingBottom: Math.max(100, insets.bottom) },
         ]}
+        style={{ flex: 1, paddingTop: insets.top }}
       >
         <View style={styles.header}>
           <Text style={[styles.title, { color: colors.text }]}>Settings</Text>
@@ -306,7 +302,7 @@ export const SettingsScreen: React.FC = () => {
         visible={showTermsOfService}
         onClose={() => setShowTermsOfService(false)}
       />
-    </SafeAreaView>
+    </View>
   );
 };
 

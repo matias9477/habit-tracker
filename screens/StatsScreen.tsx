@@ -6,8 +6,9 @@ import {
   ScrollView,
   TouchableOpacity,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+
 import { Ionicons } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useThemeStore } from '../store/themeStore';
 import { useHabitStore } from '../store/habitStore';
 import { getThemeColors } from '../utils/theme';
@@ -29,6 +30,7 @@ export const StatsScreen: React.FC = () => {
   const { isDarkMode } = useThemeStore();
   const { habits } = useHabitStore();
   const colors = getThemeColors(isDarkMode);
+  const insets = useSafeAreaInsets();
 
   const [stats, setStats] = useState<HabitStats | null>(null);
   const [trends, setTrends] = useState<HabitTrend[]>([]);
@@ -139,23 +141,25 @@ export const StatsScreen: React.FC = () => {
 
   if (isLoading) {
     return (
-      <SafeAreaView
-        style={[styles.container, { backgroundColor: colors.background }]}
-      >
+      <View style={[styles.container, { backgroundColor: colors.background }]}>
         <View style={styles.loadingContainer}>
           <Text style={[styles.loadingText, { color: colors.text }]}>
             Loading stats...
           </Text>
         </View>
-      </SafeAreaView>
+      </View>
     );
   }
 
   return (
-    <SafeAreaView
-      style={[styles.container, { backgroundColor: colors.background }]}
-    >
-      <ScrollView contentContainerStyle={styles.scrollContent}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
+      <ScrollView
+        contentContainerStyle={[
+          styles.scrollContent,
+          { backgroundColor: colors.background },
+        ]}
+        style={{ flex: 1, paddingTop: insets.top }}
+      >
         <View style={styles.header}>
           <Text style={[styles.title, { color: colors.text }]}>
             Your Progress
@@ -220,7 +224,7 @@ export const StatsScreen: React.FC = () => {
           </View>
         )}
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 };
 
@@ -231,6 +235,7 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     padding: 16,
+    paddingBottom: 100, // Add extra padding to account for the tab bar
   },
   header: {
     marginBottom: 24,

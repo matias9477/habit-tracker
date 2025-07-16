@@ -8,10 +8,7 @@ import {
   Alert,
   TouchableOpacity,
 } from 'react-native';
-import {
-  SafeAreaView,
-  useSafeAreaInsets,
-} from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useHabitStore } from '../store/habitStore';
 import { useThemeStore } from '../store/themeStore';
 import { getThemeColors } from '../utils/theme';
@@ -143,16 +140,19 @@ export const TodayScreen: React.FC = () => {
   );
 
   return (
-    <SafeAreaView
-      style={[styles.container, { backgroundColor: colors.background }]}
-    >
-      <DateHeader />
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
+      <View style={{ paddingTop: insets.top }}>
+        <DateHeader />
+      </View>
 
       <FlatList
         data={habits}
         renderItem={renderHabit}
         keyExtractor={(item) => item.id.toString()}
-        contentContainerStyle={styles.listContainer}
+        contentContainerStyle={[
+          styles.listContainer,
+          { backgroundColor: colors.background },
+        ]}
         refreshControl={
           <RefreshControl
             refreshing={isLoading}
@@ -163,6 +163,7 @@ export const TodayScreen: React.FC = () => {
         }
         ListEmptyComponent={renderEmptyState}
         showsVerticalScrollIndicator={false}
+        style={{ flex: 1 }}
       />
 
       {/* Floating Add Button */}
@@ -201,7 +202,7 @@ export const TodayScreen: React.FC = () => {
         onUpdate={handleUpdateHabit}
         onDelete={handleDeleteHabit}
       />
-    </SafeAreaView>
+    </View>
   );
 };
 
@@ -213,6 +214,7 @@ const styles = StyleSheet.create({
   listContainer: {
     paddingVertical: 8,
     flexGrow: 1,
+    paddingBottom: 120, // Add extra padding to account for the floating button and tab bar
   },
   emptyContainer: {
     flex: 1,
