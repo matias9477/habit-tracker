@@ -13,8 +13,8 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useThemeStore } from '../store/themeStore';
-import { getThemeColors } from '../utils/theme';
+import { useThemeStore } from '@/store/themeStore';
+import { getThemeColors } from '@/utils/theme';
 import { GoalTypeSelector } from './shared/GoalTypeSelector';
 import { ThemedInput } from './shared/ThemedInput';
 import { ThemedButton } from './shared/ThemedButton';

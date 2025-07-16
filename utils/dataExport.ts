@@ -1,6 +1,6 @@
 import * as FileSystem from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
-import { HabitWithCompletion } from '../store/habitStore';
+import { HabitWithCompletion } from '@/store/habitStore';
 
 export interface ExportData {
   habits: HabitWithCompletion[];

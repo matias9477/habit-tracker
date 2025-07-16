@@ -5,8 +5,8 @@ import {
   TouchableOpacityProps,
   StyleSheet,
 } from 'react-native';
-import { useThemeStore } from '../../store/themeStore';
-import { getThemeColors } from '../../utils/theme';
+import { useThemeStore } from '@/store/themeStore';
+import { getThemeColors } from '@/utils/theme';
 
 interface ThemedButtonProps extends TouchableOpacityProps {
   title: string;

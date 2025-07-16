@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { useThemeStore } from '../../store/themeStore';
-import { getThemeColors } from '../../utils/theme';
+import { useThemeStore } from '@/store/themeStore';
+import { getThemeColors } from '@/utils/theme';
 
 interface GoalType {
   key: string;

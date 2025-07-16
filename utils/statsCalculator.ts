@@ -1,5 +1,4 @@
-import { HabitWithCompletion } from '../store/habitStore';
-import { getCompletionsForDate } from '../db/completions';
+import { HabitWithCompletion } from '@/store/habitStore';
 
 export interface HabitStats {
   totalHabits: number;

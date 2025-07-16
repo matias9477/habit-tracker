@@ -9,14 +9,12 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useHabitStore } from '../store/habitStore';
-import { useThemeStore } from '../store/themeStore';
-import { getThemeColors, useTheme } from '../utils/theme';
-import { HabitCard } from '../components/HabitCard';
-import { DateHeader } from '../components/DateHeader';
-import { AddHabitModal } from '../components/AddHabitModal';
-import { EditHabitModal } from '../components/EditHabitModal';
-import { HabitWithCompletion } from '../store/habitStore';
+import { useHabitStore, HabitWithCompletion } from '@/store/habitStore';
+import { getThemeColors, useTheme } from '@/utils/theme';
+import { HabitCard } from '@/components/HabitCard';
+import { DateHeader } from '@/components/DateHeader';
+import { AddHabitModal } from '@/components/AddHabitModal';
+import { EditHabitModal } from '@/components/EditHabitModal';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 
@@ -148,7 +146,7 @@ export const TodayScreen: React.FC = () => {
       <FlatList
         data={habits}
         renderItem={renderHabit}
-        keyExtractor={(item) => item.id.toString()}
+        keyExtractor={item => item.id.toString()}
         contentContainerStyle={[
           styles.listContainer,
           { backgroundColor: colors.background },

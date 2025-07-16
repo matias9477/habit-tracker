@@ -1,8 +1,8 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Alert } from 'react-native';
-import { HabitWithCompletion } from '../store/habitStore';
-import { useThemeStore } from '../store/themeStore';
-import { getThemeColors } from '../utils/theme';
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { HabitWithCompletion } from '@/store/habitStore';
+import { useThemeStore } from '@/store/themeStore';
+import { getThemeColors } from '@/utils/theme';
 
 /**
  * Props for the HabitCard component.

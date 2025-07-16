@@ -4,14 +4,12 @@ import {
   Text,
   StyleSheet,
   ScrollView,
-  TouchableOpacity,
 } from 'react-native';
 
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useThemeStore } from '../store/themeStore';
-import { useHabitStore } from '../store/habitStore';
-import { getThemeColors, useTheme } from '../utils/theme';
+import { useHabitStore } from '@/store/habitStore';
+import { getThemeColors, useTheme } from '@/utils/theme';
 import {
   calculateHabitStats,
   calculateHabitTrends,

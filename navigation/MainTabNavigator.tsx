@@ -2,12 +2,11 @@ import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
 import { Ionicons } from '@expo/vector-icons';
-import { getThemeColors, useTheme } from '../utils/theme';
-import { TodayScreen } from '../screens/TodayScreen';
-import { StatsScreen } from '../screens/StatsScreen';
-import { SettingsScreen } from '../screens/SettingsScreen';
-import { HabitDetailsScreen } from '../screens/HabitDetailsScreen';
-import { HabitWithCompletion } from '../store/habitStore';
+import { getThemeColors, useTheme } from '@/utils/theme';
+import { TodayScreen } from '@/screens/TodayScreen';
+import { StatsScreen } from '@/screens/StatsScreen';
+import { SettingsScreen } from '@/screens/SettingsScreen';
+import { HabitDetailsScreen } from '@/screens/HabitDetailsScreen';
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();

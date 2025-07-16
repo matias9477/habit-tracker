@@ -13,12 +13,12 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useThemeStore } from '../store/themeStore';
-import { getThemeColors } from '../utils/theme';
-import { GoalTypeSelector } from './shared/GoalTypeSelector';
-import { ThemedInput } from './shared/ThemedInput';
-import { ThemedButton } from './shared/ThemedButton';
-import { HabitWithCompletion } from '../store/habitStore';
+import { useThemeStore } from '@/store/themeStore';
+import { getThemeColors } from '@/utils/theme';
+import { GoalTypeSelector } from '@/components/shared/GoalTypeSelector';
+import { ThemedInput } from '@/components/shared/ThemedInput';
+import { ThemedButton } from '@/components/shared/ThemedButton';
+import { HabitWithCompletion } from '@/store/habitStore';
 
 /**
  * Props for the EditHabitModal component.

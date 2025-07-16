@@ -10,19 +10,19 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { useThemeStore } from '../store/themeStore';
-import { useHabitStore } from '../store/habitStore';
-import { useOnboardingStore } from '../store/onboardingStore';
-import { getThemeColors, useTheme } from '../utils/theme';
-import { exportHabitData } from '../utils/dataExport';
+import { useThemeStore } from '@/store/themeStore';
+import { useHabitStore } from '@/store/habitStore';
+import { useOnboardingStore } from '@/store/onboardingStore';
+import { getThemeColors, useTheme } from '@/utils/theme';
+import { exportHabitData } from '@/utils/dataExport';
 import {
   configureNotifications,
   sendTestNotification,
   areNotificationsEnabled,
   cancelAllNotifications,
-} from '../utils/notifications';
-import { PrivacyPolicyModal } from '../components/PrivacyPolicyModal';
-import TermsOfServiceModal from '../components/TermsOfServiceModal';
+} from '@/utils/notifications';
+import { PrivacyPolicyModal } from '@/components/PrivacyPolicyModal';
+import TermsOfServiceModal from '@/components/TermsOfServiceModal';
 
 /**
  * Settings screen component that allows users to configure app preferences.

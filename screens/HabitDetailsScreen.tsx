@@ -9,14 +9,13 @@ import {
   Dimensions,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useThemeStore } from '../store/themeStore';
-import { useHabitStore } from '../store/habitStore';
-import { getThemeColors, useTheme } from '../utils/theme';
-import { HabitWithCompletion } from '../store/habitStore';
-import { EditHabitModal } from '../components/EditHabitModal';
-import { ProgressWidget } from '../components/ProgressWidget';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
+
+import { useHabitStore, HabitWithCompletion } from '@/store/habitStore';
+import { getThemeColors, useTheme } from '@/utils/theme';
+import { EditHabitModal } from '@/components/EditHabitModal';
+import { ProgressWidget } from '@/components/ProgressWidget';
 // import { LineChart } from 'react-native-chart-kit';
 
 const { width } = Dimensions.get('window');
@@ -289,7 +288,6 @@ export const HabitDetailsScreen: React.FC = () => {
                 Day Streak
               </Text>
             </View>
-            <View style={styles.statDivider} />
             <View style={styles.statItem}>
               <Text style={[styles.statNumber, { color: colors.primary }]}>
                 {habit.goal_type === 'count'
@@ -302,7 +300,6 @@ export const HabitDetailsScreen: React.FC = () => {
                 Today
               </Text>
             </View>
-            <View style={styles.statDivider} />
             <View style={styles.statItem}>
               <Text style={[styles.statNumber, { color: colors.primary }]}>
                 {habit.goal_type === 'count' ? habit.targetCount || 1 : '1'}
@@ -401,8 +398,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-around',
     paddingHorizontal: 20,
     paddingBottom: 20,
-    borderTopWidth: 1,
-    borderTopColor: 'rgba(0,0,0,0.1)',
   },
   statItem: {
     alignItems: 'center',
@@ -416,11 +411,6 @@ const styles = StyleSheet.create({
   statLabel: {
     fontSize: 12,
     fontWeight: '500',
-  },
-  statDivider: {
-    width: 1,
-    height: 30,
-    backgroundColor: 'rgba(0,0,0,0.1)',
   },
   content: {
     flex: 1,

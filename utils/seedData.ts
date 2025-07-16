@@ -1,5 +1,5 @@
-import { insertHabit } from '../db/habits';
-import { markHabitCompleted, incrementHabitCount } from '../db/completions';
+import { insertHabit } from '@/db/habits';
+import { markHabitCompleted, incrementHabitCount } from '@/db/completions';
 
 /**
  * Seeds the database with fake habit data and completion history.

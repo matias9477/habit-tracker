@@ -4,11 +4,10 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
-  ScrollView,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { getThemeColors, useTheme } from '../utils/theme';
-import { HabitWithCompletion } from '../store/habitStore';
+import { getThemeColors, useTheme } from '@/utils/theme';
+import { HabitWithCompletion } from '@/store/habitStore';
 
 type ProgressView = 'weekly' | 'monthly';
 

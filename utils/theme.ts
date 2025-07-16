@@ -1,5 +1,5 @@
 import { useColorScheme } from 'react-native';
-import { useThemeStore, ThemeMode } from '../store/themeStore';
+import { useThemeStore } from '@/store/themeStore';
 
 /**
  * Get theme colors based on the current theme mode.

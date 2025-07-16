@@ -1,21 +1,19 @@
 import { create } from 'zustand';
-import { Habit } from '../db/habits';
+import { Habit } from '@/db/habits';
 import {
-  HabitCompletion,
   markHabitCompleted,
   unmarkHabitCompleted,
   getCompletionsForDate,
   incrementHabitCount,
   decrementHabitCount,
-  getHabitCountForDate,
   getStreakForHabit,
-} from '../db/completions';
+} from '@/db/completions';
 import {
   getAllHabits,
   insertHabit,
   updateHabit,
   deleteHabit,
-} from '../db/habits';
+} from '@/db/habits';
 
 /**
  * Type representing a habit with its completion status for today.
@@ -99,13 +97,21 @@ export const useHabitStore = create<HabitState & HabitActions>((set, get) => ({
             habit.target_count || (habit.goal_type === 'count' ? 1 : undefined);
           const streak = await getStreakForHabit(habit.id);
 
-          return {
+          const result: HabitWithCompletion = {
             ...habit,
             isCompletedToday: !!completion,
             streak: streak,
-            currentCount: currentCount,
-            targetCount: targetCount,
           };
+
+          if (currentCount > 0) {
+            result.currentCount = currentCount;
+          }
+
+          if (targetCount !== undefined) {
+            result.targetCount = targetCount;
+          }
+
+          return result;
         })
       );
 

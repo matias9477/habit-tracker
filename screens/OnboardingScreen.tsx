@@ -7,14 +7,13 @@ import {
   Dimensions,
   ScrollView,
 } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
 import {
   SafeAreaView,
   useSafeAreaInsets,
 } from 'react-native-safe-area-context';
-import { useThemeStore } from '../store/themeStore';
-import { getThemeColors } from '../utils/theme';
-import { ThemedButton } from '../components/shared/ThemedButton';
+import { useThemeStore } from '@/store/themeStore';
+import { getThemeColors } from '@/utils/theme';
+import { ThemedButton } from '@/components/shared/ThemedButton';
 
 const { width, height } = Dimensions.get('window');
 
