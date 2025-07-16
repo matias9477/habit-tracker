@@ -45,16 +45,18 @@ interface HabitActions {
   // Habit management
   addHabit: (
     name: string,
-    icon: string,
+    category: string,
     goalType?: string,
-    targetCount?: number
+    targetCount?: number,
+    customEmoji?: string
   ) => Promise<boolean>;
   updateHabit: (
     id: number,
     name: string,
-    icon: string,
+    category: string,
     goalType: string,
-    targetCount?: number
+    targetCount?: number,
+    customEmoji?: string
   ) => Promise<boolean>;
   deleteHabit: (id: number) => Promise<boolean>;
 
@@ -90,8 +92,8 @@ export const useHabitStore = create<HabitState & HabitActions>((set, get) => ({
 
       // Combine habits with completion status and count data
       const habitsWithCompletion: HabitWithCompletion[] = await Promise.all(
-        habits.map(async (habit) => {
-          const completion = completions.find((c) => c.habit_id === habit.id);
+        habits.map(async habit => {
+          const completion = completions.find(c => c.habit_id === habit.id);
           const currentCount = completion?.count || 0;
           const targetCount =
             habit.target_count || (habit.goal_type === 'count' ? 1 : undefined);
@@ -129,12 +131,25 @@ export const useHabitStore = create<HabitState & HabitActions>((set, get) => ({
   // Habit management
   addHabit: async (
     name: string,
-    icon: string,
+    category: string,
     goalType: string = 'binary',
-    targetCount?: number
+    targetCount?: number,
+    customEmoji?: string
   ) => {
     try {
-      const habitId = await insertHabit(name, icon, goalType, targetCount);
+      // Get the icon from the category
+      const { getCategoryById } = await import('@/utils/categories');
+      const categoryData = getCategoryById(category);
+      const icon = categoryData?.icon || '📋';
+
+      const habitId = await insertHabit(
+        name,
+        icon,
+        category,
+        goalType,
+        customEmoji,
+        targetCount
+      );
       if (habitId) {
         await get().refreshHabits();
         return true;
@@ -150,12 +165,26 @@ export const useHabitStore = create<HabitState & HabitActions>((set, get) => ({
   updateHabit: async (
     id: number,
     name: string,
-    icon: string,
+    category: string,
     goalType: string,
-    targetCount?: number
+    targetCount?: number,
+    customEmoji?: string
   ) => {
     try {
-      const success = await updateHabit(id, name, icon, goalType, targetCount);
+      // Get the icon from the category
+      const { getCategoryById } = await import('@/utils/categories');
+      const categoryData = getCategoryById(category);
+      const icon = categoryData?.icon || '📋';
+
+      const success = await updateHabit(
+        id,
+        name,
+        icon,
+        category,
+        goalType,
+        customEmoji,
+        targetCount
+      );
       if (success) {
         await get().refreshHabits();
       }
@@ -183,7 +212,7 @@ export const useHabitStore = create<HabitState & HabitActions>((set, get) => ({
 
   // Completion management
   toggleHabitCompletion: async (habitId: number) => {
-    const habit = get().habits.find((h) => h.id === habitId);
+    const habit = get().habits.find(h => h.id === habitId);
     if (!habit) return false;
 
     if (habit.goal_type === 'count') {
@@ -211,8 +240,8 @@ export const useHabitStore = create<HabitState & HabitActions>((set, get) => ({
       const success = await markHabitCompleted(habitId);
       if (success) {
         // Update local state
-        set((state) => ({
-          habits: state.habits.map((habit) =>
+        set(state => ({
+          habits: state.habits.map(habit =>
             habit.id === habitId ? { ...habit, isCompletedToday: true } : habit
           ),
         }));
@@ -230,8 +259,8 @@ export const useHabitStore = create<HabitState & HabitActions>((set, get) => ({
       const success = await unmarkHabitCompleted(habitId);
       if (success) {
         // Update local state
-        set((state) => ({
-          habits: state.habits.map((habit) =>
+        set(state => ({
+          habits: state.habits.map(habit =>
             habit.id === habitId ? { ...habit, isCompletedToday: false } : habit
           ),
         }));
@@ -246,15 +275,15 @@ export const useHabitStore = create<HabitState & HabitActions>((set, get) => ({
 
   incrementHabitCount: async (habitId: number) => {
     try {
-      const habit = get().habits.find((h) => h.id === habitId);
+      const habit = get().habits.find(h => h.id === habitId);
       if (!habit || habit.goal_type !== 'count') return false;
 
       const newCount = await incrementHabitCount(habitId);
       const targetCount = habit.targetCount || 1;
 
       // Update local state
-      set((state) => ({
-        habits: state.habits.map((h) =>
+      set(state => ({
+        habits: state.habits.map(h =>
           h.id === habitId
             ? {
                 ...h,
@@ -275,15 +304,15 @@ export const useHabitStore = create<HabitState & HabitActions>((set, get) => ({
 
   decrementHabitCount: async (habitId: number) => {
     try {
-      const habit = get().habits.find((h) => h.id === habitId);
+      const habit = get().habits.find(h => h.id === habitId);
       if (!habit || habit.goal_type !== 'count') return false;
 
       const newCount = await decrementHabitCount(habitId);
       const targetCount = habit.targetCount || 1;
 
       // Update local state
-      set((state) => ({
-        habits: state.habits.map((h) =>
+      set(state => ({
+        habits: state.habits.map(h =>
           h.id === habitId
             ? {
                 ...h,
@@ -304,15 +333,15 @@ export const useHabitStore = create<HabitState & HabitActions>((set, get) => ({
 
   resetHabitCount: async (habitId: number) => {
     try {
-      const habit = get().habits.find((h) => h.id === habitId);
+      const habit = get().habits.find(h => h.id === habitId);
       if (!habit || habit.goal_type !== 'count') return false;
 
       // Remove the completion record entirely (resets to 0)
       await unmarkHabitCompleted(habitId);
 
       // Update local state
-      set((state) => ({
-        habits: state.habits.map((h) =>
+      set(state => ({
+        habits: state.habits.map(h =>
           h.id === habitId
             ? {
                 ...h,

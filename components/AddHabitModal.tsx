@@ -14,8 +14,10 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useThemeStore } from '@/store/themeStore';
-import { getThemeColors } from '@/utils/theme';
+import { getThemeColors, useTheme } from '@/utils/theme';
 import { GoalTypeSelector } from './shared/GoalTypeSelector';
+import { CategorySelector } from './shared/CategorySelector';
+import { CustomEmojiInput } from './shared/CustomEmojiInput';
 import { ThemedInput } from './shared/ThemedInput';
 import { ThemedButton } from './shared/ThemedButton';
 
@@ -27,15 +29,16 @@ interface AddHabitModalProps {
   onClose: () => void;
   onAdd: (
     name: string,
-    icon: string,
+    category: string,
     goalType: string,
-    targetCount?: number
+    targetCount?: number,
+    customEmoji?: string
   ) => Promise<boolean>;
 }
 
 /**
  * A modal component for adding new habits.
- * Provides a form with name input, icon selection (including custom emoji), and goal type selection.
+ * Provides a form with name input, category selection, custom emoji input, and goal type selection.
  * Supports both light and dark themes.
  */
 export const AddHabitModal: React.FC<AddHabitModalProps> = ({
@@ -43,32 +46,16 @@ export const AddHabitModal: React.FC<AddHabitModalProps> = ({
   onClose,
   onAdd,
 }) => {
-  const { isDarkMode } = useThemeStore();
+  const { isDarkMode } = useTheme();
   const colors = getThemeColors(isDarkMode);
   const insets = useSafeAreaInsets();
 
   const [name, setName] = useState('');
-  const [selectedIcon, setSelectedIcon] = useState('🏃‍♂️');
+  const [selectedCategory, setSelectedCategory] = useState('general');
   const [goalType, setGoalType] = useState('binary');
   const [targetCount, setTargetCount] = useState('1');
+  const [customEmoji, setCustomEmoji] = useState<string>('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [customEmoji, setCustomEmoji] = useState('');
-  const [useCustomEmoji, setUseCustomEmoji] = useState(false);
-
-  const icons = [
-    '🏃‍♂️', // Exercise
-    '💪', // Strength
-    '🧠', // Learning
-    '📚', // Reading
-    '💧', // Hydration
-    '🥗', // Healthy eating
-    '😴', // Sleep
-    '🧘‍♀️', // Meditation
-    '🎯', // Focus
-    '⭐', // Achievement
-    '🔥', // Motivation
-    '💎', // Consistency
-  ];
 
   const goalTypes = [
     {
@@ -85,22 +72,17 @@ export const AddHabitModal: React.FC<AddHabitModalProps> = ({
       return;
     }
 
-    if (useCustomEmoji && !customEmoji.trim()) {
-      Alert.alert('Error', 'Please enter a custom emoji');
-      return;
-    }
-
     setIsSubmitting(true);
     try {
-      const finalIcon = useCustomEmoji ? customEmoji : selectedIcon;
       const finalTargetCount =
         goalType === 'count' ? parseInt(targetCount) : undefined;
 
       const success = await onAdd(
         name.trim(),
-        finalIcon,
+        selectedCategory,
         goalType,
-        finalTargetCount
+        finalTargetCount,
+        customEmoji || undefined
       );
       if (success) {
         handleClose();
@@ -114,21 +96,20 @@ export const AddHabitModal: React.FC<AddHabitModalProps> = ({
 
   const handleClose = () => {
     setName('');
-    setSelectedIcon('🏃‍♂️');
+    setSelectedCategory('general');
     setGoalType('binary');
     setTargetCount('1');
     setCustomEmoji('');
-    setUseCustomEmoji(false);
     setIsSubmitting(false);
     onClose();
   };
 
-  const handleCustomEmojiPress = () => {
-    console.log('Custom emoji button pressed');
-    setUseCustomEmoji(!useCustomEmoji);
-    if (!useCustomEmoji) {
-      setCustomEmoji('');
-    }
+  const handleCustomEmojiChange = (emoji: string) => {
+    setCustomEmoji(emoji);
+  };
+
+  const handleCustomEmojiClear = () => {
+    setCustomEmoji('');
   };
 
   return (
@@ -173,114 +154,18 @@ export const AddHabitModal: React.FC<AddHabitModalProps> = ({
               />
             </View>
 
-            {/* Icon Selection */}
-            <View style={styles.section}>
-              <Text style={[styles.sectionTitle, { color: colors.text }]}>
-                Choose an Icon
-              </Text>
+            {/* Category Selection */}
+            <CategorySelector
+              selectedCategory={selectedCategory}
+              onCategoryChange={setSelectedCategory}
+            />
 
-              <View style={styles.iconGrid}>
-                {icons.slice(0, 6).map((icon) => (
-                  <TouchableOpacity
-                    key={icon}
-                    style={[
-                      styles.iconButton,
-                      {
-                        backgroundColor: colors.surface,
-                        borderColor: colors.border,
-                      },
-                      selectedIcon === icon &&
-                        !useCustomEmoji && {
-                          backgroundColor: colors.primary,
-                        },
-                    ]}
-                    onPress={() => {
-                      setSelectedIcon(icon);
-                      setUseCustomEmoji(false);
-                    }}
-                  >
-                    <Text style={styles.iconText}>{icon}</Text>
-                  </TouchableOpacity>
-                ))}
-              </View>
-              <View style={styles.iconGrid}>
-                {icons.slice(6, 12).map((icon) => (
-                  <TouchableOpacity
-                    key={icon}
-                    style={[
-                      styles.iconButton,
-                      {
-                        backgroundColor: colors.surface,
-                        borderColor: colors.border,
-                      },
-                      selectedIcon === icon &&
-                        !useCustomEmoji && {
-                          backgroundColor: colors.primary,
-                          borderColor: colors.primary,
-                        },
-                    ]}
-                    onPress={() => {
-                      setSelectedIcon(icon);
-                      setUseCustomEmoji(false);
-                    }}
-                  >
-                    <Text
-                      style={[
-                        styles.iconText,
-                        selectedIcon === icon &&
-                          !useCustomEmoji && { color: '#fff' },
-                      ]}
-                    >
-                      {icon}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
-                {/* Custom Emoji Button */}
-                <TouchableOpacity
-                  style={[
-                    styles.iconButton,
-                    {
-                      backgroundColor: colors.surface,
-                      borderColor: colors.border,
-                    },
-                    useCustomEmoji && {
-                      backgroundColor: colors.primary,
-                      borderColor: colors.primary,
-                    },
-                  ]}
-                  onPress={handleCustomEmojiPress}
-                >
-                  <Ionicons
-                    name="add-circle-outline"
-                    size={24}
-                    color={useCustomEmoji ? '#fff' : colors.primary}
-                  />
-                </TouchableOpacity>
-              </View>
-
-              {useCustomEmoji && (
-                <View style={styles.customEmojiInputContainer}>
-                  <TextInput
-                    style={[
-                      styles.customEmojiInput,
-                      {
-                        backgroundColor: colors.surface,
-                        borderColor: colors.border,
-                        color: colors.text,
-                      },
-                    ]}
-                    value={customEmoji}
-                    onChangeText={setCustomEmoji}
-                    maxLength={2}
-                    autoFocus
-                    autoCapitalize="none"
-                    autoCorrect={false}
-                    returnKeyType="done"
-                    placeholder=""
-                  />
-                </View>
-              )}
-            </View>
+            {/* Custom Emoji Input */}
+            <CustomEmojiInput
+              value={customEmoji}
+              onEmojiChange={handleCustomEmojiChange}
+              onClear={handleCustomEmojiClear}
+            />
 
             {/* Goal Type Selection */}
             <GoalTypeSelector

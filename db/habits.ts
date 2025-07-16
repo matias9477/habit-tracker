@@ -1,4 +1,4 @@
-import { getDatabase } from "./database";
+import { getDatabase } from './database';
 
 /**
  * Type representing a habit row in the database.
@@ -7,6 +7,8 @@ export type Habit = {
   id: number;
   name: string;
   icon: string;
+  category: string;
+  custom_emoji?: string;
   goal_type: string;
   target_count?: number;
   created_at: string;
@@ -18,21 +20,31 @@ export type Habit = {
 export const insertHabit = async (
   name: string,
   icon: string,
-  goalType: string = "binary",
+  category: string = 'general',
+  goalType: string = 'binary',
+  customEmoji?: string,
   targetCount?: number
 ): Promise<number | null> => {
   try {
     const db = await getDatabase();
     const createdAt = new Date().toISOString();
-    const finalTargetCount = targetCount || (goalType === "count" ? 1 : null);
+    const finalTargetCount = targetCount || (goalType === 'count' ? 1 : null);
 
     const result = await db.runAsync(
-      "INSERT INTO habits (name, icon, goal_type, target_count, created_at) VALUES (?, ?, ?, ?, ?)",
-      [name, icon, goalType, finalTargetCount, createdAt]
+      'INSERT INTO habits (name, icon, category, custom_emoji, goal_type, target_count, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)',
+      [
+        name,
+        icon,
+        category,
+        customEmoji || null,
+        goalType,
+        finalTargetCount,
+        createdAt,
+      ]
     );
     return result.lastInsertRowId;
   } catch (error) {
-    console.error("Insert habit error", error);
+    console.error('Insert habit error', error);
     return null;
   }
 };
@@ -44,20 +56,30 @@ export const updateHabit = async (
   id: number,
   name: string,
   icon: string,
+  category: string,
   goalType: string,
+  customEmoji?: string,
   targetCount?: number
 ): Promise<boolean> => {
   try {
     const db = await getDatabase();
-    const finalTargetCount = targetCount || (goalType === "count" ? 1 : null);
+    const finalTargetCount = targetCount || (goalType === 'count' ? 1 : null);
 
     await db.runAsync(
-      "UPDATE habits SET name = ?, icon = ?, goal_type = ?, target_count = ? WHERE id = ?",
-      [name, icon, goalType, finalTargetCount, id]
+      'UPDATE habits SET name = ?, icon = ?, category = ?, custom_emoji = ?, goal_type = ?, target_count = ? WHERE id = ?',
+      [
+        name,
+        icon,
+        category,
+        customEmoji || null,
+        goalType,
+        finalTargetCount,
+        id,
+      ]
     );
     return true;
   } catch (error) {
-    console.error("Update habit error", error);
+    console.error('Update habit error', error);
     return false;
   }
 };
@@ -68,10 +90,10 @@ export const updateHabit = async (
 export const deleteHabit = async (id: number): Promise<boolean> => {
   try {
     const db = await getDatabase();
-    await db.runAsync("DELETE FROM habits WHERE id = ?", [id]);
+    await db.runAsync('DELETE FROM habits WHERE id = ?', [id]);
     return true;
   } catch (error) {
-    console.error("Delete habit error", error);
+    console.error('Delete habit error', error);
     return false;
   }
 };
@@ -83,10 +105,10 @@ export const getAllHabits = async (): Promise<Habit[]> => {
   try {
     const db = await getDatabase();
     return await db.getAllAsync<Habit>(
-      "SELECT * FROM habits ORDER BY created_at DESC"
+      'SELECT * FROM habits ORDER BY created_at DESC'
     );
   } catch (error) {
-    console.error("Get all habits error", error);
+    console.error('Get all habits error', error);
     return [];
   }
 };

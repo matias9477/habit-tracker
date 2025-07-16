@@ -19,7 +19,9 @@ export const runMigrations = async (): Promise<void> => {
     CREATE TABLE IF NOT EXISTS habits (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       name TEXT NOT NULL,
-      icon TEXT NOT NULL,git s
+      icon TEXT NOT NULL,
+      category TEXT DEFAULT 'general',
+      custom_emoji TEXT,
       goal_type TEXT DEFAULT 'binary',
       target_count INTEGER DEFAULT 1,
       created_at TEXT NOT NULL
@@ -34,6 +36,26 @@ export const runMigrations = async (): Promise<void> => {
   } catch (error) {
     // Column already exists, ignore error
     console.log('target_count column already exists or migration not needed');
+  }
+
+  // Add category column to existing tables if it doesn't exist
+  try {
+    await db.execAsync(`
+      ALTER TABLE habits ADD COLUMN category TEXT DEFAULT 'general';
+    `);
+  } catch (error) {
+    // Column already exists, ignore error
+    console.log('category column already exists or migration not needed');
+  }
+
+  // Add custom_emoji column to existing tables if it doesn't exist
+  try {
+    await db.execAsync(`
+      ALTER TABLE habits ADD COLUMN custom_emoji TEXT;
+    `);
+  } catch (error) {
+    // Column already exists, ignore error
+    console.log('custom_emoji column already exists or migration not needed');
   }
 
   await db.execAsync(`

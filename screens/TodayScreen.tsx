@@ -75,11 +75,18 @@ export const TodayScreen: React.FC = () => {
 
   const handleAddHabit = async (
     name: string,
-    icon: string,
+    category: string,
     goalType: string,
-    targetCount?: number
+    targetCount?: number,
+    customEmoji?: string
   ) => {
-    const success = await addHabit(name, icon, goalType, targetCount);
+    const success = await addHabit(
+      name,
+      category,
+      goalType,
+      targetCount,
+      customEmoji
+    );
     if (success) {
       setIsAddModalVisible(false);
     }
@@ -93,11 +100,19 @@ export const TodayScreen: React.FC = () => {
   const handleUpdateHabit = async (
     id: number,
     name: string,
-    icon: string,
+    category: string,
     goalType: string,
-    targetCount?: number
+    targetCount?: number,
+    customEmoji?: string
   ) => {
-    const success = await updateHabit(id, name, icon, goalType, targetCount);
+    const success = await updateHabit(
+      id,
+      name,
+      category,
+      goalType,
+      targetCount,
+      customEmoji
+    );
     if (success) {
       setIsEditModalVisible(false);
       setSelectedHabit(null);

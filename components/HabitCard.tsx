@@ -1,8 +1,7 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { HabitWithCompletion } from '@/store/habitStore';
-import { useThemeStore } from '@/store/themeStore';
-import { getThemeColors } from '@/utils/theme';
+import { getThemeColors, useTheme } from '@/utils/theme';
 
 /**
  * Props for the HabitCard component.
@@ -24,7 +23,7 @@ export const HabitCard: React.FC<HabitCardProps> = ({
   onToggle,
   onPress,
 }) => {
-  const { isDarkMode } = useThemeStore();
+  const { isDarkMode } = useTheme();
   const colors = getThemeColors(isDarkMode);
 
   const handleToggle = () => {
@@ -145,7 +144,7 @@ export const HabitCard: React.FC<HabitCardProps> = ({
     >
       <View style={styles.content}>
         <View style={styles.leftSection}>
-          <Text style={styles.icon}>{habit.icon}</Text>
+          <Text style={styles.icon}>{habit.custom_emoji || habit.icon}</Text>
           <View style={styles.textContainer}>
             <Text
               style={[
