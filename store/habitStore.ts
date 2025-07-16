@@ -11,6 +11,7 @@ import {
 import {
   getAllHabits,
   getHabitsForDate,
+  getEarliestHabitDate,
   insertHabit,
   updateHabit,
   deleteHabit,
@@ -33,6 +34,7 @@ interface HabitState {
   habits: HabitWithCompletion[];
   isLoading: boolean;
   error: string | null;
+  earliestHabitDate: Date | null;
 }
 
 /**
@@ -96,12 +98,14 @@ export const useHabitStore = create<HabitState & HabitActions>((set, get) => ({
   habits: [],
   isLoading: false,
   error: null,
+  earliestHabitDate: null,
 
   // Loading and initialization
   loadHabits: async () => {
     set({ isLoading: true, error: null });
     try {
       const habits = await getAllHabits();
+      const earliestDate = await getEarliestHabitDate();
       console.log(
         'Loaded habits from DB:',
         habits.map(h => ({
@@ -150,7 +154,11 @@ export const useHabitStore = create<HabitState & HabitActions>((set, get) => ({
           icon: h.icon,
         }))
       );
-      set({ habits: habitsWithCompletion, isLoading: false });
+      set({
+        habits: habitsWithCompletion,
+        earliestHabitDate: earliestDate,
+        isLoading: false,
+      });
     } catch (error) {
       console.error('Error loading habits:', error);
       set({ error: 'Failed to load habits', isLoading: false });

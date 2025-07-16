@@ -1,5 +1,9 @@
 import { HabitWithCompletion } from '@/store/habitStore';
-import { getTotalCompletionsForHabit } from '@/db/completions';
+import { getAllHabits, updateHabitAnalyticsFields } from '@/db/habits';
+import {
+  getTotalCompletionsForHabit,
+  getStreakForHabit,
+} from '@/db/completions';
 
 export interface HabitStats {
   totalHabits: number;
@@ -218,4 +222,80 @@ export const getCategoryStats = async (
       completed: habitList.filter(h => h.isCompletedToday).length,
     }))
     .filter(cat => cat.count > 0);
+};
+
+/**
+ * Updates cached analytics fields for a single habit.
+ */
+export const updateHabitAnalytics = async (habitId: number) => {
+  const totalCompletions = await getTotalCompletionsForHabit(habitId);
+  const currentStreak = await getStreakForHabit(habitId);
+  // TODO: Implement longest streak and last completed date
+  // For now, set as current streak and null
+  const longestStreak = currentStreak;
+  const lastCompletedDate = null;
+  await updateHabitAnalyticsFields(
+    habitId,
+    totalCompletions,
+    currentStreak,
+    longestStreak,
+    lastCompletedDate
+  );
+};
+
+/**
+ * Updates analytics for all habits.
+ */
+export const updateAllHabitsAnalytics = async () => {
+  const habits = await getAllHabits();
+  for (const habit of habits) {
+    await updateHabitAnalytics(habit.id);
+  }
+};
+
+/**
+ * Computes general analytics across all habits.
+ */
+export const getGeneralAnalytics = async () => {
+  const habits = await getAllHabits();
+  let totalCompletions = 0;
+  let bestStreak = 0;
+  let mostConsistentHabit = null;
+  let mostCompletionsHabit = null;
+  let leastCompletionsHabit = null;
+  let maxCompletions = -1;
+  let minCompletions = Number.MAX_SAFE_INTEGER;
+
+  for (const habit of habits) {
+    const completions = habit.total_completions || 0;
+    const streak = habit.current_streak || 0;
+    totalCompletions += completions;
+    if (streak > bestStreak) bestStreak = streak;
+    if (completions > maxCompletions) {
+      maxCompletions = completions;
+      mostCompletionsHabit = habit;
+    }
+    if (completions < minCompletions) {
+      minCompletions = completions;
+      leastCompletionsHabit = habit;
+    }
+    if (
+      !mostConsistentHabit ||
+      streak > (mostConsistentHabit.current_streak || 0)
+    ) {
+      mostConsistentHabit = habit;
+    }
+  }
+  const averageCompletions = habits.length
+    ? totalCompletions / habits.length
+    : 0;
+  return {
+    totalCompletions,
+    averageCompletions,
+    bestStreak,
+    mostConsistentHabit,
+    mostCompletionsHabit,
+    leastCompletionsHabit,
+    habitCount: habits.length,
+  };
 };

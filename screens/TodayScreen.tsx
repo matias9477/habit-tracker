@@ -47,6 +47,7 @@ export const TodayScreen: React.FC = () => {
     habits,
     isLoading,
     error,
+    earliestHabitDate,
     loadHabits,
     loadHabitsForDate,
     toggleHabitCompletion,
@@ -143,10 +144,24 @@ export const TodayScreen: React.FC = () => {
 
   const handleDateChange = (direction: 'prev' | 'next') => {
     const newDate = new Date(selectedDate);
+    const today = new Date();
+
     if (direction === 'prev') {
       newDate.setDate(newDate.getDate() - 1);
+
+      // Don't go further back than the earliest habit date
+      if (earliestHabitDate && newDate < earliestHabitDate) {
+        return;
+      }
     } else {
       newDate.setDate(newDate.getDate() + 1);
+
+      // Don't go more than 2 days into the future
+      const maxFutureDate = new Date(today);
+      maxFutureDate.setDate(maxFutureDate.getDate() + 2);
+      if (newDate > maxFutureDate) {
+        return;
+      }
     }
     setSelectedDate(newDate);
   };
@@ -230,43 +245,68 @@ export const TodayScreen: React.FC = () => {
           habit={item.data}
           onToggle={handleToggleHabit}
           onPress={handleShowDetails}
-          onEdit={() => {
-            setSelectedHabit(item.data);
-            setIsEditModalVisible(true);
-          }}
         />
       );
     }
   };
 
   /**
-   * Renders a friendly empty state when there are no habits at all.
+   * Renders different empty states based on the context.
    */
-  const renderEmptyState = () => (
-    <View style={styles.emptyContainer}>
-      <Text style={[styles.emptyTitle, { color: colors.text }]}>
-        Let’s add your first habit!
-      </Text>
-      <Text style={[styles.emptySubtitle, { color: colors.textSecondary }]}>
-        Start building your routine by adding a new habit.
-      </Text>
-      <TouchableOpacity
-        style={[
-          styles.addFirstHabitButton,
-          { backgroundColor: colors.primary },
-        ]}
-        onPress={() => setIsAddModalVisible(true)}
-        accessibilityRole="button"
-        accessibilityLabel="Add your first habit"
-      >
-        <Text
-          style={[styles.addFirstHabitButtonText, { color: colors.surface }]}
-        >
-          Add Habit
+  const renderEmptyState = () => {
+    const isToday = () => {
+      const today = new Date();
+      return (
+        selectedDate.getDate() === today.getDate() &&
+        selectedDate.getMonth() === today.getMonth() &&
+        selectedDate.getFullYear() === today.getFullYear()
+      );
+    };
+
+    // If it's today and no habits exist, show the "create first habit" message
+    if (isToday()) {
+      return (
+        <View style={styles.emptyContainer}>
+          <Text style={[styles.emptyTitle, { color: colors.text }]}>
+            Let’s add your first habit!
+          </Text>
+          <Text style={[styles.emptySubtitle, { color: colors.textSecondary }]}>
+            Start building your routine by adding a new habit.
+          </Text>
+          <TouchableOpacity
+            style={[
+              styles.addFirstHabitButton,
+              { backgroundColor: colors.primary },
+            ]}
+            onPress={() => setIsAddModalVisible(true)}
+            accessibilityRole="button"
+            accessibilityLabel="Add your first habit"
+          >
+            <Text
+              style={[
+                styles.addFirstHabitButtonText,
+                { color: colors.surface },
+              ]}
+            >
+              Add Habit
+            </Text>
+          </TouchableOpacity>
+        </View>
+      );
+    }
+
+    // For other dates, show "no habits available for this date"
+    return (
+      <View style={styles.emptyContainer}>
+        <Text style={[styles.emptyTitle, { color: colors.text }]}>
+          No habits available for this date
         </Text>
-      </TouchableOpacity>
-    </View>
-  );
+        <Text style={[styles.emptySubtitle, { color: colors.textSecondary }]}>
+          Habits created after this date won’t appear here.
+        </Text>
+      </View>
+    );
+  };
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>

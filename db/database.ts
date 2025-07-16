@@ -58,6 +58,43 @@ export const runMigrations = async (): Promise<void> => {
     console.log('custom_emoji column already exists or migration not needed');
   }
 
+  // Add cached analytics fields for better performance
+  try {
+    await db.execAsync(`
+      ALTER TABLE habits ADD COLUMN total_completions INTEGER DEFAULT 0;
+    `);
+  } catch (error) {
+    console.log(
+      'total_completions column already exists or migration not needed'
+    );
+  }
+
+  try {
+    await db.execAsync(`
+      ALTER TABLE habits ADD COLUMN current_streak INTEGER DEFAULT 0;
+    `);
+  } catch (error) {
+    console.log('current_streak column already exists or migration not needed');
+  }
+
+  try {
+    await db.execAsync(`
+      ALTER TABLE habits ADD COLUMN longest_streak INTEGER DEFAULT 0;
+    `);
+  } catch (error) {
+    console.log('longest_streak column already exists or migration not needed');
+  }
+
+  try {
+    await db.execAsync(`
+      ALTER TABLE habits ADD COLUMN last_completed_date TEXT;
+    `);
+  } catch (error) {
+    console.log(
+      'last_completed_date column already exists or migration not needed'
+    );
+  }
+
   await db.execAsync(`
     CREATE TABLE IF NOT EXISTS habit_completions (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -77,5 +114,42 @@ export const runMigrations = async (): Promise<void> => {
   } catch (error) {
     // Column already exists, ignore error
     console.log('count column already exists or migration not needed');
+  }
+
+  // Add performance indexes
+  try {
+    await db.execAsync(`
+      CREATE INDEX IF NOT EXISTS idx_habit_completions_habit_date 
+      ON habit_completions(habit_id, date);
+    `);
+  } catch (error) {
+    console.log('Index already exists or migration not needed');
+  }
+
+  try {
+    await db.execAsync(`
+      CREATE INDEX IF NOT EXISTS idx_habit_completions_date 
+      ON habit_completions(date);
+    `);
+  } catch (error) {
+    console.log('Index already exists or migration not needed');
+  }
+
+  try {
+    await db.execAsync(`
+      CREATE INDEX IF NOT EXISTS idx_habits_category 
+      ON habits(category);
+    `);
+  } catch (error) {
+    console.log('Index already exists or migration not needed');
+  }
+
+  try {
+    await db.execAsync(`
+      CREATE INDEX IF NOT EXISTS idx_habits_created_at 
+      ON habits(created_at);
+    `);
+  } catch (error) {
+    console.log('Index already exists or migration not needed');
   }
 };

@@ -12,6 +12,11 @@ export type Habit = {
   goal_type: string;
   target_count?: number;
   created_at: string;
+  // Cached analytics fields for better performance
+  total_completions?: number;
+  current_streak?: number;
+  longest_streak?: number;
+  last_completed_date?: string;
 };
 
 /**
@@ -122,6 +127,29 @@ export const updateHabit = async (
 };
 
 /**
+ * Updates only the analytics fields for a habit by id.
+ */
+export const updateHabitAnalyticsFields = async (
+  id: number,
+  totalCompletions: number,
+  currentStreak: number,
+  longestStreak: number,
+  lastCompletedDate: string | null
+): Promise<boolean> => {
+  try {
+    const db = await getDatabase();
+    await db.runAsync(
+      'UPDATE habits SET total_completions = ?, current_streak = ?, longest_streak = ?, last_completed_date = ? WHERE id = ?',
+      [totalCompletions, currentStreak, longestStreak, lastCompletedDate, id]
+    );
+    return true;
+  } catch (error) {
+    console.error('Update habit analytics fields error', error);
+    return false;
+  }
+};
+
+/**
  * Deletes a habit by id.
  */
 export const deleteHabit = async (id: number): Promise<boolean> => {
@@ -168,5 +196,26 @@ export const getHabitsForDate = async (date: Date): Promise<Habit[]> => {
   } catch (error) {
     console.error('Get habits for date error', error);
     return [];
+  }
+};
+
+/**
+ * Gets the earliest habit creation date.
+ * Used to limit navigation to not go further back than the first habit.
+ */
+export const getEarliestHabitDate = async (): Promise<Date | null> => {
+  try {
+    const db = await getDatabase();
+    const result = await db.getFirstAsync<{ created_at: string }>(
+      'SELECT created_at FROM habits ORDER BY created_at ASC LIMIT 1'
+    );
+
+    if (result) {
+      return new Date(result.created_at);
+    }
+    return null;
+  } catch (error) {
+    console.error('Get earliest habit date error', error);
+    return null;
   }
 };

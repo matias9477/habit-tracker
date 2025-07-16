@@ -49,10 +49,9 @@ export const HabitDetailsScreen: React.FC = () => {
 
   const [showEditModal, setShowEditModal] = useState(false);
   const [weeklyData, setWeeklyData] = useState<number[]>([]);
-  // Add state for the latest habit
   const [latestHabit, setLatestHabit] = useState<HabitWithCompletion>(habit);
-  // Add state for the habit being edited
   const [editHabit, setEditHabit] = useState<HabitWithCompletion | null>(null);
+
   // When the modal closes, update the latest habit from the store
   useEffect(() => {
     if (!showEditModal) {
