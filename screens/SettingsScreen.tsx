@@ -13,7 +13,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useThemeStore } from '../store/themeStore';
 import { useHabitStore } from '../store/habitStore';
 import { useOnboardingStore } from '../store/onboardingStore';
-import { getThemeColors } from '../utils/theme';
+import { getThemeColors, useTheme } from '../utils/theme';
 import { exportHabitData } from '../utils/dataExport';
 import {
   configureNotifications,
@@ -29,14 +29,11 @@ import TermsOfServiceModal from '../components/TermsOfServiceModal';
  * Includes notification settings, data management, and app information.
  */
 export const SettingsScreen: React.FC = () => {
-  const {
-    isDarkMode,
-    notificationsEnabled,
-    toggleDarkMode,
-    toggleNotifications,
-  } = useThemeStore();
+  const { themeMode, notificationsEnabled, setThemeMode, toggleNotifications } =
+    useThemeStore();
   const { habits, deleteHabit } = useHabitStore();
   const { resetOnboarding } = useOnboardingStore();
+  const { isDarkMode } = useTheme();
   const colors = getThemeColors(isDarkMode);
   const insets = useSafeAreaInsets();
 
@@ -95,7 +92,14 @@ export const SettingsScreen: React.FC = () => {
   };
 
   const handleToggleDarkMode = () => {
-    toggleDarkMode();
+    // Cycle through theme modes: system -> light -> dark -> system
+    const nextMode =
+      themeMode === 'system'
+        ? 'light'
+        : themeMode === 'light'
+          ? 'dark'
+          : 'system';
+    setThemeMode(nextMode);
   };
 
   const handleExportData = async () => {
@@ -232,18 +236,14 @@ export const SettingsScreen: React.FC = () => {
             Appearance
           </Text>
           {renderSettingItem(
-            'Dark Mode',
-            'Switch to dark theme',
+            'Theme',
+            themeMode === 'system'
+              ? 'Follow system setting'
+              : themeMode === 'light'
+                ? 'Light mode'
+                : 'Dark mode',
             'moon-outline',
-            undefined,
-            <Switch
-              value={isDarkMode}
-              onValueChange={handleToggleDarkMode}
-              trackColor={{ false: colors.switchTrack, true: colors.primary }}
-              thumbColor={
-                isDarkMode ? colors.switchThumb : colors.switchThumbDisabled
-              }
-            />
+            handleToggleDarkMode
           )}
         </View>
 

@@ -11,7 +11,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useThemeStore } from '../store/themeStore';
 import { useHabitStore } from '../store/habitStore';
-import { getThemeColors } from '../utils/theme';
+import { getThemeColors, useTheme } from '../utils/theme';
 import {
   calculateHabitStats,
   calculateHabitTrends,
@@ -27,7 +27,7 @@ import {
  * Displays real data from the habit store with comprehensive analytics.
  */
 export const StatsScreen: React.FC = () => {
-  const { isDarkMode } = useThemeStore();
+  const { isDarkMode } = useTheme();
   const { habits } = useHabitStore();
   const colors = getThemeColors(isDarkMode);
   const insets = useSafeAreaInsets();

@@ -9,7 +9,7 @@ import { configureNotifications } from './utils/notifications';
 import { useOnboardingStore } from './store/onboardingStore';
 import { OnboardingScreen } from './screens/OnboardingScreen';
 import { useThemeStore } from './store/themeStore';
-import { getThemeColors } from './utils/theme';
+import { getThemeColors, useTheme } from './utils/theme';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { seedFakeData } from './utils/seedData';
 
@@ -17,7 +17,7 @@ import { seedFakeData } from './utils/seedData';
  * Loading screen component shown while the database is being initialized.
  */
 const LoadingScreen: React.FC = () => {
-  const { isDarkMode } = useThemeStore();
+  const { isDarkMode } = useTheme();
   const colors = getThemeColors(isDarkMode);
 
   return (
@@ -89,7 +89,7 @@ export default function App() {
   }, []);
 
   if (error) {
-    const { isDarkMode } = useThemeStore();
+    const { isDarkMode } = useTheme();
     const colors = getThemeColors(isDarkMode);
 
     return (

@@ -1,86 +1,102 @@
-export interface ThemeColors {
-  primary: string;
-  primaryLight: string;
-  background: string;
-  surface: string;
-  text: string;
-  textSecondary: string;
-  border: string;
-  shadow: string;
-  error: string;
-  success: string;
-  warning: string;
-  // Additional colors for consistent theming
-  switchTrack: string;
-  switchThumb: string;
-  switchThumbDisabled: string;
-  loading: string;
-  danger: string;
-  dangerLight: string;
-  warningLight: string;
-  successLight: string;
-  overlay: string;
-  disabled: string;
-  disabledText: string;
-}
+import { useColorScheme } from 'react-native';
+import { useThemeStore, ThemeMode } from '../store/themeStore';
 
-export const lightTheme: ThemeColors = {
-  primary: '#4CAF50',
-  primaryLight: '#81C784',
-  background: '#f5f5f5',
-  surface: '#ffffff',
-  text: '#333333',
-  textSecondary: '#666666',
-  border: '#e0e0e0',
-  shadow: '#000000',
-  error: '#d32f2f',
-  success: '#2e7d32',
-  warning: '#ed6c02',
-  // Additional colors
-  switchTrack: '#e0e0e0',
-  switchThumb: '#ffffff',
-  switchThumbDisabled: '#f4f3f4',
-  loading: '#4CAF50',
-  danger: '#f44336',
-  dangerLight: '#ffebee',
-  warningLight: '#fff3e0',
-  successLight: '#e8f5e8',
-  overlay: '#f0f0f0',
-  disabled: '#cccccc',
-  disabledText: '#999999',
-};
+/**
+ * Get theme colors based on the current theme mode.
+ * Supports light and dark themes with comprehensive color palette.
+ */
+export const getThemeColors = (isDarkMode: boolean) => {
+  if (isDarkMode) {
+    return {
+      // Background colors
+      background: '#121212',
+      surface: '#1E1E1E',
+      surfaceVariant: '#2D2D2D',
 
-export const darkTheme: ThemeColors = {
-  primary: '#4CAF50',
-  primaryLight: '#A5D6A7',
-  background: '#121212',
-  surface: '#1e1e1e',
-  text: '#ffffff',
-  textSecondary: '#b0b0b0',
-  border: '#333333',
-  shadow: '#000000',
-  error: '#f44336',
-  success: '#4caf50',
-  warning: '#ff9800',
-  // Additional colors
-  switchTrack: '#333333',
-  switchThumb: '#ffffff',
-  switchThumbDisabled: '#666666',
-  loading: '#4CAF50',
-  danger: '#f44336',
-  dangerLight: '#3d1f1f',
-  warningLight: '#3d2f1f',
-  successLight: '#1f3d1f',
-  overlay: '#1a1a1a',
-  disabled: '#666666',
-  disabledText: '#444444',
+      // Text colors
+      text: '#FFFFFF',
+      textSecondary: '#B3B3B3',
+      textTertiary: '#808080',
+
+      // Primary colors
+      primary: '#4CAF50',
+      primaryLight: '#66BB6A',
+      primaryDark: '#388E3C',
+
+      // Status colors
+      success: '#4CAF50',
+      error: '#F44336',
+      warning: '#FF9800',
+      info: '#2196F3',
+
+      // UI colors
+      border: '#333333',
+      divider: '#404040',
+      shadow: '#000000',
+
+      // Switch colors
+      switchTrack: '#404040',
+      switchThumb: '#FFFFFF',
+      switchThumbDisabled: '#666666',
+
+      // Loading color
+      loading: '#4CAF50',
+    };
+  } else {
+    return {
+      // Background colors
+      background: '#F5F5F5',
+      surface: '#FFFFFF',
+      surfaceVariant: '#F8F8F8',
+
+      // Text colors
+      text: '#333333',
+      textSecondary: '#666666',
+      textTertiary: '#999999',
+
+      // Primary colors
+      primary: '#4CAF50',
+      primaryLight: '#E8F5E8',
+      primaryDark: '#388E3C',
+
+      // Status colors
+      success: '#4CAF50',
+      error: '#F44336',
+      warning: '#FF9800',
+      info: '#2196F3',
+
+      // UI colors
+      border: '#E0E0E0',
+      divider: '#F0F0F0',
+      shadow: '#000000',
+
+      // Switch colors
+      switchTrack: '#E0E0E0',
+      switchThumb: '#FFFFFF',
+      switchThumbDisabled: '#CCCCCC',
+
+      // Loading color
+      loading: '#4CAF50',
+    };
+  }
 };
 
 /**
- * Get the appropriate theme colors based on dark mode setting.
- * @param isDarkMode - Whether dark mode is enabled
- * @returns ThemeColors object for the current theme
+ * Hook to get the current theme mode and determine if dark mode should be used.
+ * Takes into account the user's preference and system setting.
  */
-export const getThemeColors = (isDarkMode: boolean): ThemeColors => {
-  return isDarkMode ? darkTheme : lightTheme;
+export const useTheme = () => {
+  const { themeMode } = useThemeStore();
+  const systemColorScheme = useColorScheme();
+
+  // Determine if dark mode should be used
+  const isDarkMode =
+    themeMode === 'dark' ||
+    (themeMode === 'system' && systemColorScheme === 'dark');
+
+  return {
+    themeMode,
+    isDarkMode,
+    systemColorScheme,
+  };
 };

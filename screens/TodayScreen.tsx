@@ -11,7 +11,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useHabitStore } from '../store/habitStore';
 import { useThemeStore } from '../store/themeStore';
-import { getThemeColors } from '../utils/theme';
+import { getThemeColors, useTheme } from '../utils/theme';
 import { HabitCard } from '../components/HabitCard';
 import { DateHeader } from '../components/DateHeader';
 import { AddHabitModal } from '../components/AddHabitModal';
@@ -53,7 +53,7 @@ export const TodayScreen: React.FC = () => {
     deleteHabit,
     clearError,
   } = useHabitStore();
-  const { isDarkMode } = useThemeStore();
+  const { isDarkMode } = useTheme();
   const colors = getThemeColors(isDarkMode);
   const insets = useSafeAreaInsets();
 

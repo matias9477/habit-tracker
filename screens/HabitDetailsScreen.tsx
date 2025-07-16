@@ -11,7 +11,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useThemeStore } from '../store/themeStore';
 import { useHabitStore } from '../store/habitStore';
-import { getThemeColors } from '../utils/theme';
+import { getThemeColors, useTheme } from '../utils/theme';
 import { HabitWithCompletion } from '../store/habitStore';
 import { EditHabitModal } from '../components/EditHabitModal';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
@@ -43,7 +43,7 @@ export const HabitDetailsScreen: React.FC = () => {
   const navigation = useNavigation<HabitDetailsScreenNavigationProp>();
   const route = useRoute<HabitDetailsScreenRouteProp>();
   const habit = route.params.habit;
-  const { isDarkMode } = useThemeStore();
+  const { isDarkMode } = useTheme();
   const { deleteHabit, updateHabit } = useHabitStore();
   const colors = getThemeColors(isDarkMode);
 

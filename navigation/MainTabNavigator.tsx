@@ -2,8 +2,7 @@ import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
 import { Ionicons } from '@expo/vector-icons';
-import { useThemeStore } from '../store/themeStore';
-import { getThemeColors } from '../utils/theme';
+import { getThemeColors, useTheme } from '../utils/theme';
 import { TodayScreen } from '../screens/TodayScreen';
 import { StatsScreen } from '../screens/StatsScreen';
 import { SettingsScreen } from '../screens/SettingsScreen';
@@ -20,7 +19,7 @@ const Stack = createStackNavigator();
  * Supports both light and dark themes.
  */
 const TabNavigator: React.FC = () => {
-  const { isDarkMode } = useThemeStore();
+  const { isDarkMode } = useTheme();
   const colors = getThemeColors(isDarkMode);
 
   return (
@@ -86,7 +85,7 @@ const TabNavigator: React.FC = () => {
  * Supports both light and dark themes.
  */
 export const MainStackNavigator: React.FC = () => {
-  const { isDarkMode } = useThemeStore();
+  const { isDarkMode } = useTheme();
   const colors = getThemeColors(isDarkMode);
 
   return (
