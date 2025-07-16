@@ -17,6 +17,7 @@ import { AddHabitModal } from '@/components/AddHabitModal';
 import { EditHabitModal } from '@/components/EditHabitModal';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
+import { Ionicons } from '@expo/vector-icons';
 
 type RootStackParamList = {
   MainTabs: undefined;
@@ -30,14 +31,16 @@ type TodayScreenNavigationProp = StackNavigationProp<
 
 /**
  * The main screen that displays today's habits and allows users to mark them as completed.
- * Shows a list of habits with their completion status and provides toggle functionality.
+ * Shows a list of habits separated by completion status and provides toggle functionality.
  * Includes an "Add Habit" button to create new habits and edit/delete functionality.
+ * Supports date navigation to view and edit past days.
  */
 export const TodayScreen: React.FC = () => {
   const [isAddModalVisible, setIsAddModalVisible] = useState(false);
   const [isEditModalVisible, setIsEditModalVisible] = useState(false);
   const [selectedHabit, setSelectedHabit] =
     useState<HabitWithCompletion | null>(null);
+  const [selectedDate, setSelectedDate] = useState(new Date());
 
   const navigation = useNavigation<TodayScreenNavigationProp>();
   const {
@@ -45,7 +48,9 @@ export const TodayScreen: React.FC = () => {
     isLoading,
     error,
     loadHabits,
+    loadHabitsForDate,
     toggleHabitCompletion,
+    toggleHabitCompletionForDate,
     addHabit,
     updateHabit,
     deleteHabit,
@@ -65,8 +70,13 @@ export const TodayScreen: React.FC = () => {
     }
   }, [error, clearError]);
 
+  // Load habits for the selected date
+  useEffect(() => {
+    loadHabitsForDate(selectedDate);
+  }, [selectedDate, loadHabitsForDate]);
+
   const handleToggleHabit = async (habitId: number) => {
-    await toggleHabitCompletion(habitId);
+    await toggleHabitCompletionForDate(habitId, selectedDate);
   };
 
   const handleRefresh = () => {
@@ -129,25 +139,102 @@ export const TodayScreen: React.FC = () => {
     return success;
   };
 
-  const renderHabit = ({ item }: { item: any }) => (
-    <HabitCard
-      habit={item}
-      onToggle={handleToggleHabit}
-      onPress={handleShowDetails}
-    />
-  );
+  const handleDateChange = (direction: 'prev' | 'next') => {
+    const newDate = new Date(selectedDate);
+    if (direction === 'prev') {
+      newDate.setDate(newDate.getDate() - 1);
+    } else {
+      newDate.setDate(newDate.getDate() + 1);
+    }
+    setSelectedDate(newDate);
+  };
+
+  const handleTodayPress = () => {
+    setSelectedDate(new Date());
+  };
+
+  const isToday = () => {
+    const today = new Date();
+    return (
+      selectedDate.getDate() === today.getDate() &&
+      selectedDate.getMonth() === today.getMonth() &&
+      selectedDate.getFullYear() === today.getFullYear()
+    );
+  };
+
+  const formatDate = (date: Date) => {
+    const today = new Date();
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+
+    if (date.toDateString() === today.toDateString()) {
+      return 'Today';
+    } else if (date.toDateString() === yesterday.toDateString()) {
+      return 'Yesterday';
+    } else if (date.toDateString() === tomorrow.toDateString()) {
+      return 'Tomorrow';
+    } else {
+      return date.toLocaleDateString('en-US', {
+        weekday: 'long',
+        month: 'short',
+        day: 'numeric',
+      });
+    }
+  };
+
+  // Separate habits by completion status
+  const completedHabits = habits.filter(habit => habit.isCompletedToday);
+  const pendingHabits = habits.filter(habit => !habit.isCompletedToday);
+
+  type ListItem =
+    | { type: 'header'; title: string; count: number }
+    | { type: 'habit'; data: HabitWithCompletion };
+
+  const renderItem = ({ item }: { item: ListItem }) => {
+    if (item.type === 'header') {
+      return (
+        <View style={styles.sectionHeader}>
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>
+            {item.title}
+          </Text>
+          <Text style={[styles.sectionCount, { color: colors.textSecondary }]}>
+            {item.count}
+          </Text>
+        </View>
+      );
+    } else {
+      return (
+        <HabitCard
+          habit={item.data}
+          onToggle={handleToggleHabit}
+          onPress={handleShowDetails}
+        />
+      );
+    }
+  };
 
   const renderEmptyState = () => (
     <View style={styles.emptyContainer}>
-      <Text style={styles.emptyTitle}>No habits yet</Text>
-      <Text style={styles.emptySubtitle}>
+      <Text style={[styles.emptyTitle, { color: colors.text }]}>
+        No habits yet
+      </Text>
+      <Text style={[styles.emptySubtitle, { color: colors.textSecondary }]}>
         Add your first habit to start tracking your daily goals!
       </Text>
       <TouchableOpacity
-        style={styles.addFirstHabitButton}
+        style={[
+          styles.addFirstHabitButton,
+          { backgroundColor: colors.primary },
+        ]}
         onPress={() => setIsAddModalVisible(true)}
       >
-        <Text style={styles.addFirstHabitButtonText}>Add Your First Habit</Text>
+        <Text
+          style={[styles.addFirstHabitButtonText, { color: colors.surface }]}
+        >
+          Add Your First Habit
+        </Text>
       </TouchableOpacity>
     </View>
   );
@@ -155,13 +242,42 @@ export const TodayScreen: React.FC = () => {
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={{ paddingTop: insets.top }}>
-        <DateHeader />
+        <DateHeader
+          date={selectedDate}
+          onDateChange={handleDateChange}
+          onTodayPress={handleTodayPress}
+        />
       </View>
 
       <FlatList
-        data={habits}
-        renderItem={renderHabit}
-        keyExtractor={item => item.id.toString()}
+        data={
+          [
+            {
+              type: 'header' as const,
+              title: 'Pending',
+              count: pendingHabits.length,
+            },
+            ...pendingHabits.map(habit => ({
+              type: 'habit' as const,
+              data: habit,
+            })),
+            {
+              type: 'header' as const,
+              title: 'Completed',
+              count: completedHabits.length,
+            },
+            ...completedHabits.map(habit => ({
+              type: 'habit' as const,
+              data: habit,
+            })),
+          ] as ListItem[]
+        }
+        renderItem={renderItem}
+        keyExtractor={(item, index) =>
+          item.type === 'header'
+            ? `header-${item.title}`
+            : `habit-${item.data.id}-${index}`
+        }
         contentContainerStyle={[
           styles.listContainer,
           { backgroundColor: colors.background },
@@ -224,10 +340,27 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#f5f5f5',
   },
+
   listContainer: {
     paddingVertical: 8,
     flexGrow: 1,
     paddingBottom: 120, // Add extra padding to account for the floating button and tab bar
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    marginTop: 8,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+  },
+  sectionCount: {
+    fontSize: 14,
+    fontWeight: '500',
   },
   emptyContainer: {
     flex: 1,
@@ -239,25 +372,21 @@ const styles = StyleSheet.create({
   emptyTitle: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#666',
     marginBottom: 12,
     textAlign: 'center',
   },
   emptySubtitle: {
     fontSize: 16,
-    color: '#999',
     textAlign: 'center',
     lineHeight: 24,
     marginBottom: 24,
   },
   addFirstHabitButton: {
-    backgroundColor: '#4CAF50',
     paddingHorizontal: 24,
     paddingVertical: 12,
     borderRadius: 8,
   },
   addFirstHabitButtonText: {
-    color: '#fff',
     fontSize: 16,
     fontWeight: '600',
   },
@@ -283,8 +412,5 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 24,
     fontWeight: 'bold',
-    textAlign: 'center',
-    lineHeight: 24,
-    includeFontPadding: false,
   },
 });

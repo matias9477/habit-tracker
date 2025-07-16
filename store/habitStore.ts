@@ -40,7 +40,21 @@ interface HabitState {
 interface HabitActions {
   // Loading and initialization
   loadHabits: () => Promise<void>;
+  loadHabitsForDate: (date: Date) => Promise<void>;
   refreshHabits: () => Promise<void>;
+
+  // Date-specific completion management
+  toggleHabitCompletionForDate: (
+    habitId: number,
+    date: Date
+  ) => Promise<boolean>;
+  markHabitCompletedForDate: (habitId: number, date: Date) => Promise<boolean>;
+  unmarkHabitCompletedForDate: (
+    habitId: number,
+    date: Date
+  ) => Promise<boolean>;
+  incrementHabitCountForDate: (habitId: number, date: Date) => Promise<boolean>;
+  decrementHabitCountForDate: (habitId: number, date: Date) => Promise<boolean>;
 
   // Habit management
   addHabit: (
@@ -126,6 +140,221 @@ export const useHabitStore = create<HabitState & HabitActions>((set, get) => ({
 
   refreshHabits: async () => {
     await get().loadHabits();
+  },
+
+  loadHabitsForDate: async (date: Date) => {
+    set({ isLoading: true, error: null });
+    try {
+      const habits = await getAllHabits();
+      const dateString = date.toISOString().slice(0, 10);
+      const completions = await getCompletionsForDate(dateString);
+
+      // Combine habits with completion status and count data for the specific date
+      const habitsWithCompletion: HabitWithCompletion[] = await Promise.all(
+        habits.map(async habit => {
+          const completion = completions.find(c => c.habit_id === habit.id);
+          const currentCount = completion?.count || 0;
+          const targetCount =
+            habit.target_count || (habit.goal_type === 'count' ? 1 : undefined);
+          const streak = await getStreakForHabit(habit.id);
+
+          const result: HabitWithCompletion = {
+            ...habit,
+            isCompletedToday: !!completion,
+            streak: streak,
+          };
+
+          if (currentCount > 0) {
+            result.currentCount = currentCount;
+          }
+
+          if (targetCount !== undefined) {
+            result.targetCount = targetCount;
+          }
+
+          return result;
+        })
+      );
+
+      set({ habits: habitsWithCompletion, isLoading: false });
+    } catch (error) {
+      console.error('Error loading habits for date:', error);
+      set({ error: 'Failed to load habits', isLoading: false });
+    }
+  },
+
+  // Date-specific completion management
+  toggleHabitCompletionForDate: async (habitId: number, date: Date) => {
+    const habit = get().habits.find(h => h.id === habitId);
+    if (!habit) return false;
+
+    const dateString = date.toISOString().slice(0, 10);
+
+    if (habit.goal_type === 'count') {
+      const currentCount = habit.currentCount || 0;
+      const targetCount = habit.targetCount || 1;
+
+      // If we've reached the target, reset to 0
+      if (currentCount >= targetCount) {
+        const success = await unmarkHabitCompleted(habitId, dateString);
+        if (success) {
+          // Update local state
+          set(state => ({
+            habits: state.habits.map(h =>
+              h.id === habitId
+                ? { ...h, currentCount: 0, isCompletedToday: false }
+                : h
+            ),
+          }));
+        }
+        return success;
+      } else {
+        // Otherwise increment the count
+        const newCount = await incrementHabitCount(habitId, dateString);
+        const targetCount = habit.targetCount || 1;
+
+        // Update local state
+        set(state => ({
+          habits: state.habits.map(h =>
+            h.id === habitId
+              ? {
+                  ...h,
+                  currentCount: newCount,
+                  isCompletedToday: newCount >= targetCount,
+                }
+              : h
+          ),
+        }));
+
+        return true;
+      }
+    } else {
+      const isCompleted = habit.isCompletedToday;
+      if (isCompleted) {
+        const success = await unmarkHabitCompleted(habitId, dateString);
+        if (success) {
+          // Update local state
+          set(state => ({
+            habits: state.habits.map(h =>
+              h.id === habitId ? { ...h, isCompletedToday: false } : h
+            ),
+          }));
+        }
+        return success;
+      } else {
+        const success = await markHabitCompleted(habitId, dateString);
+        if (success) {
+          // Update local state
+          set(state => ({
+            habits: state.habits.map(h =>
+              h.id === habitId ? { ...h, isCompletedToday: true } : h
+            ),
+          }));
+        }
+        return success;
+      }
+    }
+  },
+
+  markHabitCompletedForDate: async (habitId: number, date: Date) => {
+    try {
+      const dateString = date.toISOString().slice(0, 10);
+      const result = await markHabitCompleted(habitId, dateString);
+      const success = result !== null;
+      if (success) {
+        // Update local state
+        set(state => ({
+          habits: state.habits.map(habit =>
+            habit.id === habitId ? { ...habit, isCompletedToday: true } : habit
+          ),
+        }));
+      }
+      return success;
+    } catch (error) {
+      console.error('Error marking habit completed for date:', error);
+      set({ error: 'Failed to mark habit as completed' });
+      return false;
+    }
+  },
+
+  unmarkHabitCompletedForDate: async (habitId: number, date: Date) => {
+    try {
+      const dateString = date.toISOString().slice(0, 10);
+      const success = await unmarkHabitCompleted(habitId, dateString);
+      if (success) {
+        // Update local state
+        set(state => ({
+          habits: state.habits.map(habit =>
+            habit.id === habitId ? { ...habit, isCompletedToday: false } : habit
+          ),
+        }));
+      }
+      return success;
+    } catch (error) {
+      console.error('Error unmarking habit completed for date:', error);
+      set({ error: 'Failed to unmark habit as completed' });
+      return false;
+    }
+  },
+
+  incrementHabitCountForDate: async (habitId: number, date: Date) => {
+    try {
+      const habit = get().habits.find(h => h.id === habitId);
+      if (!habit || habit.goal_type !== 'count') return false;
+
+      const dateString = date.toISOString().slice(0, 10);
+      const newCount = await incrementHabitCount(habitId, dateString);
+      const targetCount = habit.targetCount || 1;
+
+      // Update local state
+      set(state => ({
+        habits: state.habits.map(h =>
+          h.id === habitId
+            ? {
+                ...h,
+                currentCount: newCount,
+                isCompletedToday: newCount >= targetCount,
+              }
+            : h
+        ),
+      }));
+
+      return true;
+    } catch (error) {
+      console.error('Error incrementing habit count for date:', error);
+      set({ error: 'Failed to increment habit count' });
+      return false;
+    }
+  },
+
+  decrementHabitCountForDate: async (habitId: number, date: Date) => {
+    try {
+      const habit = get().habits.find(h => h.id === habitId);
+      if (!habit || habit.goal_type !== 'count') return false;
+
+      const dateString = date.toISOString().slice(0, 10);
+      const newCount = await decrementHabitCount(habitId, dateString);
+      const targetCount = habit.targetCount || 1;
+
+      // Update local state
+      set(state => ({
+        habits: state.habits.map(h =>
+          h.id === habitId
+            ? {
+                ...h,
+                currentCount: newCount,
+                isCompletedToday: newCount >= targetCount,
+              }
+            : h
+        ),
+      }));
+
+      return true;
+    } catch (error) {
+      console.error('Error decrementing habit count for date:', error);
+      set({ error: 'Failed to decrement habit count' });
+      return false;
+    }
   },
 
   // Habit management
