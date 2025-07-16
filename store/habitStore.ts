@@ -70,8 +70,8 @@ interface HabitActions {
     name: string,
     category: string,
     goalType: string,
-    targetCount?: number,
-    customEmoji?: string
+    customEmoji?: string,
+    targetCount?: number
   ) => Promise<boolean>;
   deleteHabit: (id: number) => Promise<boolean>;
 
@@ -102,6 +102,15 @@ export const useHabitStore = create<HabitState & HabitActions>((set, get) => ({
     set({ isLoading: true, error: null });
     try {
       const habits = await getAllHabits();
+      console.log(
+        'Loaded habits from DB:',
+        habits.map(h => ({
+          id: h.id,
+          name: h.name,
+          custom_emoji: h.custom_emoji,
+          icon: h.icon,
+        }))
+      );
       const today = new Date().toISOString().slice(0, 10);
       const completions = await getCompletionsForDate(today);
 
@@ -132,6 +141,15 @@ export const useHabitStore = create<HabitState & HabitActions>((set, get) => ({
         })
       );
 
+      console.log(
+        'Habits with completion:',
+        habitsWithCompletion.map(h => ({
+          id: h.id,
+          name: h.name,
+          custom_emoji: h.custom_emoji,
+          icon: h.icon,
+        }))
+      );
       set({ habits: habitsWithCompletion, isLoading: false });
     } catch (error) {
       console.error('Error loading habits:', error);
@@ -140,6 +158,7 @@ export const useHabitStore = create<HabitState & HabitActions>((set, get) => ({
   },
 
   refreshHabits: async () => {
+    console.log('Refreshing habits...');
     await get().loadHabits();
   },
 
@@ -402,14 +421,23 @@ export const useHabitStore = create<HabitState & HabitActions>((set, get) => ({
     name: string,
     category: string,
     goalType: string,
-    targetCount?: number,
-    customEmoji?: string
+    customEmoji?: string,
+    targetCount?: number
   ) => {
     try {
       // Get the icon from the category
       const { getCategoryById } = await import('@/utils/categories');
       const categoryData = getCategoryById(category);
       const icon = categoryData?.icon || '📋';
+
+      console.log('Updating habit:', {
+        id,
+        name,
+        category,
+        goalType,
+        customEmoji,
+        targetCount,
+      });
 
       const success = await updateHabit(
         id,
@@ -421,6 +449,7 @@ export const useHabitStore = create<HabitState & HabitActions>((set, get) => ({
         targetCount
       );
       if (success) {
+        console.log('Habit updated successfully, refreshing habits...');
         await get().refreshHabits();
       }
       return success;

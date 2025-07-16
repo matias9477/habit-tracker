@@ -33,8 +33,8 @@ interface EditHabitModalProps {
     name: string,
     category: string,
     goalType: string,
-    targetCount?: number,
-    customEmoji?: string
+    customEmoji?: string,
+    targetCount?: number
   ) => Promise<boolean>;
   onDelete: (id: number) => Promise<boolean>;
 }
@@ -56,21 +56,36 @@ export const EditHabitModal: React.FC<EditHabitModalProps> = ({
   const insets = useSafeAreaInsets();
 
   const [name, setName] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('general');
+  const [selectedCategory, setSelectedCategory] = useState('fitness');
   const [goalType, setGoalType] = useState('binary');
   const [targetCount, setTargetCount] = useState('1');
   const [customEmoji, setCustomEmoji] = useState<string>('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
+    console.log('EditHabitModal useEffect - habit:', habit);
     if (habit) {
+      console.log('Populating form with habit data:', {
+        name: habit.name,
+        category: habit.category,
+        goal_type: habit.goal_type,
+        targetCount: habit.targetCount,
+        custom_emoji: habit.custom_emoji,
+      });
       setName(habit.name);
-      setSelectedCategory(habit.category || 'general');
+      setSelectedCategory(habit.category || 'fitness');
       setGoalType(habit.goal_type);
       setTargetCount(habit.targetCount?.toString() || '1');
       setCustomEmoji(habit.custom_emoji || '');
     }
   }, [habit]);
+
+  // Reset form when modal becomes invisible
+  useEffect(() => {
+    if (!visible) {
+      resetForm();
+    }
+  }, [visible]);
 
   const handleSubmit = async () => {
     if (!habit) return;
@@ -85,13 +100,22 @@ export const EditHabitModal: React.FC<EditHabitModalProps> = ({
       const finalTargetCount =
         goalType === 'count' ? parseInt(targetCount) : undefined;
 
+      console.log('EditHabitModal submitting:', {
+        id: habit.id,
+        name: name.trim(),
+        category: selectedCategory,
+        goalType,
+        customEmoji: customEmoji || undefined,
+        targetCount: finalTargetCount,
+      });
+
       const success = await onUpdate(
         habit.id,
         name.trim(),
         selectedCategory,
         goalType,
-        finalTargetCount,
-        customEmoji || undefined
+        customEmoji || undefined,
+        finalTargetCount
       );
       if (success) {
         handleClose();
@@ -132,13 +156,17 @@ export const EditHabitModal: React.FC<EditHabitModalProps> = ({
     );
   };
 
-  const handleClose = () => {
+  const resetForm = () => {
     setName('');
-    setSelectedCategory('general');
+    setSelectedCategory('fitness');
     setGoalType('binary');
     setTargetCount('1');
     setCustomEmoji('');
     setIsSubmitting(false);
+  };
+
+  const handleClose = () => {
+    resetForm();
     onClose();
   };
 

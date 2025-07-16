@@ -112,20 +112,22 @@ export const TodayScreen: React.FC = () => {
     name: string,
     category: string,
     goalType: string,
-    targetCount?: number,
-    customEmoji?: string
+    customEmoji?: string,
+    targetCount?: number
   ) => {
     const success = await updateHabit(
       id,
       name,
       category,
       goalType,
-      targetCount,
-      customEmoji
+      customEmoji,
+      targetCount
     );
     if (success) {
       setIsEditModalVisible(false);
       setSelectedHabit(null);
+      // Refresh habits for the selected date
+      loadHabitsForDate(selectedDate);
     }
     return success;
   };
@@ -228,18 +230,25 @@ export const TodayScreen: React.FC = () => {
           habit={item.data}
           onToggle={handleToggleHabit}
           onPress={handleShowDetails}
+          onEdit={() => {
+            setSelectedHabit(item.data);
+            setIsEditModalVisible(true);
+          }}
         />
       );
     }
   };
 
+  /**
+   * Renders a friendly empty state when there are no habits at all.
+   */
   const renderEmptyState = () => (
     <View style={styles.emptyContainer}>
       <Text style={[styles.emptyTitle, { color: colors.text }]}>
-        No habits yet
+        Let’s add your first habit!
       </Text>
       <Text style={[styles.emptySubtitle, { color: colors.textSecondary }]}>
-        Add your first habit to start tracking your daily goals!
+        Start building your routine by adding a new habit.
       </Text>
       <TouchableOpacity
         style={[
@@ -247,11 +256,13 @@ export const TodayScreen: React.FC = () => {
           { backgroundColor: colors.primary },
         ]}
         onPress={() => setIsAddModalVisible(true)}
+        accessibilityRole="button"
+        accessibilityLabel="Add your first habit"
       >
         <Text
           style={[styles.addFirstHabitButtonText, { color: colors.surface }]}
         >
-          Add Your First Habit
+          Add Habit
         </Text>
       </TouchableOpacity>
     </View>
@@ -269,26 +280,28 @@ export const TodayScreen: React.FC = () => {
 
       <FlatList
         data={
-          [
-            {
-              type: 'header' as const,
-              title: 'Pending',
-              count: pendingHabits.length,
-            },
-            ...pendingHabits.map(habit => ({
-              type: 'habit' as const,
-              data: habit,
-            })),
-            {
-              type: 'header' as const,
-              title: 'Completed',
-              count: completedHabits.length,
-            },
-            ...completedHabits.map(habit => ({
-              type: 'habit' as const,
-              data: habit,
-            })),
-          ] as ListItem[]
+          habits.length === 0
+            ? []
+            : ([
+                {
+                  type: 'header' as const,
+                  title: 'Pending',
+                  count: pendingHabits.length,
+                },
+                ...pendingHabits.map(habit => ({
+                  type: 'habit' as const,
+                  data: habit,
+                })),
+                {
+                  type: 'header' as const,
+                  title: 'Completed',
+                  count: completedHabits.length,
+                },
+                ...completedHabits.map(habit => ({
+                  type: 'habit' as const,
+                  data: habit,
+                })),
+              ] as ListItem[])
         }
         renderItem={renderItem}
         keyExtractor={(item, index) =>

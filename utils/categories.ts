@@ -97,8 +97,8 @@ export const getCategoryById = (id: string): Category | undefined => {
 };
 
 /**
- * Get the default category.
+ * Get the default category (first category in the list).
  */
 export const getDefaultCategory = (): Category => {
-  return categories.find(category => category.id === 'general')!;
+  return categories[0]!; // Returns the first category (fitness)
 };

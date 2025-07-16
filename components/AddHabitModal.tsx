@@ -51,7 +51,7 @@ export const AddHabitModal: React.FC<AddHabitModalProps> = ({
   const insets = useSafeAreaInsets();
 
   const [name, setName] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('general');
+  const [selectedCategory, setSelectedCategory] = useState('fitness');
   const [goalType, setGoalType] = useState('binary');
   const [targetCount, setTargetCount] = useState('1');
   const [customEmoji, setCustomEmoji] = useState<string>('');
@@ -96,7 +96,7 @@ export const AddHabitModal: React.FC<AddHabitModalProps> = ({
 
   const handleClose = () => {
     setName('');
-    setSelectedCategory('general');
+    setSelectedCategory('fitness');
     setGoalType('binary');
     setTargetCount('1');
     setCustomEmoji('');

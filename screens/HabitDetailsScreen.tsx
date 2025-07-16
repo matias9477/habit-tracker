@@ -44,11 +44,22 @@ export const HabitDetailsScreen: React.FC = () => {
   const route = useRoute<HabitDetailsScreenRouteProp>();
   const habit = route.params.habit;
   const { isDarkMode } = useTheme();
-  const { deleteHabit, updateHabit } = useHabitStore();
+  const { habits, updateHabit, deleteHabit } = useHabitStore();
   const colors = getThemeColors(isDarkMode);
 
   const [showEditModal, setShowEditModal] = useState(false);
   const [weeklyData, setWeeklyData] = useState<number[]>([]);
+  // Add state for the latest habit
+  const [latestHabit, setLatestHabit] = useState<HabitWithCompletion>(habit);
+  // Add state for the habit being edited
+  const [editHabit, setEditHabit] = useState<HabitWithCompletion | null>(null);
+  // When the modal closes, update the latest habit from the store
+  useEffect(() => {
+    if (!showEditModal) {
+      const updated = habits.find(h => h.id === habit.id);
+      if (updated) setLatestHabit(updated);
+    }
+  }, [showEditModal, habits, habit.id]);
 
   // Generate weekly data for the chart
   useEffect(() => {
@@ -57,15 +68,15 @@ export const HabitDetailsScreen: React.FC = () => {
       for (let i = 6; i >= 0; i--) {
         // Simulate realistic data based on streak
         const baseCompletion =
-          habit.streak > 20 ? 0.8 : habit.streak > 10 ? 0.6 : 0.4;
+          latestHabit.streak > 20 ? 0.8 : latestHabit.streak > 10 ? 0.6 : 0.4;
         const randomFactor = Math.random() * 0.4 - 0.2; // ±20% variation
         const completion = Math.max(
           0,
           Math.min(1, baseCompletion + randomFactor)
         );
 
-        if (habit.goal_type === 'count') {
-          const targetCount = habit.targetCount || 1;
+        if (latestHabit.goal_type === 'count') {
+          const targetCount = latestHabit.targetCount || 1;
           data.push(Math.round(completion * targetCount));
         } else {
           data.push(completion > 0.5 ? 1 : 0);
@@ -75,19 +86,19 @@ export const HabitDetailsScreen: React.FC = () => {
     };
 
     generateWeeklyData();
-  }, [habit]);
+  }, [latestHabit]);
 
   const handleDelete = () => {
     Alert.alert(
       'Delete Habit',
-      `Are you sure you want to delete "${habit.name}"? This action cannot be undone.`,
+      `Are you sure you want to delete "${latestHabit.name}"? This action cannot be undone.`,
       [
         { text: 'Cancel', style: 'cancel' },
         {
           text: 'Delete',
           style: 'destructive',
           onPress: async () => {
-            const success = await deleteHabit(habit.id);
+            const success = await deleteHabit(latestHabit.id);
             if (success) {
               navigation.goBack();
             }
@@ -98,30 +109,39 @@ export const HabitDetailsScreen: React.FC = () => {
   };
 
   const handleEdit = () => {
-    setShowEditModal(true);
+    const updated = habits.find(h => h.id === latestHabit.id);
+    setEditHabit(updated || latestHabit);
   };
 
   const handleUpdateHabit = async (
     id: number,
     name: string,
-    icon: string,
+    category: string,
     goalType: string,
+    customEmoji?: string,
     targetCount?: number
   ) => {
-    const success = await updateHabit(id, name, icon, goalType, targetCount);
+    const success = await updateHabit(
+      id,
+      name,
+      category,
+      goalType,
+      customEmoji,
+      targetCount
+    );
     if (success) {
-      setShowEditModal(false);
+      setEditHabit(null);
     }
     return success;
   };
 
   const renderProgressSection = () => {
-    const currentCount = habit.currentCount || 0;
-    const targetCount = habit.targetCount || 1;
+    const currentCount = latestHabit.currentCount || 0;
+    const targetCount = latestHabit.targetCount || 1;
     const progress =
-      habit.goal_type === 'count'
+      latestHabit.goal_type === 'count'
         ? Math.min(currentCount / targetCount, 1)
-        : habit.isCompletedToday
+        : latestHabit.isCompletedToday
           ? 1
           : 0;
 
@@ -131,7 +151,7 @@ export const HabitDetailsScreen: React.FC = () => {
           Today's Progress
         </Text>
 
-        {habit.goal_type === 'count' ? (
+        {latestHabit.goal_type === 'count' ? (
           <View style={styles.countProgress}>
             <Text style={[styles.countText, { color: colors.text }]}>
               {currentCount}/{targetCount}
@@ -156,20 +176,22 @@ export const HabitDetailsScreen: React.FC = () => {
               style={[
                 styles.completionIndicator,
                 {
-                  backgroundColor: habit.isCompletedToday
+                  backgroundColor: latestHabit.isCompletedToday
                     ? colors.success
                     : colors.border,
                 },
               ]}
             >
               <Ionicons
-                name={habit.isCompletedToday ? 'checkmark' : 'close'}
+                name={latestHabit.isCompletedToday ? 'checkmark' : 'close'}
                 size={24}
-                color={habit.isCompletedToday ? '#fff' : colors.textSecondary}
+                color={
+                  latestHabit.isCompletedToday ? '#fff' : colors.textSecondary
+                }
               />
             </View>
             <Text style={[styles.completionText, { color: colors.text }]}>
-              {habit.isCompletedToday ? 'Completed' : 'Not completed'}
+              {latestHabit.isCompletedToday ? 'Completed' : 'Not completed'}
             </Text>
           </View>
         )}
@@ -186,7 +208,7 @@ export const HabitDetailsScreen: React.FC = () => {
       <View style={styles.statsGrid}>
         <View style={styles.statItem}>
           <Text style={[styles.statNumber, { color: colors.primary }]}>
-            {habit.streak}
+            {latestHabit.streak}
           </Text>
           <Text style={[styles.statLabel, { color: colors.textSecondary }]}>
             Day Streak
@@ -195,9 +217,9 @@ export const HabitDetailsScreen: React.FC = () => {
 
         <View style={styles.statItem}>
           <Text style={[styles.statNumber, { color: colors.primary }]}>
-            {habit.goal_type === 'count'
-              ? habit.currentCount || 0
-              : habit.isCompletedToday
+            {latestHabit.goal_type === 'count'
+              ? latestHabit.currentCount || 0
+              : latestHabit.isCompletedToday
                 ? 1
                 : 0}
           </Text>
@@ -208,7 +230,9 @@ export const HabitDetailsScreen: React.FC = () => {
 
         <View style={styles.statItem}>
           <Text style={[styles.statNumber, { color: colors.primary }]}>
-            {habit.goal_type === 'count' ? habit.targetCount || 1 : 1}
+            {latestHabit.goal_type === 'count'
+              ? latestHabit.targetCount || 1
+              : 1}
           </Text>
           <Text style={[styles.statLabel, { color: colors.textSecondary }]}>
             Target
@@ -219,7 +243,7 @@ export const HabitDetailsScreen: React.FC = () => {
   );
 
   const renderProgressWidget = () => (
-    <ProgressWidget habit={habit} weeklyData={weeklyData} />
+    <ProgressWidget habit={latestHabit} weeklyData={weeklyData} />
   );
 
   return (
@@ -242,16 +266,20 @@ export const HabitDetailsScreen: React.FC = () => {
                   { backgroundColor: colors.primary + '20' },
                 ]}
               >
-                <Text style={styles.icon}>{habit.icon}</Text>
+                <Text style={styles.icon}>
+                  {latestHabit.custom_emoji || latestHabit.icon}
+                </Text>
               </View>
               <View style={styles.textContainer}>
                 <Text style={[styles.title, { color: colors.text }]}>
-                  {habit.name}
+                  {latestHabit.name}
                 </Text>
                 <Text
                   style={[styles.subtitle, { color: colors.textSecondary }]}
                 >
-                  {habit.goal_type === 'count' ? 'Count Goal' : 'Daily Goal'}
+                  {latestHabit.goal_type === 'count'
+                    ? 'Count Goal'
+                    : 'Daily Goal'}
                 </Text>
               </View>
             </View>
@@ -282,7 +310,7 @@ export const HabitDetailsScreen: React.FC = () => {
           <View style={styles.quickStats}>
             <View style={styles.statItem}>
               <Text style={[styles.statNumber, { color: colors.primary }]}>
-                {habit.streak}
+                {latestHabit.streak}
               </Text>
               <Text style={[styles.statLabel, { color: colors.textSecondary }]}>
                 Day Streak
@@ -290,9 +318,9 @@ export const HabitDetailsScreen: React.FC = () => {
             </View>
             <View style={styles.statItem}>
               <Text style={[styles.statNumber, { color: colors.primary }]}>
-                {habit.goal_type === 'count'
-                  ? habit.currentCount || 0
-                  : habit.isCompletedToday
+                {latestHabit.goal_type === 'count'
+                  ? latestHabit.currentCount || 0
+                  : latestHabit.isCompletedToday
                     ? 1
                     : 0}
               </Text>
@@ -302,7 +330,9 @@ export const HabitDetailsScreen: React.FC = () => {
             </View>
             <View style={styles.statItem}>
               <Text style={[styles.statNumber, { color: colors.primary }]}>
-                {habit.goal_type === 'count' ? habit.targetCount || 1 : '1'}
+                {latestHabit.goal_type === 'count'
+                  ? latestHabit.targetCount || 1
+                  : '1'}
               </Text>
               <Text style={[styles.statLabel, { color: colors.textSecondary }]}>
                 Target
@@ -318,11 +348,11 @@ export const HabitDetailsScreen: React.FC = () => {
 
       {/* Edit Modal */}
       <EditHabitModal
-        visible={showEditModal}
-        habit={habit}
-        onClose={() => setShowEditModal(false)}
+        visible={!!editHabit}
+        habit={editHabit}
+        onClose={() => setEditHabit(null)}
         onUpdate={handleUpdateHabit}
-        onDelete={(id) => {
+        onDelete={id => {
           handleDelete();
           return Promise.resolve(true);
         }}
