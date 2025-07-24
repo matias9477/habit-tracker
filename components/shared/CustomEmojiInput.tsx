@@ -31,14 +31,12 @@ export const CustomEmojiInput: React.FC<CustomEmojiInputProps> = ({
 
   // Update inputValue when value prop changes
   useEffect(() => {
-    console.log('CustomEmojiInput value changed:', value);
     setInputValue(value || '');
     setIsExpanded(!!value);
   }, [value]);
 
   const handleSave = () => {
     const trimmedValue = inputValue.trim();
-    console.log('CustomEmojiInput handleSave - trimmedValue:', trimmedValue);
 
     // Validate emoji input - allow flags (which can be 2-4 characters)
     if (trimmedValue && trimmedValue.length > 4) {
@@ -50,7 +48,6 @@ export const CustomEmojiInput: React.FC<CustomEmojiInputProps> = ({
       return;
     }
 
-    console.log('CustomEmojiInput calling onEmojiChange with:', trimmedValue);
     onEmojiChange(trimmedValue);
     if (!trimmedValue) {
       setIsExpanded(false);

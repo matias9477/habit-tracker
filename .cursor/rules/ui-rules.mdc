@@ -1,8 +1,5 @@
 ---
-Following these UI rules ensures a consistent, professional, and accessible user experience across all themes and devices.
-description:
-globs:
-alwaysApply: false
+alwaysApply: true
 ---
 
 # UI Design Rules – Habit Tracker App

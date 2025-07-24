@@ -63,15 +63,7 @@ export const EditHabitModal: React.FC<EditHabitModalProps> = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
-    console.log('EditHabitModal useEffect - habit:', habit);
     if (habit) {
-      console.log('Populating form with habit data:', {
-        name: habit.name,
-        category: habit.category,
-        goal_type: habit.goal_type,
-        targetCount: habit.targetCount,
-        custom_emoji: habit.custom_emoji,
-      });
       setName(habit.name);
       setSelectedCategory(habit.category || 'fitness');
       setGoalType(habit.goal_type);
@@ -99,15 +91,6 @@ export const EditHabitModal: React.FC<EditHabitModalProps> = ({
     try {
       const finalTargetCount =
         goalType === 'count' ? parseInt(targetCount) : undefined;
-
-      console.log('EditHabitModal submitting:', {
-        id: habit.id,
-        name: name.trim(),
-        category: selectedCategory,
-        goalType,
-        customEmoji: customEmoji || undefined,
-        targetCount: finalTargetCount,
-      });
 
       const success = await onUpdate(
         habit.id,

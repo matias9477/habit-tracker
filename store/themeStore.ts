@@ -7,6 +7,7 @@ export type ThemeMode = 'system' | 'light' | 'dark';
 export interface ThemeState {
   themeMode: ThemeMode;
   notificationsEnabled: boolean;
+  isDarkMode: boolean;
   setThemeMode: (mode: ThemeMode) => void;
   toggleNotifications: () => void;
   setNotifications: (enabled: boolean) => void;
@@ -21,13 +22,14 @@ export const useThemeStore = create<ThemeState>()(
     (set, get) => ({
       themeMode: 'system',
       notificationsEnabled: false,
+      isDarkMode: false, // This will be computed dynamically
 
       setThemeMode: (mode: ThemeMode) => {
         set({ themeMode: mode });
       },
 
       toggleNotifications: () => {
-        set((state) => ({ notificationsEnabled: !state.notificationsEnabled }));
+        set(state => ({ notificationsEnabled: !state.notificationsEnabled }));
       },
 
       setNotifications: (enabled: boolean) => {

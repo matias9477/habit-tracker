@@ -8,8 +8,6 @@ import { markHabitCompleted, incrementHabitCount } from '@/db/completions';
  */
 export const seedFakeData = async () => {
   try {
-    console.log('🌱 Seeding database with fake data...');
-
     // Create some realistic habits with different creation dates
     const habits = [
       {
@@ -186,6 +184,9 @@ export const seedFakeData = async () => {
 
     // Add completion data for each habit
     for (const data of completionData) {
+      // Skip if habitId is undefined
+      if (data.habitId === undefined) continue;
+
       for (let i = 0; i < data.days.length; i++) {
         const daysAgo = data.days[i];
         if (daysAgo === undefined) continue;
@@ -207,7 +208,6 @@ export const seedFakeData = async () => {
           await markHabitCompleted(data.habitId, dateStr);
         }
       }
-      console.log(`✅ Added completion data for habit ${data.habitId}`);
     }
 
     // Add some partial progress for today
@@ -240,15 +240,6 @@ export const seedFakeData = async () => {
         await incrementHabitCount(validHabitIds[6]!, todayStr);
       }
     }
-
-    console.log('🎉 Fake data seeding completed!');
-    console.log('📊 You now have:');
-    console.log('   • 8 habits with different creation dates (July 1-18)');
-    console.log('   • 30 days of completion history');
-    console.log(
-      '   • Date filtering test: navigate to July 1-17 to see different habits'
-    );
-    console.log('   • Realistic data to test all app features');
   } catch (error) {
     console.error('❌ Error seeding fake data:', error);
   }
@@ -261,15 +252,11 @@ export const clearAllData = async () => {
   try {
     const db = await import('../db/database').then(m => m.getDatabase());
 
-    console.log('🗑️ Clearing all data...');
-
     // Delete all completions
     await db.runAsync('DELETE FROM habit_completions');
 
     // Delete all habits
     await db.runAsync('DELETE FROM habits');
-
-    console.log('✅ All data cleared!');
   } catch (error) {
     console.error('❌ Error clearing data:', error);
   }

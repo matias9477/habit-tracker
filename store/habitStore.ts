@@ -106,15 +106,7 @@ export const useHabitStore = create<HabitState & HabitActions>((set, get) => ({
     try {
       const habits = await getAllHabits();
       const earliestDate = await getEarliestHabitDate();
-      console.log(
-        'Loaded habits from DB:',
-        habits.map(h => ({
-          id: h.id,
-          name: h.name,
-          custom_emoji: h.custom_emoji,
-          icon: h.icon,
-        }))
-      );
+
       const today = new Date().toISOString().slice(0, 10);
       const completions = await getCompletionsForDate(today);
 
@@ -145,15 +137,6 @@ export const useHabitStore = create<HabitState & HabitActions>((set, get) => ({
         })
       );
 
-      console.log(
-        'Habits with completion:',
-        habitsWithCompletion.map(h => ({
-          id: h.id,
-          name: h.name,
-          custom_emoji: h.custom_emoji,
-          icon: h.icon,
-        }))
-      );
       set({
         habits: habitsWithCompletion,
         earliestHabitDate: earliestDate,
@@ -166,7 +149,6 @@ export const useHabitStore = create<HabitState & HabitActions>((set, get) => ({
   },
 
   refreshHabits: async () => {
-    console.log('Refreshing habits...');
     await get().loadHabits();
   },
 
@@ -438,15 +420,6 @@ export const useHabitStore = create<HabitState & HabitActions>((set, get) => ({
       const categoryData = getCategoryById(category);
       const icon = categoryData?.icon || '📋';
 
-      console.log('Updating habit:', {
-        id,
-        name,
-        category,
-        goalType,
-        customEmoji,
-        targetCount,
-      });
-
       const success = await updateHabit(
         id,
         name,
@@ -457,7 +430,6 @@ export const useHabitStore = create<HabitState & HabitActions>((set, get) => ({
         targetCount
       );
       if (success) {
-        console.log('Habit updated successfully, refreshing habits...');
         await get().refreshHabits();
       }
       return success;

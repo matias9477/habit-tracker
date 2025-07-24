@@ -44,7 +44,7 @@ export class ErrorBoundary extends Component<Props, State> {
         onPress: () => {
           // In a real app, you might want to reload the app
           // For now, we'll just reset the error state
-          this.setState({ hasError: false, error: undefined });
+          this.setState({ hasError: false });
         },
       },
     ]);

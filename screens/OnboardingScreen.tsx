@@ -80,6 +80,11 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({
 
   const currentStepData = steps[currentStep];
 
+  // Safety check - if currentStepData is undefined, use the first step
+  if (!currentStepData) {
+    return null;
+  }
+
   return (
     <SafeAreaView
       style={[styles.container, { backgroundColor: colors.background }]}

@@ -21,7 +21,6 @@ const isExpoGo = () => {
 export const configureNotifications = async () => {
   // Allow notifications in Expo Go but log a warning
   if (isExpoGo()) {
-    console.log('Notifications enabled in Expo Go (may have limitations)');
   }
 
   try {
@@ -36,7 +35,6 @@ export const configureNotifications = async () => {
     }
 
     if (finalStatus !== 'granted') {
-      console.log('Notification permissions not granted');
       return false;
     }
 
@@ -52,7 +50,6 @@ export const configureNotifications = async () => {
 
     return true;
   } catch (error) {
-    console.log('Notification setup failed:', error);
     return false;
   }
 };
@@ -63,7 +60,6 @@ export const configureNotifications = async () => {
  */
 export const sendTestNotification = async (): Promise<string> => {
   if (isExpoGo()) {
-    console.log('Test notification enabled in Expo Go');
   }
 
   try {
@@ -78,7 +74,6 @@ export const sendTestNotification = async (): Promise<string> => {
 
     return identifier;
   } catch (error) {
-    console.log('Test notification failed:', error);
     return '';
   }
 };
@@ -94,7 +89,6 @@ export const scheduleHabitReminder = async (
   time: string
 ): Promise<string> => {
   if (isExpoGo()) {
-    console.log('Schedule habit reminder enabled in Expo Go');
   }
 
   try {
@@ -115,7 +109,6 @@ export const scheduleHabitReminder = async (
 
     return identifier;
   } catch (error) {
-    console.log('Schedule habit reminder failed:', error);
     return '';
   }
 };
@@ -126,14 +119,11 @@ export const scheduleHabitReminder = async (
  */
 export const cancelNotification = async (identifier: string): Promise<void> => {
   if (isExpoGo()) {
-    console.log('Cancel notification enabled in Expo Go');
   }
 
   try {
     await Notifications.cancelScheduledNotificationAsync(identifier);
-  } catch (error) {
-    console.log('Cancel notification failed:', error);
-  }
+  } catch (error) {}
 };
 
 /**
@@ -144,13 +134,11 @@ export const getScheduledNotifications = async (): Promise<
   Notifications.NotificationRequest[]
 > => {
   if (isExpoGo()) {
-    console.log('Get scheduled notifications enabled in Expo Go');
   }
 
   try {
     return await Notifications.getAllScheduledNotificationsAsync();
   } catch (error) {
-    console.log('Get scheduled notifications failed:', error);
     return [];
   }
 };
@@ -160,14 +148,11 @@ export const getScheduledNotifications = async (): Promise<
  */
 export const cancelAllNotifications = async () => {
   if (isExpoGo()) {
-    console.log('Cancel notifications enabled in Expo Go');
   }
 
   try {
     await Notifications.cancelAllScheduledNotificationsAsync();
-  } catch (error) {
-    console.log('Cancel notifications failed:', error);
-  }
+  } catch (error) {}
 };
 
 /**
@@ -176,14 +161,12 @@ export const cancelAllNotifications = async () => {
  */
 export const areNotificationsEnabled = async (): Promise<boolean> => {
   if (isExpoGo()) {
-    console.log('Check notifications enabled in Expo Go');
   }
 
   try {
     const { status } = await Notifications.getPermissionsAsync();
     return status === 'granted';
   } catch (error) {
-    console.log('Check notifications enabled failed:', error);
     return false;
   }
 };
