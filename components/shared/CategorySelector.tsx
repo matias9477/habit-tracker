@@ -6,8 +6,8 @@ import {
   StyleSheet,
   ScrollView,
 } from 'react-native';
-import { categories, Category } from '@/utils/categories';
-import { getThemeColors, useTheme } from '@/utils/theme';
+import { categories, Category } from '../../utils/categories';
+import { getThemeColors, useTheme } from '../../utils/theme';
 
 interface CategorySelectorProps {
   selectedCategory: string;
@@ -24,6 +24,7 @@ export const CategorySelector: React.FC<CategorySelectorProps> = ({
 }) => {
   const { isDarkMode } = useTheme();
   const colors = getThemeColors(isDarkMode);
+  console.log('[CategorySelector] Rendered:', { selectedCategory });
 
   const renderCategoryItem = (category: Category) => {
     const isSelected = selectedCategory === category.id;

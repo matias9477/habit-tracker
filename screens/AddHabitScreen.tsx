@@ -13,12 +13,12 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useThemeStore } from '@/store/themeStore';
-import { getThemeColors } from '@/utils/theme';
-import { GoalTypeSelector } from '@/components/shared/GoalTypeSelector';
-import { ThemedInput } from '@/components/shared/ThemedInput';
-import { ThemedButton } from '@/components/shared/ThemedButton';
-import { useHabitStore } from '@/store/habitStore';
+import { useThemeStore } from '../store/themeStore';
+import { getThemeColors } from '../utils/theme';
+import { GoalTypeSelector } from '../components/shared/GoalTypeSelector';
+import { ThemedInput } from '../components/shared/ThemedInput';
+import { ThemedButton } from '../components/shared/ThemedButton';
+import { useHabitStore } from '../store/habitStore';
 
 /**
  * A screen component for adding new habits.
@@ -26,6 +26,7 @@ import { useHabitStore } from '@/store/habitStore';
  * Supports both light and dark themes.
  */
 export const AddHabitScreen: React.FC = () => {
+  console.log('[AddHabitScreen] Rendered');
   const { isDarkMode } = useThemeStore();
   const colors = getThemeColors(isDarkMode);
   const insets = useSafeAreaInsets();

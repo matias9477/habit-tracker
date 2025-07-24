@@ -45,81 +45,95 @@ async function main() {
   ]);
 
   // 2. Update version numbers
-  const appJson = readJson(appJsonPath);
-  const pkgJson = readJson(pkgJsonPath);
-  const oldVersion = appJson.expo.version;
-  const newVersion = incVersion(oldVersion, updateType);
-  appJson.expo.version = newVersion;
-  appJson.expo.ios.buildNumber = String(
-    (parseInt(appJson.expo.ios.buildNumber, 10) || 0) + 1
-  );
-  pkgJson.version = newVersion;
-  writeJson(appJsonPath, appJson);
-  writeJson(pkgJsonPath, pkgJson);
-  console.log(`\nUpdated version: ${oldVersion} → ${newVersion}`);
-  console.log(`iOS buildNumber: ${appJson.expo.ios.buildNumber}`);
+  const appJsonOrig = fs.readFileSync(appJsonPath, 'utf8');
+  const pkgJsonOrig = fs.readFileSync(pkgJsonPath, 'utf8');
+  let versionUpdated = false;
+  try {
+    const appJson = JSON.parse(appJsonOrig);
+    const pkgJson = JSON.parse(pkgJsonOrig);
+    const oldVersion = appJson.expo.version;
+    const newVersion = incVersion(oldVersion, updateType);
+    appJson.expo.version = newVersion;
+    appJson.expo.ios.buildNumber = String(
+      (parseInt(appJson.expo.ios.buildNumber, 10) || 0) + 1
+    );
+    pkgJson.version = newVersion;
+    writeJson(appJsonPath, appJson);
+    writeJson(pkgJsonPath, pkgJson);
+    versionUpdated = true;
+    console.log(`\nUpdated version: ${oldVersion} → ${newVersion}`);
+    console.log(`iOS buildNumber: ${appJson.expo.ios.buildNumber}`);
 
-  // 3. Confirm build for iOS
-  const { buildIos } = await inquirer.prompt([
-    {
-      type: 'confirm',
-      name: 'buildIos',
-      message: 'Build for iOS now?',
-      default: true,
-    },
-  ]);
-  if (!buildIos) {
-    console.log('Release cancelled.');
-    process.exit(0);
-  }
+    // 3. Confirm build for iOS
+    const { buildIos } = await inquirer.prompt([
+      {
+        type: 'confirm',
+        name: 'buildIos',
+        message: 'Build for iOS now?',
+        default: true,
+      },
+    ]);
+    if (!buildIos) {
+      console.log('Release cancelled.');
+      process.exit(0);
+    }
 
-  // 4. Run EAS build for iOS
-  console.log('\nStarting EAS build for iOS...');
-  const buildProc = spawn('npx', ['eas-cli', 'build', '--platform', 'ios'], {
-    stdio: 'inherit',
-    shell: true,
-  });
-  await new Promise((resolve, reject) => {
-    buildProc.on('close', code => {
-      if (code === 0) resolve();
-      else reject(new Error('EAS build failed'));
-    });
-  });
-  console.log('iOS build complete.');
-
-  // 5. Prompt to submit to TestFlight
-  const { submitIos } = await inquirer.prompt([
-    {
-      type: 'list',
-      name: 'submitIos',
-      message: 'Submit this build to TestFlight?',
-      choices: [
-        { name: 'Yes', value: true },
-        { name: 'No', value: false },
-      ],
-    },
-  ]);
-  if (submitIos) {
-    console.log('\nSubmitting to TestFlight...');
-    const submitProc = spawn('npx', ['eas-cli', 'submit', '--platform', 'ios', '--latest'], {
+    // 4. Run EAS build for iOS
+    console.log('\nStarting EAS build for iOS...');
+    const buildProc = spawn('npx', ['eas-cli', 'build', '--platform', 'ios'], {
       stdio: 'inherit',
       shell: true,
     });
     await new Promise((resolve, reject) => {
-      submitProc.on('close', code => {
+      buildProc.on('close', code => {
         if (code === 0) resolve();
-        else reject(new Error('EAS submit failed'));
+        else reject(new Error('EAS build failed'));
       });
     });
-    console.log('Submitted to TestFlight.');
-  } else {
-    console.log('Skipped TestFlight submission.');
-  }
+    console.log('iOS build complete.');
 
-  // 6. Summary
-  console.log('\nRelease complete!');
-  console.log(`Version: ${newVersion}`);
-  console.log(`iOS buildNumber: ${appJson.expo.ios.buildNumber}`);
+    // 5. Prompt to submit to TestFlight
+    const { submitIos } = await inquirer.prompt([
+      {
+        type: 'list',
+        name: 'submitIos',
+        message: 'Submit this build to TestFlight?',
+        choices: [
+          { name: 'Yes', value: true },
+          { name: 'No', value: false },
+        ],
+      },
+    ]);
+    if (submitIos) {
+      console.log('\nSubmitting to TestFlight...');
+      const submitProc = spawn('npx', ['eas-cli', 'submit', '--platform', 'ios', '--latest'], {
+        stdio: 'inherit',
+        shell: true,
+      });
+      await new Promise((resolve, reject) => {
+        submitProc.on('close', code => {
+          if (code === 0) resolve();
+          else reject(new Error('EAS submit failed'));
+        });
+      });
+      console.log('Submitted to TestFlight.');
+    } else {
+      console.log('Skipped TestFlight submission.');
+    }
+
+    // 6. Summary
+    console.log('\nRelease complete!');
+    console.log(`Version: ${newVersion}`);
+    console.log(`iOS buildNumber: ${appJson.expo.ios.buildNumber}`);
+  } catch (err) {
+    if (versionUpdated) {
+      // Revert version changes
+      fs.writeFileSync(appJsonPath, appJsonOrig, 'utf8');
+      fs.writeFileSync(pkgJsonPath, pkgJsonOrig, 'utf8');
+      console.error('\nVersion numbers reverted due to failure.');
+    }
+    throw err;
+  }
 }
 
 await main().catch(err => {

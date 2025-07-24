@@ -9,12 +9,12 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useHabitStore, HabitWithCompletion } from '@/store/habitStore';
-import { getThemeColors, useTheme } from '@/utils/theme';
-import { HabitCard } from '@/components/HabitCard';
-import { DateHeader } from '@/components/DateHeader';
-import { AddHabitModal } from '@/components/AddHabitModal';
-import { EditHabitModal } from '@/components/EditHabitModal';
+import { useHabitStore, HabitWithCompletion } from '../store/habitStore';
+import { getThemeColors, useTheme } from '../utils/theme';
+import { HabitCard } from '../components/HabitCard';
+import { DateHeader } from '../components/DateHeader';
+import { AddHabitModal } from '../components/AddHabitModal';
+import { EditHabitModal } from '../components/EditHabitModal';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 
@@ -35,6 +35,7 @@ type TodayScreenNavigationProp = StackNavigationProp<
  * Supports date navigation to view and edit past days.
  */
 export const TodayScreen: React.FC = () => {
+  console.log('[TodayScreen] Rendered');
   const [isAddModalVisible, setIsAddModalVisible] = useState(false);
   const [isEditModalVisible, setIsEditModalVisible] = useState(false);
   const [selectedHabit, setSelectedHabit] =

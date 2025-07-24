@@ -12,10 +12,10 @@ import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 
-import { useHabitStore, HabitWithCompletion } from '@/store/habitStore';
-import { getThemeColors, useTheme } from '@/utils/theme';
-import { EditHabitModal } from '@/components/EditHabitModal';
-import { ProgressWidget } from '@/components/ProgressWidget';
+import { useHabitStore, HabitWithCompletion } from '../store/habitStore';
+import { getThemeColors, useTheme } from '../utils/theme';
+import { EditHabitModal } from '../components/EditHabitModal';
+import { ProgressWidget } from '../components/ProgressWidget';
 // import { LineChart } from 'react-native-chart-kit';
 
 const { width } = Dimensions.get('window');
@@ -40,6 +40,7 @@ type HabitDetailsScreenRouteProp = RouteProp<
  * Displays progress, analytics, charts, and provides edit/delete functionality.
  */
 export const HabitDetailsScreen: React.FC = () => {
+  console.log('[HabitDetailsScreen] Rendered');
   const navigation = useNavigation<HabitDetailsScreenNavigationProp>();
   const route = useRoute<HabitDetailsScreenRouteProp>();
   const habit = route.params.habit;

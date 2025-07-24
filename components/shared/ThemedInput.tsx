@@ -1,7 +1,7 @@
 import React from 'react';
 import { TextInput, TextInputProps, StyleSheet } from 'react-native';
-import { useThemeStore } from '@/store/themeStore';
-import { getThemeColors } from '@/utils/theme';
+import { useThemeStore } from '../../store/themeStore';
+import { getThemeColors } from '../../utils/theme';
 
 interface ThemedInputProps extends TextInputProps {
   placeholder?: string;
@@ -11,9 +11,10 @@ interface ThemedInputProps extends TextInputProps {
  * Shared themed input component that automatically adapts to light/dark mode.
  * Used across all forms to ensure consistent styling and theming.
  */
-export const ThemedInput: React.FC<ThemedInputProps> = (props) => {
+export const ThemedInput: React.FC<ThemedInputProps> = props => {
   const { isDarkMode } = useThemeStore();
   const colors = getThemeColors(isDarkMode);
+  console.log('[ThemedInput] Rendered with props:', props);
 
   return (
     <TextInput

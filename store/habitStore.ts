@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { Habit } from '@/db/habits';
+import { Habit } from '../db/habits';
 import {
   markHabitCompleted,
   unmarkHabitCompleted,
@@ -7,7 +7,7 @@ import {
   incrementHabitCount,
   decrementHabitCount,
   getStreakForHabit,
-} from '@/db/completions';
+} from '../db/completions';
 import {
   getAllHabits,
   getHabitsForDate,
@@ -15,7 +15,7 @@ import {
   insertHabit,
   updateHabit,
   deleteHabit,
-} from '@/db/habits';
+} from '../db/habits';
 
 /**
  * Type representing a habit with its completion status for today.
@@ -382,7 +382,7 @@ export const useHabitStore = create<HabitState & HabitActions>((set, get) => ({
   ) => {
     try {
       // Get the icon from the category
-      const { getCategoryById } = await import('@/utils/categories');
+      const { getCategoryById } = await import('../utils/categories');
       const categoryData = getCategoryById(category);
       const icon = categoryData?.icon || '📋';
 
@@ -416,7 +416,7 @@ export const useHabitStore = create<HabitState & HabitActions>((set, get) => ({
   ) => {
     try {
       // Get the icon from the category
-      const { getCategoryById } = await import('@/utils/categories');
+      const { getCategoryById } = await import('../utils/categories');
       const categoryData = getCategoryById(category);
       const icon = categoryData?.icon || '📋';
 

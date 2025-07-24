@@ -10,9 +10,9 @@ import {
   SafeAreaView,
   useSafeAreaInsets,
 } from 'react-native-safe-area-context';
-import { useThemeStore } from '@/store/themeStore';
-import { getThemeColors } from '@/utils/theme';
-import { ThemedButton } from '@/components/shared/ThemedButton';
+import { useThemeStore } from '../store/themeStore';
+import { getThemeColors } from '../utils/theme';
+import { ThemedButton } from '../components/shared/ThemedButton';
 
 /**
  * Props for the OnboardingScreen component.
@@ -28,6 +28,7 @@ interface OnboardingScreenProps {
 export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({
   onComplete,
 }) => {
+  console.log('[OnboardingScreen] Rendered');
   const { isDarkMode } = useThemeStore();
   const colors = getThemeColors(isDarkMode);
   const insets = useSafeAreaInsets();

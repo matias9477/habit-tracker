@@ -1,8 +1,8 @@
 import React, { Component, ErrorInfo, ReactNode } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useThemeStore } from '@/store/themeStore';
-import { getThemeColors } from '@/utils/theme';
+import { useThemeStore } from '../store/themeStore';
+import { getThemeColors } from '../utils/theme';
 
 interface Props {
   children: ReactNode;
@@ -52,6 +52,10 @@ export class ErrorBoundary extends Component<Props, State> {
 
   render() {
     if (this.state.hasError) {
+      console.log(
+        '[ErrorBoundary] Fallback UI rendered due to error:',
+        this.state.error
+      );
       return <ErrorFallback onRestart={this.handleRestart} />;
     }
 

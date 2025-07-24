@@ -1,9 +1,9 @@
-import { HabitWithCompletion } from '@/store/habitStore';
-import { getAllHabits, updateHabitAnalyticsFields } from '@/db/habits';
+import { HabitWithCompletion } from '../store/habitStore';
+import { getAllHabits, updateHabitAnalyticsFields } from '../db/habits';
 import {
   getTotalCompletionsForHabit,
   getStreakForHabit,
-} from '@/db/completions';
+} from '../db/completions';
 
 export interface HabitStats {
   totalHabits: number;

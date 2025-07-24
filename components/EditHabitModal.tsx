@@ -12,13 +12,13 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { getThemeColors, useTheme } from '@/utils/theme';
-import { GoalTypeSelector } from '@/components/shared/GoalTypeSelector';
-import { CategorySelector } from '@/components/shared/CategorySelector';
-import { CustomEmojiInput } from '@/components/shared/CustomEmojiInput';
-import { ThemedInput } from '@/components/shared/ThemedInput';
-import { ThemedButton } from '@/components/shared/ThemedButton';
-import { HabitWithCompletion } from '@/store/habitStore';
+import { getThemeColors, useTheme } from '../utils/theme';
+import { GoalTypeSelector } from '../components/shared/GoalTypeSelector';
+import { CategorySelector } from '../components/shared/CategorySelector';
+import { CustomEmojiInput } from '../components/shared/CustomEmojiInput';
+import { ThemedInput } from '../components/shared/ThemedInput';
+import { ThemedButton } from '../components/shared/ThemedButton';
+import { HabitWithCompletion } from '../store/habitStore';
 
 /**
  * Props for the EditHabitModal component.
@@ -53,6 +53,7 @@ export const EditHabitModal: React.FC<EditHabitModalProps> = ({
   const { isDarkMode } = useTheme();
   const colors = getThemeColors(isDarkMode);
   const insets = useSafeAreaInsets();
+  console.log('[EditHabitModal] Rendered:', { visible, habit });
 
   const [name, setName] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('fitness');

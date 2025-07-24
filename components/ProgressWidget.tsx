@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { getThemeColors, useTheme } from '@/utils/theme';
-import { HabitWithCompletion } from '@/store/habitStore';
-import { getCompletionsForDate } from '@/db/completions';
+import { getThemeColors, useTheme } from '../utils/theme';
+import { HabitWithCompletion } from '../store/habitStore';
+import { getCompletionsForDate } from '../db/completions';
 
 type ProgressView = 'weekly' | 'monthly';
 
@@ -22,6 +22,7 @@ export const ProgressWidget: React.FC<ProgressWidgetProps> = ({
 }) => {
   const { isDarkMode } = useTheme();
   const colors = getThemeColors(isDarkMode);
+  console.log('[ProgressWidget] Rendered:', { habit });
   const [viewMode, setViewMode] = useState<ProgressView>('weekly');
   const [monthlyData, setMonthlyData] = useState<
     {

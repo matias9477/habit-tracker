@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { getThemeColors, useTheme } from '@/utils/theme';
+import { getThemeColors, useTheme } from '../utils/theme';
 
 /**
  * Props for the DateHeader component.
@@ -24,6 +24,7 @@ export const DateHeader: React.FC<DateHeaderProps> = ({
 }) => {
   const { isDarkMode } = useTheme();
   const colors = getThemeColors(isDarkMode);
+  console.log('[DateHeader] Rendered:', { date });
 
   const formatDayOfWeek = (date: Date) => {
     const options: Intl.DateTimeFormatOptions = {

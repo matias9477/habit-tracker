@@ -6,6 +6,8 @@ export interface OnboardingState {
   hasCompletedOnboarding: boolean;
   setOnboardingCompleted: () => void;
   resetOnboarding: () => void;
+  hasHydrated: boolean;
+  setHasHydrated: () => void;
 }
 
 /**
@@ -14,8 +16,9 @@ export interface OnboardingState {
  */
 export const useOnboardingStore = create<OnboardingState>()(
   persist(
-    (set) => ({
+    set => ({
       hasCompletedOnboarding: false,
+      hasHydrated: false,
 
       setOnboardingCompleted: () => {
         set({ hasCompletedOnboarding: true });
@@ -24,10 +27,17 @@ export const useOnboardingStore = create<OnboardingState>()(
       resetOnboarding: () => {
         set({ hasCompletedOnboarding: false });
       },
+
+      setHasHydrated: () => {
+        set({ hasHydrated: true });
+      },
     }),
     {
       name: 'onboarding-storage',
       storage: createJSONStorage(() => AsyncStorage),
+      onRehydrateStorage: () => state => {
+        state?.setHasHydrated?.();
+      },
     }
   )
 );

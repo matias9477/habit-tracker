@@ -35,9 +35,17 @@ const LoadingScreen: React.FC = () => {
  * Shows onboarding on first launch, otherwise shows the main app.
  */
 const AppContent: React.FC = () => {
-  const { hasCompletedOnboarding, setOnboardingCompleted } =
+  const { hasCompletedOnboarding, hasHydrated, setOnboardingCompleted } =
     useOnboardingStore();
-  const [showOnboarding, setShowOnboarding] = useState(!hasCompletedOnboarding);
+  const [showOnboarding, setShowOnboarding] = useState(false);
+
+  useEffect(() => {
+    if (hasHydrated) {
+      setShowOnboarding(!hasCompletedOnboarding);
+    }
+  }, [hasHydrated]);
+
+  if (!hasHydrated) return null;
 
   const handleOnboardingComplete = () => {
     setOnboardingCompleted();
@@ -67,18 +75,24 @@ export default function App() {
   useEffect(() => {
     const initializeApp = async () => {
       try {
+        console.log('[App] Starting initialization');
         // Run database migrations
+        console.log('[App] Running migrations...');
         await runMigrations();
+        console.log('[App] Migrations complete');
 
         // Configure notifications
+        console.log('[App] Configuring notifications...');
         await configureNotifications();
+        console.log('[App] Notifications configured');
 
         // Uncomment the line below to seed fake data (for testing)
         // await seedFakeData();
 
         setIsInitialized(true);
+        console.log('[App] Initialization complete');
       } catch (err) {
-        console.error('Failed to initialize app:', err);
+        console.error('[App] Failed to initialize app:', err);
         setError('Failed to initialize the app. Please restart.');
       }
     };

@@ -1,6 +1,6 @@
 import * as FileSystem from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
-import { HabitWithCompletion } from '@/store/habitStore';
+import { HabitWithCompletion } from '../store/habitStore';
 
 export interface ExportData {
   habits: HabitWithCompletion[];
@@ -18,35 +18,26 @@ export const exportHabitData = async (
   habits: HabitWithCompletion[]
 ): Promise<boolean> => {
   try {
-    const exportData: ExportData = {
+    console.log('[exportHabitData] Starting export...');
+    const data: ExportData = {
       habits,
       exportDate: new Date().toISOString(),
       totalHabits: habits.length,
-      completedToday: habits.filter((h) => h.isCompletedToday).length,
+      completedToday: habits.filter(h => h.isCompletedToday).length,
     };
-
-    // Create CSV content
-    const csvContent = createCSVContent(exportData);
-
-    // Create file path
-    const fileName = `habit-tracker-export-${new Date().toISOString().split('T')[0]}.csv`;
-    const fileUri = `${FileSystem.documentDirectory}${fileName}`;
-
-    // Write file
-    await FileSystem.writeAsStringAsync(fileUri, csvContent);
-
-    // Share file
-    const isAvailable = await Sharing.isAvailableAsync();
-    if (isAvailable) {
-      await Sharing.shareAsync(fileUri, {
-        mimeType: 'text/csv',
-        dialogTitle: 'Export Habit Data',
-      });
-    }
-
+    const json = JSON.stringify(data, null, 2);
+    const fileUri = FileSystem.cacheDirectory + 'consistency-habits.json';
+    await FileSystem.writeAsStringAsync(fileUri, json);
+    console.log('[exportHabitData] File written:', fileUri);
+    await Sharing.shareAsync(fileUri, {
+      mimeType: 'application/json',
+      dialogTitle: 'Export Habits',
+      UTI: 'public.json',
+    });
+    console.log('[exportHabitData] Sharing complete');
     return true;
   } catch (error) {
-    console.error('Failed to export data:', error);
+    console.error('[exportHabitData] Export failed:', error);
     return false;
   }
 };
@@ -64,7 +55,7 @@ const createCSVContent = (exportData: ExportData): string => {
     'Habit Name,Icon,Goal Type,Target Count,Completed Today,Total Completions\n';
 
   // Data rows
-  habits.forEach((habit) => {
+  habits.forEach(habit => {
     const row = [
       `"${habit.name}"`,
       habit.icon,

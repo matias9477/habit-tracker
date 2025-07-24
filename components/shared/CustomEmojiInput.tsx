@@ -7,7 +7,7 @@ import {
   StyleSheet,
   Alert,
 } from 'react-native';
-import { getThemeColors, useTheme } from '@/utils/theme';
+import { getThemeColors, useTheme } from '../../utils/theme';
 
 interface CustomEmojiInputProps {
   value?: string;
@@ -28,6 +28,7 @@ export const CustomEmojiInput: React.FC<CustomEmojiInputProps> = ({
   const [isExpanded, setIsExpanded] = useState(!!value);
   const { isDarkMode } = useTheme();
   const colors = getThemeColors(isDarkMode);
+  console.log('[CustomEmojiInput] Rendered:', { value });
 
   // Update inputValue when value prop changes
   useEffect(() => {

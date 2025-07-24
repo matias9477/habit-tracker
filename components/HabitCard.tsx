@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { HabitWithCompletion } from '@/store/habitStore';
-import { getThemeColors, useTheme } from '@/utils/theme';
+import { HabitWithCompletion } from '../store/habitStore';
+import { getThemeColors, useTheme } from '../utils/theme';
 
 /**
  * Props for the HabitCard component.
@@ -25,6 +25,7 @@ export const HabitCard: React.FC<HabitCardProps> = ({
 }) => {
   const { isDarkMode } = useTheme();
   const colors = getThemeColors(isDarkMode);
+  console.log('[HabitCard] Rendered:', { habit });
 
   const handleToggle = () => {
     onToggle(habit.id);

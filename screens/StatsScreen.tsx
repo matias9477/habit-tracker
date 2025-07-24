@@ -3,8 +3,8 @@ import { View, Text, StyleSheet, ScrollView } from 'react-native';
 
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useHabitStore } from '@/store/habitStore';
-import { getThemeColors, useTheme } from '@/utils/theme';
+import { useHabitStore } from '../store/habitStore';
+import { getThemeColors, useTheme } from '../utils/theme';
 import {
   calculateHabitStats,
   calculateHabitTrends,
@@ -19,6 +19,7 @@ import {
  * Focuses on helping users understand their habit patterns and improve their routines.
  */
 export const StatsScreen: React.FC = () => {
+  console.log('[StatsScreen] Rendered');
   const { isDarkMode } = useTheme();
   const { habits } = useHabitStore();
   const colors = getThemeColors(isDarkMode);

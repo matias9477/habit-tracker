@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { useThemeStore } from '@/store/themeStore';
-import { getThemeColors } from '@/utils/theme';
+import { useThemeStore } from '../../store/themeStore';
+import { getThemeColors } from '../../utils/theme';
 
 interface GoalType {
   key: string;
@@ -24,6 +24,7 @@ export const GoalTypeSelector: React.FC<GoalTypeSelectorProps> = ({
 }) => {
   const { isDarkMode } = useThemeStore();
   const colors = getThemeColors(isDarkMode);
+  console.log('[GoalTypeSelector] Rendered:', { goalType });
 
   const goalTypes: GoalType[] = [
     {
@@ -43,7 +44,7 @@ export const GoalTypeSelector: React.FC<GoalTypeSelectorProps> = ({
       <Text style={[styles.sectionTitle, { color: colors.text }]}>
         Goal Type
       </Text>
-      {goalTypes.map((type) => (
+      {goalTypes.map(type => (
         <TouchableOpacity
           key={type.key}
           style={[

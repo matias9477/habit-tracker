@@ -12,7 +12,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { getThemeColors, useTheme } from '@/utils/theme';
+import { getThemeColors, useTheme } from '../utils/theme';
 import { GoalTypeSelector } from './shared/GoalTypeSelector';
 import { CategorySelector } from './shared/CategorySelector';
 import { CustomEmojiInput } from './shared/CustomEmojiInput';
@@ -47,6 +47,7 @@ export const AddHabitModal: React.FC<AddHabitModalProps> = ({
   const { isDarkMode } = useTheme();
   const colors = getThemeColors(isDarkMode);
   const insets = useSafeAreaInsets();
+  console.log('[AddHabitModal] Rendered:', { visible });
 
   const [name, setName] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('fitness');
