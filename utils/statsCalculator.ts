@@ -156,7 +156,6 @@ export const getWeeklyData = async (
   for (let i = 6; i >= 0; i--) {
     const date = new Date(today);
     date.setDate(date.getDate() - i);
-    const dateString = date.toISOString().slice(0, 10);
 
     // This is a simplified calculation - in a real app, you'd query the DB
     const completed =

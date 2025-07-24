@@ -25,15 +25,6 @@ export const DateHeader: React.FC<DateHeaderProps> = ({
   const { isDarkMode } = useTheme();
   const colors = getThemeColors(isDarkMode);
 
-  const formatDate = (date: Date) => {
-    const options: Intl.DateTimeFormatOptions = {
-      weekday: 'long',
-      month: 'long',
-      day: 'numeric',
-    };
-    return date.toLocaleDateString('en-US', options);
-  };
-
   const formatDayOfWeek = (date: Date) => {
     const options: Intl.DateTimeFormatOptions = {
       weekday: 'short',

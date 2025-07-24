@@ -9,11 +9,9 @@ import {
   Alert,
   KeyboardAvoidingView,
   Platform,
-  TextInput,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useThemeStore } from '@/store/themeStore';
 import { getThemeColors, useTheme } from '@/utils/theme';
 import { GoalTypeSelector } from './shared/GoalTypeSelector';
 import { CategorySelector } from './shared/CategorySelector';
@@ -57,15 +55,6 @@ export const AddHabitModal: React.FC<AddHabitModalProps> = ({
   const [customEmoji, setCustomEmoji] = useState<string>('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const goalTypes = [
-    {
-      key: 'binary',
-      label: 'Daily Goal',
-      description: 'Complete or not complete',
-    },
-    { key: 'count', label: 'Count Goal', description: 'Track number of times' },
-  ];
-
   const handleSubmit = async () => {
     if (!name.trim()) {
       Alert.alert('Error', 'Please enter a habit name');
@@ -87,7 +76,7 @@ export const AddHabitModal: React.FC<AddHabitModalProps> = ({
       if (success) {
         handleClose();
       }
-    } catch (error) {
+    } catch {
       Alert.alert('Error', 'Failed to add habit. Please try again.');
     } finally {
       setIsSubmitting(false);

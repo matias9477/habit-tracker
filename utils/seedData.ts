@@ -216,28 +216,32 @@ export const seedFakeData = async () => {
     // Water: 5/8 glasses today
     if (validHabitIds.length > 0) {
       for (let i = 0; i < 5; i++) {
-        await incrementHabitCount(validHabitIds[0]!, todayStr);
+        if (typeof validHabitIds[0] === 'number')
+          await incrementHabitCount(validHabitIds[0], todayStr);
       }
     }
 
     // Reading: 15/30 minutes today
     if (validHabitIds.length > 2) {
       for (let i = 0; i < 15; i++) {
-        await incrementHabitCount(validHabitIds[2]!, todayStr);
+        if (typeof validHabitIds[2] === 'number')
+          await incrementHabitCount(validHabitIds[2], todayStr);
       }
     }
 
     // Walking: 6500/10000 steps today
     if (validHabitIds.length > 5) {
       for (let i = 0; i < 6500; i++) {
-        await incrementHabitCount(validHabitIds[5]!, todayStr);
+        if (typeof validHabitIds[5] === 'number')
+          await incrementHabitCount(validHabitIds[5], todayStr);
       }
     }
 
     // Guitar: 10/20 minutes today
     if (validHabitIds.length > 6) {
       for (let i = 0; i < 10; i++) {
-        await incrementHabitCount(validHabitIds[6]!, todayStr);
+        if (typeof validHabitIds[6] === 'number')
+          await incrementHabitCount(validHabitIds[6], todayStr);
       }
     }
   } catch (error) {

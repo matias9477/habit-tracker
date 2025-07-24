@@ -19,7 +19,6 @@ import { CustomEmojiInput } from '@/components/shared/CustomEmojiInput';
 import { ThemedInput } from '@/components/shared/ThemedInput';
 import { ThemedButton } from '@/components/shared/ThemedButton';
 import { HabitWithCompletion } from '@/store/habitStore';
-import { getCategoryById } from '@/utils/categories';
 
 /**
  * Props for the EditHabitModal component.

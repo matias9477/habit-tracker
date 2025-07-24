@@ -43,7 +43,6 @@ export const ProgressWidget: React.FC<ProgressWidgetProps> = ({
 
       for (let day = 1; day <= daysInMonth; day++) {
         const date = new Date(currentYear, currentMonth, day);
-        const isToday = date.toDateString() === today.toDateString();
         const isPast = date <= today;
         const isAfterCreation = date >= habitCreatedAt;
 

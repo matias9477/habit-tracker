@@ -100,5 +100,8 @@ export const getCategoryById = (id: string): Category | undefined => {
  * Get the default category (first category in the list).
  */
 export const getDefaultCategory = (): Category => {
-  return categories[0]!; // Returns the first category (fitness)
+  if (categories.length === 0) {
+    throw new Error('No categories defined');
+  }
+  return categories[0] as Category;
 };

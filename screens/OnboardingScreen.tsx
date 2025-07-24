@@ -4,7 +4,6 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
-  Dimensions,
   ScrollView,
 } from 'react-native';
 import {
@@ -14,8 +13,6 @@ import {
 import { useThemeStore } from '@/store/themeStore';
 import { getThemeColors } from '@/utils/theme';
 import { ThemedButton } from '@/components/shared/ThemedButton';
-
-const { width, height } = Dimensions.get('window');
 
 /**
  * Props for the OnboardingScreen component.

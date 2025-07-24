@@ -4,6 +4,9 @@ import {
   Text,
   TouchableOpacityProps,
   StyleSheet,
+  StyleProp,
+  ViewStyle,
+  TextStyle,
 } from 'react-native';
 import { useThemeStore } from '@/store/themeStore';
 import { getThemeColors } from '@/utils/theme';
@@ -31,38 +34,38 @@ export const ThemedButton: React.FC<ThemedButtonProps> = ({
   const colors = getThemeColors(isDarkMode);
 
   const getButtonStyle = () => {
-    const baseStyle = [styles.button];
+    const baseStyle: ViewStyle[] = [styles.button];
 
     if (variant === 'danger') {
       baseStyle.push({
         backgroundColor: isDarkMode ? '#8B0000' : '#f44336',
         borderColor: isDarkMode ? '#DC143C' : '#f44336',
-      } as any);
+      });
     } else {
       baseStyle.push({
         backgroundColor: isDarkMode ? '#2E7D32' : colors.primary,
         borderColor: isDarkMode ? '#4CAF50' : colors.primary,
-      } as any);
+      });
     }
 
     if (disabled) {
       baseStyle.push({
         backgroundColor: colors.border,
         borderColor: colors.border,
-      } as any);
+      });
     }
 
-    return baseStyle;
+    return baseStyle as StyleProp<ViewStyle>;
   };
 
   const getTextStyle = () => {
-    const baseStyle = [styles.buttonText, { color: '#fff' }];
+    const baseStyle: TextStyle[] = [styles.buttonText, { color: '#fff' }];
 
     if (disabled) {
       baseStyle.push({ color: colors.textSecondary });
     }
 
-    return baseStyle;
+    return baseStyle as StyleProp<TextStyle>;
   };
 
   return (

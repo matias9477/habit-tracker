@@ -1,5 +1,6 @@
 import * as Notifications from 'expo-notifications';
 import Constants from 'expo-constants';
+import { SchedulableTriggerInputTypes } from 'expo-notifications';
 
 export interface NotificationSettings {
   enabled: boolean;
@@ -21,6 +22,8 @@ const isExpoGo = () => {
 export const configureNotifications = async () => {
   // Allow notifications in Expo Go but log a warning
   if (isExpoGo()) {
+    // Notifications are limited in Expo Go; skip configuration
+    return false;
   }
 
   try {
@@ -50,6 +53,8 @@ export const configureNotifications = async () => {
 
     return true;
   } catch (error) {
+    // Log error for debugging
+    console.error('Error configuring notifications:', error);
     return false;
   }
 };
@@ -60,6 +65,8 @@ export const configureNotifications = async () => {
  */
 export const sendTestNotification = async (): Promise<string> => {
   if (isExpoGo()) {
+    // Notifications are not supported in Expo Go
+    return '';
   }
 
   try {
@@ -74,6 +81,7 @@ export const sendTestNotification = async (): Promise<string> => {
 
     return identifier;
   } catch (error) {
+    console.error('Error sending test notification:', error);
     return '';
   }
 };
@@ -89,6 +97,8 @@ export const scheduleHabitReminder = async (
   time: string
 ): Promise<string> => {
   if (isExpoGo()) {
+    // Notifications are not supported in Expo Go
+    return '';
   }
 
   try {
@@ -101,14 +111,15 @@ export const scheduleHabitReminder = async (
         data: { type: 'habit_reminder', habitName },
       },
       trigger: {
-        hour,
-        minute,
-        repeats: true,
-      } as any,
+        type: SchedulableTriggerInputTypes.DAILY,
+        hour: hour ?? 9,
+        minute: minute ?? 0,
+      },
     });
 
     return identifier;
   } catch (error) {
+    console.error('Error scheduling habit reminder:', error);
     return '';
   }
 };
@@ -119,11 +130,15 @@ export const scheduleHabitReminder = async (
  */
 export const cancelNotification = async (identifier: string): Promise<void> => {
   if (isExpoGo()) {
+    // Notifications are not supported in Expo Go
+    return;
   }
 
   try {
     await Notifications.cancelScheduledNotificationAsync(identifier);
-  } catch (error) {}
+  } catch (error) {
+    console.error('Error cancelling notification:', error);
+  }
 };
 
 /**
@@ -134,11 +149,14 @@ export const getScheduledNotifications = async (): Promise<
   Notifications.NotificationRequest[]
 > => {
   if (isExpoGo()) {
+    // Notifications are not supported in Expo Go
+    return [];
   }
 
   try {
     return await Notifications.getAllScheduledNotificationsAsync();
   } catch (error) {
+    console.error('Error getting scheduled notifications:', error);
     return [];
   }
 };
@@ -148,11 +166,15 @@ export const getScheduledNotifications = async (): Promise<
  */
 export const cancelAllNotifications = async () => {
   if (isExpoGo()) {
+    // Notifications are not supported in Expo Go
+    return;
   }
 
   try {
     await Notifications.cancelAllScheduledNotificationsAsync();
-  } catch (error) {}
+  } catch (error) {
+    console.error('Error cancelling all notifications:', error);
+  }
 };
 
 /**
@@ -161,12 +183,15 @@ export const cancelAllNotifications = async () => {
  */
 export const areNotificationsEnabled = async (): Promise<boolean> => {
   if (isExpoGo()) {
+    // Notifications are not supported in Expo Go
+    return false;
   }
 
   try {
     const { status } = await Notifications.getPermissionsAsync();
     return status === 'granted';
   } catch (error) {
+    console.error('Error checking notification permissions:', error);
     return false;
   }
 };

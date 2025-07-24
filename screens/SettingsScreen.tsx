@@ -38,15 +38,12 @@ export const SettingsScreen: React.FC = () => {
   const colors = getThemeColors(isDarkMode);
   const insets = useSafeAreaInsets();
 
-  const [isNotificationsConfigured, setIsNotificationsConfigured] =
-    useState(false);
   const [showPrivacyPolicy, setShowPrivacyPolicy] = useState(false);
   const [showTermsOfService, setShowTermsOfService] = useState(false);
 
   useEffect(() => {
     const checkNotificationStatus = async () => {
       const enabled = await areNotificationsEnabled();
-      setIsNotificationsConfigured(enabled);
     };
 
     checkNotificationStatus();
@@ -58,7 +55,6 @@ export const SettingsScreen: React.FC = () => {
       const success = await configureNotifications();
       if (success) {
         toggleNotifications();
-        setIsNotificationsConfigured(true);
         Alert.alert(
           'Success',
           'Notifications enabled! You can now receive reminders.'
@@ -73,7 +69,6 @@ export const SettingsScreen: React.FC = () => {
       // Disable notifications
       await cancelAllNotifications();
       toggleNotifications();
-      setIsNotificationsConfigured(false);
     }
   };
 

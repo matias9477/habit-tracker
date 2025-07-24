@@ -47,18 +47,17 @@ export const HabitDetailsScreen: React.FC = () => {
   const { habits, updateHabit, deleteHabit } = useHabitStore();
   const colors = getThemeColors(isDarkMode);
 
-  const [showEditModal, setShowEditModal] = useState(false);
   const [weeklyData, setWeeklyData] = useState<number[]>([]);
   const [latestHabit, setLatestHabit] = useState<HabitWithCompletion>(habit);
   const [editHabit, setEditHabit] = useState<HabitWithCompletion | null>(null);
 
   // When the modal closes, update the latest habit from the store
   useEffect(() => {
-    if (!showEditModal) {
+    if (!editHabit) {
       const updated = habits.find(h => h.id === habit.id);
       if (updated) setLatestHabit(updated);
     }
-  }, [showEditModal, habits, habit.id]);
+  }, [editHabit, habits, habit.id]);
 
   // Generate weekly data for the chart
   useEffect(() => {

@@ -55,15 +55,6 @@ export const AddHabitScreen: React.FC = () => {
     '💎', // Consistency
   ];
 
-  const goalTypes = [
-    {
-      key: 'binary',
-      label: 'Daily Goal',
-      description: 'Complete or not complete',
-    },
-    { key: 'count', label: 'Count Goal', description: 'Track number of times' },
-  ];
-
   const handleSubmit = async () => {
     if (!name.trim()) {
       Alert.alert('Error', 'Please enter a habit name');
@@ -106,12 +97,6 @@ export const AddHabitScreen: React.FC = () => {
 
   const handleCustomEmojiPress = () => {
     setShowEmojiModal(true);
-  };
-
-  const handleEmojiSelect = (emoji: string) => {
-    setCustomEmoji(emoji);
-    setUseCustomEmoji(true);
-    setShowEmojiModal(false);
   };
 
   const handleEmojiModalClose = () => {
@@ -162,7 +147,7 @@ export const AddHabitScreen: React.FC = () => {
             </Text>
 
             <View style={styles.iconGrid}>
-              {icons.slice(0, 6).map((icon) => (
+              {icons.slice(0, 6).map(icon => (
                 <TouchableOpacity
                   key={icon}
                   style={[
@@ -186,7 +171,7 @@ export const AddHabitScreen: React.FC = () => {
               ))}
             </View>
             <View style={styles.iconGrid}>
-              {icons.slice(6, 12).map((icon) => (
+              {icons.slice(6, 12).map(icon => (
                 <TouchableOpacity
                   key={icon}
                   style={[

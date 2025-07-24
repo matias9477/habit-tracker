@@ -19,7 +19,7 @@ export interface ThemeState {
  */
 export const useThemeStore = create<ThemeState>()(
   persist(
-    (set, get) => ({
+    set => ({
       themeMode: 'system',
       notificationsEnabled: false,
       isDarkMode: false, // This will be computed dynamically

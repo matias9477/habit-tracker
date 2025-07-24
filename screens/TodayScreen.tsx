@@ -17,7 +17,6 @@ import { AddHabitModal } from '@/components/AddHabitModal';
 import { EditHabitModal } from '@/components/EditHabitModal';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
-import { Ionicons } from '@expo/vector-icons';
 
 type RootStackParamList = {
   MainTabs: undefined;
@@ -50,7 +49,6 @@ export const TodayScreen: React.FC = () => {
     earliestHabitDate,
     loadHabits,
     loadHabitsForDate,
-    toggleHabitCompletion,
     toggleHabitCompletionForDate,
     addHabit,
     updateHabit,
@@ -168,37 +166,6 @@ export const TodayScreen: React.FC = () => {
 
   const handleTodayPress = () => {
     setSelectedDate(new Date());
-  };
-
-  const isToday = () => {
-    const today = new Date();
-    return (
-      selectedDate.getDate() === today.getDate() &&
-      selectedDate.getMonth() === today.getMonth() &&
-      selectedDate.getFullYear() === today.getFullYear()
-    );
-  };
-
-  const formatDate = (date: Date) => {
-    const today = new Date();
-    const yesterday = new Date(today);
-    yesterday.setDate(yesterday.getDate() - 1);
-    const tomorrow = new Date(today);
-    tomorrow.setDate(tomorrow.getDate() + 1);
-
-    if (date.toDateString() === today.toDateString()) {
-      return 'Today';
-    } else if (date.toDateString() === yesterday.toDateString()) {
-      return 'Yesterday';
-    } else if (date.toDateString() === tomorrow.toDateString()) {
-      return 'Tomorrow';
-    } else {
-      return date.toLocaleDateString('en-US', {
-        weekday: 'long',
-        month: 'short',
-        day: 'numeric',
-      });
-    }
   };
 
   // Separate habits by completion status

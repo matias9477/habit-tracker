@@ -1,11 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-} from 'react-native';
+import { View, Text, StyleSheet, ScrollView } from 'react-native';
 
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -161,7 +155,6 @@ export const StatsScreen: React.FC = () => {
   const renderWeeklyProgress = () => {
     if (weeklyData.length === 0) return null;
 
-    const todayCompleted = weeklyData[weeklyData.length - 1]?.completed || 0;
     const totalHabits = habits.length;
     const weeklyAverage = Math.round(
       weeklyData.reduce((sum, day) => sum + day.completed, 0) /
