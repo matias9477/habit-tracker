@@ -8,6 +8,18 @@ export const getDatabase = async () => {
 };
 
 /**
+ * Checks if a column exists in a table.
+ */
+const columnExists = async (
+  db: SQLite.SQLiteDatabase,
+  table: string,
+  column: string
+): Promise<boolean> => {
+  const result = await db.getAllAsync(`PRAGMA table_info(${table});`);
+  return result.some((row: any) => row.name === column);
+};
+
+/**
  * Runs the schema migrations for the habits and completions tables.
  * Call this on app startup to ensure tables exist.
  */
@@ -28,91 +40,44 @@ export const runMigrations = async (): Promise<void> => {
     );
   `);
 
-  // Add target_count column to existing tables if it doesn't exist
-  try {
-    await db.execAsync(`
-      ALTER TABLE habits ADD COLUMN target_count INTEGER DEFAULT 1;
-    `);
-  } catch (error) {
-    // Log error for debugging
-    console.error(
-      'Error in runMigrations: ALTER TABLE habits ADD COLUMN target_count INTEGER DEFAULT 1',
-      error
+  // Add target_count column if it doesn't exist
+  if (!(await columnExists(db, 'habits', 'target_count'))) {
+    await db.execAsync(
+      `ALTER TABLE habits ADD COLUMN target_count INTEGER DEFAULT 1;`
     );
   }
 
-  // Add category column to existing tables if it doesn't exist
-  try {
-    await db.execAsync(`
-      ALTER TABLE habits ADD COLUMN category TEXT DEFAULT 'general';
-    `);
-  } catch (error) {
-    // Log error for debugging
-    console.error(
-      "Error in runMigrations: ALTER TABLE habits ADD COLUMN category TEXT DEFAULT 'general'",
-      error
+  // Add category column if it doesn't exist
+  if (!(await columnExists(db, 'habits', 'category'))) {
+    await db.execAsync(
+      `ALTER TABLE habits ADD COLUMN category TEXT DEFAULT 'general';`
     );
   }
 
-  // Add custom_emoji column to existing tables if it doesn't exist
-  try {
-    await db.execAsync(`
-      ALTER TABLE habits ADD COLUMN custom_emoji TEXT;
-    `);
-  } catch (error) {
-    // Log error for debugging
-    console.error(
-      'Error in runMigrations: ALTER TABLE habits ADD COLUMN custom_emoji TEXT',
-      error
-    );
+  // Add custom_emoji column if it doesn't exist
+  if (!(await columnExists(db, 'habits', 'custom_emoji'))) {
+    await db.execAsync(`ALTER TABLE habits ADD COLUMN custom_emoji TEXT;`);
   }
 
   // Add cached analytics fields for better performance
-  try {
-    await db.execAsync(`
-      ALTER TABLE habits ADD COLUMN total_completions INTEGER DEFAULT 0;
-    `);
-  } catch (error) {
-    // Log error for debugging
-    console.error(
-      'Error in runMigrations: ALTER TABLE habits ADD COLUMN total_completions INTEGER DEFAULT 0',
-      error
+  if (!(await columnExists(db, 'habits', 'total_completions'))) {
+    await db.execAsync(
+      `ALTER TABLE habits ADD COLUMN total_completions INTEGER DEFAULT 0;`
     );
   }
-
-  try {
-    await db.execAsync(`
-      ALTER TABLE habits ADD COLUMN current_streak INTEGER DEFAULT 0;
-    `);
-  } catch (error) {
-    // Log error for debugging
-    console.error(
-      'Error in runMigrations: ALTER TABLE habits ADD COLUMN current_streak INTEGER DEFAULT 0',
-      error
+  if (!(await columnExists(db, 'habits', 'current_streak'))) {
+    await db.execAsync(
+      `ALTER TABLE habits ADD COLUMN current_streak INTEGER DEFAULT 0;`
     );
   }
-
-  try {
-    await db.execAsync(`
-      ALTER TABLE habits ADD COLUMN longest_streak INTEGER DEFAULT 0;
-    `);
-  } catch (error) {
-    // Log error for debugging
-    console.error(
-      'Error in runMigrations: ALTER TABLE habits ADD COLUMN longest_streak INTEGER DEFAULT 0',
-      error
+  if (!(await columnExists(db, 'habits', 'longest_streak'))) {
+    await db.execAsync(
+      `ALTER TABLE habits ADD COLUMN longest_streak INTEGER DEFAULT 0;`
     );
   }
-
-  try {
-    await db.execAsync(`
-      ALTER TABLE habits ADD COLUMN last_completed_date TEXT;
-    `);
-  } catch (error) {
-    // Log error for debugging
-    console.error(
-      'Error in runMigrations: ALTER TABLE habits ADD COLUMN last_completed_date TEXT',
-      error
+  if (!(await columnExists(db, 'habits', 'last_completed_date'))) {
+    await db.execAsync(
+      `ALTER TABLE habits ADD COLUMN last_completed_date TEXT;`
     );
   }
 
@@ -127,69 +92,28 @@ export const runMigrations = async (): Promise<void> => {
     );
   `);
 
-  // Add count column to existing tables if it doesn't exist
-  try {
-    await db.execAsync(`
-      ALTER TABLE habit_completions ADD COLUMN count INTEGER DEFAULT 1;
-    `);
-  } catch (error) {
-    // Log error for debugging
-    console.error(
-      'Error in runMigrations: ALTER TABLE habit_completions ADD COLUMN count INTEGER DEFAULT 1',
-      error
+  // Add count column to habit_completions if it doesn't exist
+  if (!(await columnExists(db, 'habit_completions', 'count'))) {
+    await db.execAsync(
+      `ALTER TABLE habit_completions ADD COLUMN count INTEGER DEFAULT 1;`
     );
   }
 
   // Add performance indexes
-  try {
-    await db.execAsync(`
-      CREATE INDEX IF NOT EXISTS idx_habit_completions_habit_date 
-      ON habit_completions(habit_id, date);
-    `);
-  } catch (error) {
-    // Log error for debugging
-    console.error(
-      'Error in runMigrations: CREATE INDEX IF NOT EXISTS idx_habit_completions_habit_date',
-      error
-    );
-  }
-
-  try {
-    await db.execAsync(`
-      CREATE INDEX IF NOT EXISTS idx_habit_completions_date 
-      ON habit_completions(date);
-    `);
-  } catch (error) {
-    // Log error for debugging
-    console.error(
-      'Error in runMigrations: CREATE INDEX IF NOT EXISTS idx_habit_completions_date',
-      error
-    );
-  }
-
-  try {
-    await db.execAsync(`
-      CREATE INDEX IF NOT EXISTS idx_habits_category 
-      ON habits(category);
-    `);
-  } catch (error) {
-    // Log error for debugging
-    console.error(
-      'Error in runMigrations: CREATE INDEX IF NOT EXISTS idx_habits_category',
-      error
-    );
-  }
-
-  try {
-    await db.execAsync(`
-      CREATE INDEX IF NOT EXISTS idx_habits_created_at 
-      ON habits(created_at);
-    `);
-  } catch (error) {
-    // Log error for debugging
-    console.error(
-      'Error in runMigrations: CREATE INDEX IF NOT EXISTS idx_habits_created_at',
-      error
-    );
-  }
+  await db.execAsync(`
+    CREATE INDEX IF NOT EXISTS idx_habit_completions_habit_date 
+    ON habit_completions(habit_id, date);
+  `);
+  await db.execAsync(`
+    CREATE INDEX IF NOT EXISTS idx_habit_completions_date 
+    ON habit_completions(date);
+  `);
+  await db.execAsync(`
+    CREATE INDEX IF NOT EXISTS idx_habits_category 
+    ON habits(category);
+  `);
+  await db.execAsync(`
+    CREATE INDEX IF NOT EXISTS idx_habits_created_at 
+    ON habits(created_at);
+  `);
 };
