@@ -154,20 +154,12 @@ export const DateHeader: React.FC<DateHeaderProps> = ({
           {/* Show navigation limit message */}
           {!canGoBack && (
             <Text style={[styles.limitMessage, { color: colors.textTertiary }]}>
-              {earliestHabitDate
-                ? `Earliest: ${earliestHabitDate.toLocaleDateString()}`
-                : 'Earliest: Today'}
+              {/* Earliest date message removed - user doesn't find it useful */}
             </Text>
           )}
           {!canGoForward && (
             <Text style={[styles.limitMessage, { color: colors.textTertiary }]}>
-              Latest:{' '}
-              {(() => {
-                const today = new Date();
-                const maxFuture = new Date(today);
-                maxFuture.setDate(maxFuture.getDate() + 2);
-                return maxFuture.toLocaleDateString();
-              })()}
+              {/* Latest date message removed - user doesn't find it useful */}
             </Text>
           )}
         </TouchableOpacity>

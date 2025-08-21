@@ -303,42 +303,7 @@ export const ProgressWidget: React.FC<ProgressWidgetProps> = ({
           })}
         </View>
 
-        {/* Legend */}
-        <View style={[styles.legend, { borderTopColor: colors.border }]}>
-          <View style={styles.legendItem}>
-            <View
-              style={[
-                styles.legendIndicator,
-                { backgroundColor: colors.success },
-              ]}
-            />
-            <Text style={[styles.legendText, { color: colors.textSecondary }]}>
-              Completed
-            </Text>
-          </View>
-          <View style={styles.legendItem}>
-            <View
-              style={[
-                styles.legendIndicator,
-                { backgroundColor: colors.border },
-              ]}
-            />
-            <Text style={[styles.legendText, { color: colors.textSecondary }]}>
-              Missed
-            </Text>
-          </View>
-          <View style={styles.legendItem}>
-            <View
-              style={[
-                styles.legendIndicator,
-                { borderColor: colors.primary, borderWidth: 2 },
-              ]}
-            />
-            <Text style={[styles.legendText, { color: colors.textSecondary }]}>
-              Today
-            </Text>
-          </View>
-        </View>
+        {/* Legend removed - user doesn't find it useful */}
       </View>
     );
   };
@@ -533,25 +498,5 @@ const styles = StyleSheet.create({
   countText: {
     fontSize: 8,
     fontWeight: 'bold',
-  },
-  legend: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    marginTop: 16,
-    paddingTop: 16,
-    borderTopWidth: 1,
-  },
-  legendItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  legendIndicator: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-    marginRight: 6,
-  },
-  legendText: {
-    fontSize: 12,
   },
 });
