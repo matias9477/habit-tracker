@@ -14,6 +14,7 @@ import { useThemeStore } from '../store/themeStore';
 import { useHabitStore } from '../store/habitStore';
 import { useOnboardingStore } from '../store/onboardingStore';
 import { getThemeColors, useTheme } from '../utils/theme';
+import { getAppVersion } from '../utils/version';
 import { exportHabitData } from '../utils/dataExport';
 import { testSeedData } from '../utils/testSeed';
 import {
@@ -410,7 +411,11 @@ export const SettingsScreen: React.FC = () => {
           <Text style={[styles.sectionTitle, { color: colors.text }]}>
             About
           </Text>
-          {renderSettingItem('Version', '1.0.0', 'information-circle-outline')}
+          {renderSettingItem(
+            'Version',
+            getAppVersion(),
+            'information-circle-outline'
+          )}
           {renderSettingItem(
             'Privacy Policy',
             'Read our privacy policy',
