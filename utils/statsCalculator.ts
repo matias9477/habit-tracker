@@ -211,64 +211,23 @@ export const getWeeklyData = async (
 export const getCategoryStats = async (
   habits: HabitWithCompletion[]
 ): Promise<{ category: string; count: number; completed: number }[]> => {
-  // Categorize habits based on their icons and names
-  const categories = {
-    Health: habits.filter(
-      h =>
-        h.icon.includes('💧') ||
-        h.icon.includes('💊') ||
-        h.name.toLowerCase().includes('water') ||
-        h.name.toLowerCase().includes('vitamin')
-    ),
-    Exercise: habits.filter(
-      h =>
-        h.icon.includes('🏃') ||
-        h.icon.includes('👟') ||
-        h.name.toLowerCase().includes('exercise') ||
-        h.name.toLowerCase().includes('walk')
-    ),
-    Learning: habits.filter(
-      h =>
-        h.icon.includes('📚') ||
-        h.icon.includes('🎸') ||
-        h.name.toLowerCase().includes('read') ||
-        h.name.toLowerCase().includes('practice')
-    ),
-    Wellness: habits.filter(
-      h =>
-        h.icon.includes('🧘') ||
-        h.icon.includes('📝') ||
-        h.name.toLowerCase().includes('meditate') ||
-        h.name.toLowerCase().includes('journal')
-    ),
-    Other: habits.filter(
-      h =>
-        !h.icon.includes('💧') &&
-        !h.icon.includes('💊') &&
-        !h.icon.includes('🏃') &&
-        !h.icon.includes('👟') &&
-        !h.icon.includes('📚') &&
-        !h.icon.includes('🎸') &&
-        !h.icon.includes('🧘') &&
-        !h.icon.includes('📝') &&
-        !h.name.toLowerCase().includes('water') &&
-        !h.name.toLowerCase().includes('vitamin') &&
-        !h.name.toLowerCase().includes('exercise') &&
-        !h.name.toLowerCase().includes('walk') &&
-        !h.name.toLowerCase().includes('read') &&
-        !h.name.toLowerCase().includes('practice') &&
-        !h.name.toLowerCase().includes('meditate') &&
-        !h.name.toLowerCase().includes('journal')
-    ),
-  };
+  // Group habits by their actual category
+  const categoryMap = new Map<string, HabitWithCompletion[]>();
 
-  return Object.entries(categories)
-    .map(([category, habitList]) => ({
-      category,
-      count: habitList.length,
-      completed: habitList.filter(h => h.isCompletedToday).length,
-    }))
-    .filter(cat => cat.count > 0);
+  for (const habit of habits) {
+    const category = habit.category || 'General';
+    if (!categoryMap.has(category)) {
+      categoryMap.set(category, []);
+    }
+    categoryMap.get(category)!.push(habit);
+  }
+
+  // Convert to the expected format
+  return Array.from(categoryMap.entries()).map(([category, habitList]) => ({
+    category: category.charAt(0).toUpperCase() + category.slice(1), // Capitalize first letter
+    count: habitList.length,
+    completed: habitList.filter(h => h.isCompletedToday).length,
+  }));
 };
 
 /**
