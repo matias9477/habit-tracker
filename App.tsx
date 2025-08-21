@@ -131,29 +131,21 @@ export default function App() {
 
   const initializeApp = useCallback(async () => {
     try {
-      console.log('[App] Starting initialization');
       setError(null);
 
       // Force database reinitialization to add missing reminder columns
-      console.log('[App] Reinitializing database for reminder columns...');
       await reinitializeDatabase();
-      console.log('[App] Database reinitialization complete');
 
       // Run database migrations
-      console.log('[App] Running migrations...');
       await runMigrations();
-      console.log('[App] Migrations complete');
 
       // Configure notifications
-      console.log('[App] Configuring notifications...');
       await configureNotifications();
-      console.log('[App] Notifications configured');
 
       // Uncomment the line below to seed fake data (for testing)
       // await seedFakeData();
 
       setIsInitialized(true);
-      console.log('[App] Initialization complete');
     } catch (err) {
       console.error('[App] Failed to initialize app:', err);
 
@@ -191,7 +183,6 @@ export default function App() {
       setIsRetrying(true);
       setError(null);
 
-      console.log('[App] Resetting database...');
       await resetDatabase();
 
       // Try to initialize again

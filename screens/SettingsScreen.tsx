@@ -35,7 +35,6 @@ import TermsOfServiceModal from '../components/TermsOfServiceModal';
  * Includes notification settings, data management, and app information.
  */
 export const SettingsScreen: React.FC = () => {
-  console.log('[SettingsScreen] Rendered');
   const { themeMode, notificationsEnabled, setThemeMode, toggleNotifications } =
     useThemeStore();
   const { habits, deleteHabit } = useHabitStore();
@@ -407,12 +406,6 @@ export const SettingsScreen: React.FC = () => {
             'trash-outline',
             handleClearData
           )}
-          {renderSettingItem(
-            'Test Seed Data',
-            'Seed with test habits (different creation dates)',
-            'flask-outline',
-            handleTestSeedData
-          )}
         </View>
 
         <View style={styles.section}>
@@ -478,6 +471,12 @@ export const SettingsScreen: React.FC = () => {
               'Complete database reset (use only if experiencing issues)',
               'refresh-circle-outline',
               handleResetDatabase
+            )}
+            {renderSettingItem(
+              'Test Seed Data',
+              'Seed with test habits (different creation dates)',
+              'flask-outline',
+              handleTestSeedData
             )}
           </View>
         )}

@@ -51,7 +51,6 @@ export const AddHabitModal: React.FC<AddHabitModalProps> = ({
   const { isDarkMode } = useTheme();
   const colors = getThemeColors(isDarkMode);
   const insets = useSafeAreaInsets();
-  console.log('[AddHabitModal] Rendered:', { visible });
 
   const [name, setName] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('fitness');
@@ -65,7 +64,7 @@ export const AddHabitModal: React.FC<AddHabitModalProps> = ({
 
   // Debug useEffect
   useEffect(() => {
-    console.log('[AddHabitModal] showTimePicker changed to:', showTimePicker);
+    // Removed console.log for cleaner console
   }, [showTimePicker]);
 
   const handleSubmit = async () => {
@@ -235,7 +234,6 @@ export const AddHabitModal: React.FC<AddHabitModalProps> = ({
                       },
                     ]}
                     onPress={() => {
-                      console.log('[AddHabitModal] Time picker button pressed');
                       setShowTimePicker(true);
                     }}
                     activeOpacity={0.7}
@@ -351,11 +349,6 @@ export const AddHabitModal: React.FC<AddHabitModalProps> = ({
                   const date = new Date();
                   if (hours !== undefined && minutes !== undefined) {
                     date.setHours(hours, minutes, 0, 0);
-                    console.log('[AddHabitModal] Creating picker date with:', {
-                      hours,
-                      minutes,
-                      date,
-                    });
                   }
                   return date;
                 })()}
@@ -364,32 +357,12 @@ export const AddHabitModal: React.FC<AddHabitModalProps> = ({
                 textColor={isDarkMode ? '#ffffff' : '#000000'}
                 onChange={(event, date) => {
                   if (event.type === 'set' && date) {
-                    console.log('[AddHabitModal] Raw date from picker:', date);
-                    console.log('[AddHabitModal] Date hours:', date.getHours());
-                    console.log(
-                      '[AddHabitModal] Date minutes:',
-                      date.getMinutes()
-                    );
-
                     // Use the picker's time directly without timezone conversion
                     const hours = date.getHours();
                     const minutes = date.getMinutes();
 
                     // Ensure hours are in 24-hour format for consistency
                     const newTime = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
-                    console.log(
-                      '[AddHabitModal] Raw hours from picker:',
-                      hours
-                    );
-                    console.log(
-                      '[AddHabitModal] Raw minutes from picker:',
-                      minutes
-                    );
-                    console.log('[AddHabitModal] Calculated newTime:', newTime);
-                    console.log(
-                      '[AddHabitModal] Setting reminderTime to:',
-                      newTime
-                    );
                     setReminderTime(newTime);
                   }
                 }}

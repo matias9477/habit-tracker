@@ -12,6 +12,7 @@ export const testSeedData = async () => {
     // Seed with new data
     await seedFakeData();
   } catch (error) {
-    console.error('❌ Test failed:', error);
+    // Error handling without console.log
+    throw error;
   }
 };

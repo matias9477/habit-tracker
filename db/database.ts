@@ -71,15 +71,11 @@ const setSchemaVersion = async (
  * Migration from version 0 to 1: Initial schema
  */
 const migrateToVersion1 = async (db: SQLite.SQLiteDatabase): Promise<void> => {
-  console.log('Running migration to version 1...');
-
   try {
     // Check if habits table exists and has the expected structure
     const habitsTableExists = await tableExists(db, 'habits');
 
     if (!habitsTableExists) {
-      console.log('Creating habits table...');
-      // Create habits table with improved constraints
       await db.execAsync(`
         CREATE TABLE habits (
           id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -91,15 +87,13 @@ const migrateToVersion1 = async (db: SQLite.SQLiteDatabase): Promise<void> => {
           target_count INTEGER DEFAULT 1 CHECK (target_count > 0 AND target_count <= 1000),
           target_time_minutes INTEGER DEFAULT NULL CHECK (target_time_minutes IS NULL OR (target_time_minutes > 0 AND target_time_minutes <= 1440)),
           reminder_enabled BOOLEAN DEFAULT 0 CHECK (reminder_enabled IN (0, 1)),
-          reminder_time TEXT CHECK (reminder_time IS NULL OR (reminder_time LIKE '__:__' AND CAST(substr(reminder_time, 1, 2) AS INTEGER) BETWEEN 0 AND 23 AND CAST(substr(reminder_time, 4, 2) AS INTEGER) BETWEEN 0 AND 59)),
+          reminder_time TEXT CHECK (reminder_time IS NULL OR (reminder_time LIKE "__:__" AND CAST(substr(reminder_time, 1, 2) AS INTEGER) BETWEEN 0 AND 23 AND CAST(substr(reminder_time, 4, 2) AS INTEGER) BETWEEN 0 AND 59)),
           is_active BOOLEAN DEFAULT 1 CHECK (is_active IN (0, 1)),
           created_at TEXT NOT NULL DEFAULT (datetime('now', 'utc')),
           updated_at TEXT NOT NULL DEFAULT (datetime('now', 'utc'))
         );
       `);
-      console.log('Habits table created successfully');
     } else {
-      console.log('Habits table exists, checking for missing columns...');
       // Table exists, check if we need to add missing columns
       const columnsToAdd = [
         {
@@ -128,12 +122,8 @@ const migrateToVersion1 = async (db: SQLite.SQLiteDatabase): Promise<void> => {
         if (!(await columnExists(db, 'habits', column))) {
           try {
             await db.execAsync(`ALTER TABLE habits ${sql};`);
-            console.log(`Added column ${column} to habits table`);
           } catch (error) {
-            console.log(
-              `Column ${column} already exists or couldn't be added:`,
-              error
-            );
+            // Column already exists or couldn't be added
           }
         }
       }
@@ -145,9 +135,8 @@ const migrateToVersion1 = async (db: SQLite.SQLiteDatabase): Promise<void> => {
           SET is_active = 1, updated_at = COALESCE(updated_at, created_at, datetime('now', 'utc'))
           WHERE is_active IS NULL OR updated_at IS NULL;
         `);
-        console.log('Updated existing habits with default values');
       } catch (error) {
-        console.log('Could not update existing habits:', error);
+        // Could not update existing habits
       }
     }
 
@@ -155,8 +144,6 @@ const migrateToVersion1 = async (db: SQLite.SQLiteDatabase): Promise<void> => {
     const completionsTableExists = await tableExists(db, 'habit_completions');
 
     if (!completionsTableExists) {
-      console.log('Creating habit_completions table...');
-      // Create habit_completions table
       await db.execAsync(`
         CREATE TABLE habit_completions (
           id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -170,11 +157,7 @@ const migrateToVersion1 = async (db: SQLite.SQLiteDatabase): Promise<void> => {
           FOREIGN KEY(habit_id) REFERENCES habits(id) ON DELETE CASCADE
         );
       `);
-      console.log('Habit completions table created successfully');
     } else {
-      console.log(
-        'Habit completions table exists, checking for missing columns...'
-      );
       // Table exists, check if we need to add missing columns
       const completionsColumnsToAdd = [
         {
@@ -195,12 +178,8 @@ const migrateToVersion1 = async (db: SQLite.SQLiteDatabase): Promise<void> => {
         if (!(await columnExists(db, 'habit_completions', column))) {
           try {
             await db.execAsync(`ALTER TABLE habit_completions ${sql};`);
-            console.log(`Added column ${column} to habit_completions table`);
           } catch (error) {
-            console.log(
-              `Column ${column} already exists or couldn't be added:`,
-              error
-            );
+            // Column already exists or couldn't be added
           }
         }
       }
@@ -212,14 +191,12 @@ const migrateToVersion1 = async (db: SQLite.SQLiteDatabase): Promise<void> => {
           SET completed_at = COALESCE(completed_at, date, datetime('now', 'utc'))
           WHERE completed_at IS NULL;
         `);
-        console.log('Updated existing completions with default values');
       } catch (error) {
-        console.log('Could not update existing completions:', error);
+        // Could not update existing completions
       }
     }
 
     // Create performance indexes (ignore if they already exist)
-    console.log('Creating performance indexes...');
     const indexes = [
       'CREATE INDEX IF NOT EXISTS idx_habit_completions_habit_date ON habit_completions(habit_id, date);',
       'CREATE INDEX IF NOT EXISTS idx_habit_completions_date ON habit_completions(date);',
@@ -233,21 +210,18 @@ const migrateToVersion1 = async (db: SQLite.SQLiteDatabase): Promise<void> => {
       try {
         await db.execAsync(indexSql);
       } catch (error) {
-        console.log('Index creation failed (might already exist):', error);
+        // Index creation failed (might already exist):
       }
     }
 
     // Enable foreign key constraints
     try {
       await db.execAsync('PRAGMA foreign_keys = ON;');
-      console.log('Foreign key constraints enabled');
     } catch (error) {
-      console.log('Could not enable foreign keys:', error);
+      // Could not enable foreign keys:
     }
-
-    console.log('Version 1 migration completed successfully');
   } catch (error) {
-    console.error('Version 1 migration failed:', error);
+    // Version 1 migration failed:
     throw error;
   }
 };
@@ -256,8 +230,6 @@ const migrateToVersion1 = async (db: SQLite.SQLiteDatabase): Promise<void> => {
  * Migration from version 1 to 2: Add missing columns and constraints
  */
 const migrateToVersion2 = async (db: SQLite.SQLiteDatabase): Promise<void> => {
-  console.log('Running migration to version 2...');
-
   // This migration is now mostly handled in version 1
   // Just ensure all columns exist and have proper constraints
 
@@ -265,7 +237,7 @@ const migrateToVersion2 = async (db: SQLite.SQLiteDatabase): Promise<void> => {
   const habitsColumns = ['target_time_minutes', 'is_active', 'updated_at'];
   for (const column of habitsColumns) {
     if (!(await columnExists(db, 'habits', column))) {
-      console.log(`Warning: Column ${column} missing from habits table`);
+      // Warning: Column ${column} missing from habits table
     }
   }
 
@@ -273,21 +245,15 @@ const migrateToVersion2 = async (db: SQLite.SQLiteDatabase): Promise<void> => {
   const completionsColumns = ['time_minutes', 'notes', 'completed_at'];
   for (const column of completionsColumns) {
     if (!(await columnExists(db, 'habit_completions', column))) {
-      console.log(
-        `Warning: Column ${column} missing from habit_completions table`
-      );
+      // Warning: Column ${column} missing from habit_completions table
     }
   }
-
-  console.log('Version 2 migration completed (verification only)');
 };
 
 /**
  * Migration from version 2 to 3: Remove deprecated cached fields
  */
 const migrateToVersion3 = async (db: SQLite.SQLiteDatabase): Promise<void> => {
-  console.log('Running migration to version 3...');
-
   // Remove deprecated cached fields if they exist
   const deprecatedColumns = [
     'total_completions',
@@ -315,7 +281,7 @@ export const checkDatabaseIntegrity = async (): Promise<boolean> => {
     const requiredTables = ['habits', 'habit_completions', 'schema_version'];
     for (const table of requiredTables) {
       if (!(await tableExists(db, table))) {
-        console.log(`Missing required table: ${table}`);
+        // Missing required table: ${table}
         return false;
       }
     }
@@ -337,7 +303,7 @@ export const checkDatabaseIntegrity = async (): Promise<boolean> => {
 
     for (const column of requiredHabitColumns) {
       if (!(await columnExists(db, 'habits', column))) {
-        console.log(`Missing required column in habits table: ${column}`);
+        // Missing required column in habits table: ${column}
         return false;
       }
     }
@@ -355,16 +321,14 @@ export const checkDatabaseIntegrity = async (): Promise<boolean> => {
 
     for (const column of requiredCompletionColumns) {
       if (!(await columnExists(db, 'habit_completions', column))) {
-        console.log(
-          `Missing required column in habit_completions table: ${column}`
-        );
+        // Missing required column in habit_completions table: ${column}
         return false;
       }
     }
 
     return true;
   } catch (error) {
-    console.error('Database integrity check failed:', error);
+    // Database integrity check failed:
     return false;
   }
 };
@@ -384,40 +348,28 @@ export const runMigrations = async (): Promise<void> => {
     const currentVersion = await getSchemaVersion(db);
     const targetVersion = 3; // Current schema version
 
-    console.log(
-      `Current database version: ${currentVersion}, target: ${targetVersion}`
-    );
-
     // Check if database is in a consistent state before proceeding
     if (currentVersion > 0) {
       const isConsistent = await checkDatabaseIntegrity();
       if (!isConsistent) {
-        console.log('Database integrity check failed, attempting to repair...');
+        // Database integrity check failed, attempting to repair...
         // Try to repair the database first
         const repairSuccess = await repairDatabase();
         if (repairSuccess) {
-          console.log(
-            'Database repair successful, continuing with migration...'
-          );
+          // Database repair successful, continuing with migration...
           // Check integrity again after repair
           const isRepaired = await checkDatabaseIntegrity();
           if (!isRepaired) {
-            console.log(
-              'Database still inconsistent after repair, resetting...'
-            );
+            // Database still inconsistent after repair, resetting...
             await resetDatabase();
-            console.log(
-              'Database reset due to integrity issues. Starting fresh...'
-            );
+            // Database reset due to integrity issues. Starting fresh...
             // Reset version to 0 to trigger full migration
             await setSchemaVersion(db, 0);
           }
         } else {
-          console.log('Database repair failed, resetting...');
+          // Database repair failed, resetting...
           await resetDatabase();
-          console.log(
-            'Database reset due to repair failure. Starting fresh...'
-          );
+          // Database reset due to repair failure. Starting fresh...
           await setSchemaVersion(db, 0);
         }
       }
@@ -444,31 +396,29 @@ export const runMigrations = async (): Promise<void> => {
       throw new Error('Database integrity check failed after migrations');
     }
 
-    console.log(
-      `Database migration completed successfully. Current version: ${targetVersion}`
-    );
+    // Database migration completed successfully. Current version: ${targetVersion}
   } catch (error) {
-    console.error('Migration failed:', error);
+    // Migration failed:
 
     // If migration fails, try to repair first, then reset if needed
-    console.log('Attempting to repair database due to migration failure...');
+    // Attempting to repair database due to migration failure...
     try {
       const repairSuccess = await repairDatabase();
       if (repairSuccess) {
-        console.log('Database repair successful. Please restart the app.');
+        // Database repair successful. Please restart the app.
         throw new Error(
           'Database has been repaired due to migration failure. Please restart the app.'
         );
       } else {
-        console.log('Database repair failed, attempting reset...');
+        // Database repair failed, attempting reset...
         await resetDatabase();
-        console.log('Database reset successful. Please restart the app.');
+        // Database reset successful. Please restart the app.
         throw new Error(
           'Database has been reset due to migration failure. Please restart the app.'
         );
       }
     } catch (resetError) {
-      console.error('Database repair and reset both failed:', resetError);
+      // Database repair and reset both failed:
       throw new Error(
         'Database migration, repair, and reset all failed. Please reinstall the app.'
       );
@@ -521,7 +471,7 @@ export const getDatabaseInfo = async (): Promise<{
       completionsColumns,
     };
   } catch (error) {
-    console.error('Failed to get database info:', error);
+    // Failed to get database info:
     throw error;
   }
 };
@@ -545,9 +495,9 @@ export const resetDatabase = async (): Promise<void> => {
     // Re-enable foreign keys
     await db.execAsync('PRAGMA foreign_keys = ON;');
 
-    console.log('Database reset complete');
+    // Database reset complete
   } catch (error) {
-    console.error('Database reset failed:', error);
+    // Database reset failed:
     throw error;
   }
 };
@@ -559,7 +509,7 @@ export const resetDatabase = async (): Promise<void> => {
 export const repairDatabase = async (): Promise<boolean> => {
   try {
     const db = await getDatabase();
-    console.log('Attempting database repair...');
+    // Attempting database repair...
 
     // Check what's missing and try to fix it
     const habitsTableExists = await tableExists(db, 'habits');
@@ -570,14 +520,14 @@ export const repairDatabase = async (): Promise<boolean> => {
 
     // Try to recreate schema_version table if missing
     if (!schemaTableExists) {
-      console.log('Recreating schema_version table...');
+      // Recreating schema_version table...
       await setSchemaVersion(db, 0);
       repaired = true;
     }
 
     // Try to recreate habits table if missing
     if (!habitsTableExists) {
-      console.log('Recreating habits table...');
+      // Recreating habits table...
       await db.execAsync(`
         CREATE TABLE habits (
           id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -600,7 +550,7 @@ export const repairDatabase = async (): Promise<boolean> => {
 
     // Try to recreate habit_completions table if missing
     if (!completionsTableExists) {
-      console.log('Recreating habit_completions table...');
+      // Recreating habit_completions table...
       await db.execAsync(`
         CREATE TABLE habit_completions (
           id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -637,11 +587,11 @@ export const repairDatabase = async (): Promise<boolean> => {
 
             if (sql) {
               await db.execAsync(`ALTER TABLE habits ${sql};`);
-              console.log(`Added missing column ${column} to habits table`);
+              // Added missing column ${column} to habits table
               repaired = true;
             }
           } catch (error) {
-            console.log(`Could not add column ${column}:`, error);
+            // Could not add column ${column}:
           }
         }
       }
@@ -665,29 +615,27 @@ export const repairDatabase = async (): Promise<boolean> => {
 
             if (sql) {
               await db.execAsync(`ALTER TABLE habit_completions ${sql};`);
-              console.log(
-                `Added missing column ${column} to habit_completions table`
-              );
+              // Added missing column ${column} to habit_completions table
               repaired = true;
             }
           } catch (error) {
-            console.log(`Could not add column ${column}:`, error);
+            // Could not add column ${column}:
           }
         }
       }
     }
 
     if (repaired) {
-      console.log('Database repair completed');
+      // Database repair completed
       // Set version to current to prevent re-migration
       await setSchemaVersion(db, 3);
       return true;
     } else {
-      console.log('No repairs were needed');
+      // No repairs were needed
       return true;
     }
   } catch (error) {
-    console.error('Database repair failed:', error);
+    // Database repair failed:
     return false;
   }
 };
@@ -697,19 +645,16 @@ export const repairDatabase = async (): Promise<boolean> => {
  * Use this when you need to force database schema updates.
  */
 export const reinitializeDatabase = async (): Promise<void> => {
-  console.log('Reinitializing database...');
   const db = await getDatabase();
 
   try {
     // Drop the schema version table to force re-migration
     await db.execAsync('DROP TABLE IF EXISTS schema_version;');
-    console.log('Dropped schema version table');
 
     // Run the migrations which will recreate everything
     await runMigrations();
-    console.log('Database reinitialized successfully');
   } catch (error) {
-    console.error('Failed to reinitialize database:', error);
+    // Failed to reinitialize database:
     throw error;
   }
 };
