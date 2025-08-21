@@ -142,13 +142,7 @@ export const DateHeader: React.FC<DateHeaderProps> = ({
               />
             </TouchableOpacity>
           </View>
-          <Text
-            style={[
-              styles.relativeDate,
-              { color: colors.textSecondary },
-              isToday() && { color: colors.primary },
-            ]}
-          >
+          <Text style={[styles.relativeDate, { color: colors.textSecondary }]}>
             {formatRelativeDate(date)}
           </Text>
           {/* Show navigation limit message */}
@@ -211,6 +205,7 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     paddingVertical: 8,
+    height: 60, // Fixed height to prevent container size changes
   },
   dateContainer: {
     flexDirection: 'row',
@@ -229,6 +224,10 @@ const styles = StyleSheet.create({
   relativeDate: {
     fontSize: 12,
     fontWeight: '500',
+    height: 20, // Fixed height to prevent container size changes
+    textAlign: 'center', // Center the text
+    lineHeight: 20, // Match the height to center text vertically
+    includeFontPadding: false, // Remove extra font padding on Android
   },
   limitMessage: {
     fontSize: 10,
