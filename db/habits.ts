@@ -11,12 +11,10 @@ export type Habit = {
   custom_emoji?: string;
   goal_type: string;
   target_count?: number;
+  target_time_minutes?: number;
+  is_active: boolean;
   created_at: string;
-  // Cached analytics fields for better performance
-  total_completions?: number;
-  current_streak?: number;
-  longest_streak?: number;
-  last_completed_date?: string;
+  updated_at: string;
 };
 
 /**
@@ -28,15 +26,16 @@ export const insertHabit = async (
   category: string = 'general',
   goalType: string = 'binary',
   customEmoji?: string,
-  targetCount?: number
+  targetCount?: number,
+  targetTimeMinutes?: number
 ): Promise<number | null> => {
   try {
     const db = await getDatabase();
-    const createdAt = new Date().toISOString();
+    const now = new Date().toISOString();
     const finalTargetCount = targetCount || (goalType === 'count' ? 1 : null);
 
     const result = await db.runAsync(
-      'INSERT INTO habits (name, icon, category, custom_emoji, goal_type, target_count, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)',
+      'INSERT INTO habits (name, icon, category, custom_emoji, goal_type, target_count, target_time_minutes, is_active, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
       [
         name,
         icon,
@@ -44,7 +43,10 @@ export const insertHabit = async (
         customEmoji || null,
         goalType,
         finalTargetCount,
-        createdAt,
+        targetTimeMinutes || null,
+        1, // is_active = true
+        now,
+        now,
       ]
     );
     return result.lastInsertRowId;
@@ -65,7 +67,8 @@ export const insertHabitWithDate = async (
   category: string = 'general',
   goalType: string = 'binary',
   customEmoji?: string,
-  targetCount?: number
+  targetCount?: number,
+  targetTimeMinutes?: number
 ): Promise<number | null> => {
   try {
     const db = await getDatabase();
@@ -73,7 +76,7 @@ export const insertHabitWithDate = async (
     const finalTargetCount = targetCount || (goalType === 'count' ? 1 : null);
 
     const result = await db.runAsync(
-      'INSERT INTO habits (name, icon, category, custom_emoji, goal_type, target_count, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)',
+      'INSERT INTO habits (name, icon, category, custom_emoji, goal_type, target_count, target_time_minutes, is_active, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
       [
         name,
         icon,
@@ -81,6 +84,9 @@ export const insertHabitWithDate = async (
         customEmoji || null,
         goalType,
         finalTargetCount,
+        targetTimeMinutes || null,
+        1, // is_active = true
+        createdAtString,
         createdAtString,
       ]
     );
@@ -101,14 +107,16 @@ export const updateHabit = async (
   category: string,
   goalType: string,
   customEmoji?: string,
-  targetCount?: number
+  targetCount?: number,
+  targetTimeMinutes?: number
 ): Promise<boolean> => {
   try {
     const db = await getDatabase();
     const finalTargetCount = targetCount || (goalType === 'count' ? 1 : null);
+    const now = new Date().toISOString();
 
     await db.runAsync(
-      'UPDATE habits SET name = ?, icon = ?, category = ?, custom_emoji = ?, goal_type = ?, target_count = ? WHERE id = ?',
+      'UPDATE habits SET name = ?, icon = ?, category = ?, custom_emoji = ?, goal_type = ?, target_count = ?, target_time_minutes = ?, updated_at = ? WHERE id = ?',
       [
         name,
         icon,
@@ -116,6 +124,8 @@ export const updateHabit = async (
         customEmoji || null,
         goalType,
         finalTargetCount,
+        targetTimeMinutes || null,
+        now,
         id,
       ]
     );
@@ -127,24 +137,40 @@ export const updateHabit = async (
 };
 
 /**
- * Updates only the analytics fields for a habit by id.
+ * Soft deletes a habit by setting is_active to false.
+ * This preserves the habit's history while marking it as inactive.
  */
-export const updateHabitAnalyticsFields = async (
-  id: number,
-  totalCompletions: number,
-  currentStreak: number,
-  longestStreak: number,
-  lastCompletedDate: string | null
-): Promise<boolean> => {
+export const softDeleteHabit = async (id: number): Promise<boolean> => {
   try {
     const db = await getDatabase();
+    const now = new Date().toISOString();
+    
     await db.runAsync(
-      'UPDATE habits SET total_completions = ?, current_streak = ?, longest_streak = ?, last_completed_date = ? WHERE id = ?',
-      [totalCompletions, currentStreak, longestStreak, lastCompletedDate, id]
+      'UPDATE habits SET is_active = 0, updated_at = ? WHERE id = ?',
+      [now, id]
     );
     return true;
   } catch (error) {
-    console.error('Update habit analytics fields error', error);
+    console.error('Soft delete habit error', error);
+    return false;
+  }
+};
+
+/**
+ * Reactivates a previously soft-deleted habit.
+ */
+export const reactivateHabit = async (id: number): Promise<boolean> => {
+  try {
+    const db = await getDatabase();
+    const now = new Date().toISOString();
+    
+    await db.runAsync(
+      'UPDATE habits SET is_active = 1, updated_at = ? WHERE id = ?',
+      [now, id]
+    );
+    return true;
+  } catch (error) {
+    console.error('Reactivate habit error', error);
     return false;
   }
 };
@@ -164,16 +190,32 @@ export const deleteHabit = async (id: number): Promise<boolean> => {
 };
 
 /**
- * Fetches all habits from the database.
+ * Fetches all active habits from the database.
  */
 export const getAllHabits = async (): Promise<Habit[]> => {
+  try {
+    const db = await getDatabase();
+    return await db.getAllAsync<Habit>(
+      'SELECT * FROM habits WHERE is_active = 1 ORDER BY created_at DESC'
+    );
+  } catch (error) {
+    console.error('Get all habits error', error);
+    return [];
+  }
+};
+
+/**
+ * Fetches all habits (including inactive ones) from the database.
+ * Useful for admin purposes or data export.
+ */
+export const getAllHabitsIncludingInactive = async (): Promise<Habit[]> => {
   try {
     const db = await getDatabase();
     return await db.getAllAsync<Habit>(
       'SELECT * FROM habits ORDER BY created_at DESC'
     );
   } catch (error) {
-    console.error('Get all habits error', error);
+    console.error('Get all habits including inactive error', error);
     return [];
   }
 };
@@ -188,7 +230,7 @@ export const getHabitsForDate = async (date: Date): Promise<Habit[]> => {
     const dateString = date.toISOString().slice(0, 10); // YYYY-MM-DD format
 
     const habits = await db.getAllAsync<Habit>(
-      'SELECT * FROM habits WHERE DATE(created_at) <= ? ORDER BY created_at DESC',
+      'SELECT * FROM habits WHERE DATE(created_at) <= ? AND is_active = 1 ORDER BY created_at DESC',
       [dateString]
     );
 

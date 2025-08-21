@@ -74,7 +74,8 @@ export const seedFakeData = async () => {
         'general', // category
         habit.goalType,
         undefined, // customEmoji
-        habit.targetCount
+        habit.targetCount,
+        undefined // targetTimeMinutes
       );
       if (id) {
         habitIds.push(id);

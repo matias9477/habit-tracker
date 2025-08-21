@@ -65,7 +65,8 @@ interface HabitActions {
     category: string,
     goalType?: string,
     targetCount?: number,
-    customEmoji?: string
+    customEmoji?: string,
+    targetTimeMinutes?: number
   ) => Promise<boolean>;
   updateHabit: (
     id: number,
@@ -73,7 +74,8 @@ interface HabitActions {
     category: string,
     goalType: string,
     customEmoji?: string,
-    targetCount?: number
+    targetCount?: number,
+    targetTimeMinutes?: number
   ) => Promise<boolean>;
   deleteHabit: (id: number) => Promise<boolean>;
 
@@ -378,7 +380,8 @@ export const useHabitStore = create<HabitState & HabitActions>((set, get) => ({
     category: string,
     goalType: string = 'binary',
     targetCount?: number,
-    customEmoji?: string
+    customEmoji?: string,
+    targetTimeMinutes?: number
   ) => {
     try {
       // Get the icon from the category
@@ -392,7 +395,8 @@ export const useHabitStore = create<HabitState & HabitActions>((set, get) => ({
         category,
         goalType,
         customEmoji,
-        targetCount
+        targetCount,
+        targetTimeMinutes
       );
       if (habitId) {
         await get().refreshHabits();
@@ -412,7 +416,8 @@ export const useHabitStore = create<HabitState & HabitActions>((set, get) => ({
     category: string,
     goalType: string,
     customEmoji?: string,
-    targetCount?: number
+    targetCount?: number,
+    targetTimeMinutes?: number
   ) => {
     try {
       // Get the icon from the category
@@ -427,7 +432,8 @@ export const useHabitStore = create<HabitState & HabitActions>((set, get) => ({
         category,
         goalType,
         customEmoji,
-        targetCount
+        targetCount,
+        targetTimeMinutes
       );
       if (success) {
         await get().refreshHabits();

@@ -1,5 +1,5 @@
 import { HabitWithCompletion } from '../store/habitStore';
-import { getAllHabits, updateHabitAnalyticsFields } from '../db/habits';
+import { getAllHabits } from '../db/habits';
 import {
   getTotalCompletionsForHabit,
   getStreakForHabit,
@@ -242,36 +242,24 @@ export const getCategoryStats = async (
 };
 
 /**
- * Updates cached analytics fields for a single habit.
+ * Gets analytics for a single habit.
+ * Since we no longer cache analytics fields, this calculates them dynamically.
  */
-export const updateHabitAnalytics = async (habitId: number) => {
+export const getHabitAnalytics = async (habitId: number) => {
   const totalCompletions = await getTotalCompletionsForHabit(habitId);
   const currentStreak = await getStreakForHabit(habitId);
-  // TODO: Implement longest streak and last completed date
-  // For now, set as current streak and null
-  const longestStreak = currentStreak;
-  const lastCompletedDate = null;
-  await updateHabitAnalyticsFields(
-    habitId,
+  
+  return {
     totalCompletions,
     currentStreak,
-    longestStreak,
-    lastCompletedDate
-  );
-};
-
-/**
- * Updates analytics for all habits.
- */
-export const updateAllHabitsAnalytics = async () => {
-  const habits = await getAllHabits();
-  for (const habit of habits) {
-    await updateHabitAnalytics(habit.id);
-  }
+    // Note: longest streak and last completed date would need additional queries
+    // For now, we'll calculate these when needed
+  };
 };
 
 /**
  * Computes general analytics across all habits.
+ * Since we no longer cache analytics fields, this calculates them dynamically.
  */
 export const getGeneralAnalytics = async () => {
   const habits = await getAllHabits();
@@ -283,9 +271,11 @@ export const getGeneralAnalytics = async () => {
   let maxCompletions = -1;
   let minCompletions = Number.MAX_SAFE_INTEGER;
 
+  // Calculate analytics for each habit dynamically
   for (const habit of habits) {
-    const completions = habit.total_completions || 0;
-    const streak = habit.current_streak || 0;
+    const completions = await getTotalCompletionsForHabit(habit.id);
+    const streak = await getStreakForHabit(habit.id);
+    
     totalCompletions += completions;
     if (streak > bestStreak) bestStreak = streak;
     if (completions > maxCompletions) {
@@ -298,14 +288,16 @@ export const getGeneralAnalytics = async () => {
     }
     if (
       !mostConsistentHabit ||
-      streak > (mostConsistentHabit.current_streak || 0)
+      streak > (await getStreakForHabit(mostConsistentHabit.id))
     ) {
       mostConsistentHabit = habit;
     }
   }
+  
   const averageCompletions = habits.length
     ? totalCompletions / habits.length
     : 0;
+    
   return {
     totalCompletions,
     averageCompletions,

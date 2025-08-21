@@ -88,14 +88,16 @@ export const TodayScreen: React.FC = () => {
     category: string,
     goalType: string,
     targetCount?: number,
-    customEmoji?: string
+    customEmoji?: string,
+    targetTimeMinutes?: number
   ) => {
     const success = await addHabit(
       name,
       category,
       goalType,
       targetCount,
-      customEmoji
+      customEmoji,
+      targetTimeMinutes
     );
     if (success) {
       setIsAddModalVisible(false);
@@ -113,7 +115,8 @@ export const TodayScreen: React.FC = () => {
     category: string,
     goalType: string,
     customEmoji?: string,
-    targetCount?: number
+    targetCount?: number,
+    targetTimeMinutes?: number
   ) => {
     const success = await updateHabit(
       id,
@@ -121,7 +124,8 @@ export const TodayScreen: React.FC = () => {
       category,
       goalType,
       customEmoji,
-      targetCount
+      targetCount,
+      targetTimeMinutes
     );
     if (success) {
       setIsEditModalVisible(false);

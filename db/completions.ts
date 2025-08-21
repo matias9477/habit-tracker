@@ -8,6 +8,9 @@ export type HabitCompletion = {
   habit_id: number;
   date: string; // ISO string (YYYY-MM-DD)
   count?: number; // For count-based habits
+  time_minutes?: number; // For time-based habits
+  notes?: string; // Optional notes about the completion
+  completed_at: string; // When the completion was recorded
 };
 
 /**
@@ -15,13 +18,15 @@ export type HabitCompletion = {
  */
 export const markHabitCompleted = async (
   habitId: number,
-  date: string = new Date().toISOString().slice(0, 10)
+  date: string = new Date().toISOString().slice(0, 10),
+  notes?: string
 ): Promise<number | null> => {
   try {
     const db = await getDatabase();
+    const now = new Date().toISOString();
     const result = await db.runAsync(
-      'INSERT OR IGNORE INTO habit_completions (habit_id, date) VALUES (?, ?)',
-      [habitId, date]
+      'INSERT OR IGNORE INTO habit_completions (habit_id, date, notes, completed_at) VALUES (?, ?, ?, ?)',
+      [habitId, date, notes || null, now]
     );
     return result.lastInsertRowId;
   } catch (error) {
@@ -59,6 +64,7 @@ export const incrementHabitCount = async (
 ): Promise<number> => {
   try {
     const db = await getDatabase();
+    const now = new Date().toISOString();
 
     // Check if there's already a completion record for today
     const existing = await db.getFirstAsync<HabitCompletion>(
@@ -70,15 +76,15 @@ export const incrementHabitCount = async (
       // Update existing record
       const newCount = (existing.count || 0) + 1;
       await db.runAsync(
-        'UPDATE habit_completions SET count = ? WHERE habit_id = ? AND date = ?',
-        [newCount, habitId, date]
+        'UPDATE habit_completions SET count = ?, completed_at = ? WHERE habit_id = ? AND date = ?',
+        [newCount, now, habitId, date]
       );
       return newCount;
     } else {
       // Create new record
       const result = await db.runAsync(
-        'INSERT INTO habit_completions (habit_id, date, count) VALUES (?, ?, 1)',
-        [habitId, date]
+        'INSERT INTO habit_completions (habit_id, date, count, completed_at) VALUES (?, ?, 1, ?)',
+        [habitId, date, now]
       );
       return 1;
     }
@@ -206,6 +212,65 @@ export const getTotalCompletionsForHabit = async (
     return result?.total || 0;
   } catch (error) {
     console.error('Get total completions error', error);
+    return 0;
+  }
+};
+
+/**
+ * Records time spent on a time-based habit for a given date.
+ */
+export const recordHabitTime = async (
+  habitId: number,
+  timeMinutes: number,
+  date: string = new Date().toISOString().slice(0, 10),
+  notes?: string
+): Promise<number | null> => {
+  try {
+    const db = await getDatabase();
+    const now = new Date().toISOString();
+
+    // Check if there's already a completion record for today
+    const existing = await db.getFirstAsync<HabitCompletion>(
+      'SELECT * FROM habit_completions WHERE habit_id = ? AND date = ?',
+      [habitId, date]
+    );
+
+    if (existing) {
+      // Update existing record
+      await db.runAsync(
+        'UPDATE habit_completions SET time_minutes = ?, notes = ?, completed_at = ? WHERE habit_id = ? AND date = ?',
+        [timeMinutes, notes || null, now, habitId, date]
+      );
+      return existing.id;
+    } else {
+      // Create new record
+      const result = await db.runAsync(
+        'INSERT INTO habit_completions (habit_id, date, time_minutes, notes, completed_at) VALUES (?, ?, ?, ?, ?)',
+        [habitId, date, timeMinutes, notes || null, now]
+      );
+      return result.lastInsertRowId;
+    }
+  } catch (error) {
+    console.error('Record habit time error', error);
+    return null;
+  }
+};
+
+/**
+ * Gets the total time spent on a habit across all time.
+ */
+export const getTotalTimeForHabit = async (
+  habitId: number
+): Promise<number> => {
+  try {
+    const db = await getDatabase();
+    const result = await db.getFirstAsync<{ total: number }>(
+      'SELECT SUM(time_minutes) as total FROM habit_completions WHERE habit_id = ? AND time_minutes IS NOT NULL',
+      [habitId]
+    );
+    return result?.total || 0;
+  } catch (error) {
+    console.error('Get total time error', error);
     return 0;
   }
 };

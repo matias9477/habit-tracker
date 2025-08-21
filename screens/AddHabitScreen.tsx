@@ -77,7 +77,9 @@ export const AddHabitScreen: React.FC = () => {
         name.trim(),
         finalIcon,
         goalType,
-        finalTargetCount
+        finalTargetCount,
+        undefined, // customEmoji
+        undefined // targetTimeMinutes
       );
       if (success) {
         // Reset form
