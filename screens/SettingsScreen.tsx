@@ -17,6 +17,12 @@ import { getThemeColors, useTheme } from '../utils/theme';
 import { exportHabitData } from '../utils/dataExport';
 import { testSeedData } from '../utils/testSeed';
 import {
+  resetDatabase,
+  getDatabaseInfo,
+  repairDatabase,
+  runMigrations,
+} from '../db/database';
+import {
   configureNotifications,
   sendTestNotification,
   areNotificationsEnabled,
@@ -174,6 +180,114 @@ export const SettingsScreen: React.FC = () => {
     );
   };
 
+  const handleResetDatabase = () => {
+    Alert.alert(
+      'Reset Database',
+      'This will completely reset the database and delete all data. This action cannot be undone and will require a restart.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Reset Database',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await resetDatabase();
+              Alert.alert(
+                'Database Reset',
+                'Database has been reset. Please restart the app to complete the process.',
+                [
+                  {
+                    text: 'OK',
+                    onPress: () => {
+                      // Force app restart by throwing an error
+                      throw new Error(
+                        'Database reset completed. Please restart the app.'
+                      );
+                    },
+                  },
+                ]
+              );
+            } catch (error) {
+              Alert.alert(
+                'Error',
+                'Failed to reset database. Please try again.'
+              );
+            }
+          },
+        },
+      ]
+    );
+  };
+
+  const handleShowDatabaseInfo = async () => {
+    try {
+      const dbInfo = await getDatabaseInfo();
+      const infoText = `Version: ${dbInfo.version}\nTables: ${dbInfo.tables.join(', ')}\nHabits Columns: ${dbInfo.habitsColumns.join(', ')}\nCompletions Columns: ${dbInfo.completionsColumns.join(', ')}`;
+
+      Alert.alert('Database Info', infoText, [{ text: 'OK' }]);
+    } catch (error) {
+      Alert.alert('Error', 'Failed to get database info.');
+    }
+  };
+
+  const handleRepairDatabase = () => {
+    Alert.alert(
+      'Repair Database',
+      'This will attempt to repair any database issues without losing data.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Repair',
+          onPress: async () => {
+            try {
+              const success = await repairDatabase();
+              if (success) {
+                Alert.alert(
+                  'Success',
+                  'Database repair completed successfully.'
+                );
+              } else {
+                Alert.alert(
+                  'Error',
+                  'Database repair failed. You may need to reset the database.'
+                );
+              }
+            } catch (error) {
+              Alert.alert('Error', 'Database repair failed. Please try again.');
+            }
+          },
+        },
+      ]
+    );
+  };
+
+  const handleReinitializeDatabase = () => {
+    Alert.alert(
+      'Reinitialize Database',
+      "This will run database migrations again. This is useful if you're experiencing database issues.",
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Reinitialize',
+          onPress: async () => {
+            try {
+              await runMigrations();
+              Alert.alert(
+                'Success',
+                'Database reinitialization completed successfully.'
+              );
+            } catch (error) {
+              Alert.alert(
+                'Error',
+                'Database reinitialization failed. You may need to reset the database.'
+              );
+            }
+          },
+        },
+      ]
+    );
+  };
+
   const renderSettingItem = (
     title: string,
     subtitle: string,
@@ -316,6 +430,39 @@ export const SettingsScreen: React.FC = () => {
             handleResetOnboarding
           )}
         </View>
+
+        {/* Development section - only show in development */}
+        {__DEV__ && (
+          <View style={styles.section}>
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>
+              Development
+            </Text>
+            {renderSettingItem(
+              'Database Info',
+              'Show database structure and version',
+              'information-circle-outline',
+              handleShowDatabaseInfo
+            )}
+            {renderSettingItem(
+              'Reinitialize Database',
+              'Run database migrations again',
+              'sync-outline',
+              handleReinitializeDatabase
+            )}
+            {renderSettingItem(
+              'Repair Database',
+              'Attempt to repair database issues',
+              'construct-outline',
+              handleRepairDatabase
+            )}
+            {renderSettingItem(
+              'Reset Database',
+              'Complete database reset (use only if experiencing issues)',
+              'refresh-circle-outline',
+              handleResetDatabase
+            )}
+          </View>
+        )}
       </ScrollView>
 
       {/* Privacy Policy Modal */}

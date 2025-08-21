@@ -1,9 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { StatusBar } from 'expo-status-bar';
-import { View, Text, StyleSheet, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, ActivityIndicator, TouchableOpacity } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { runMigrations } from './db/database';
+import { runMigrations, resetDatabase } from './db/database';
 import { MainStackNavigator } from './navigation/MainTabNavigator';
 import { configureNotifications } from './utils/notifications';
 import { useOnboardingStore } from './store/onboardingStore';
@@ -31,6 +31,48 @@ const LoadingScreen: React.FC = () => {
 };
 
 /**
+ * Error screen component shown when initialization fails.
+ */
+const ErrorScreen: React.FC<{ error: string; onRetry: () => void; onReset: () => void }> = ({ 
+  error, 
+  onRetry, 
+  onReset 
+}) => {
+  const { isDarkMode } = useTheme();
+  const colors = getThemeColors(isDarkMode);
+
+  return (
+    <View
+      style={[styles.errorContainer, { backgroundColor: colors.background }]}
+    >
+      <Text style={[styles.errorText, { color: colors.error }]}>{error}</Text>
+      
+      <View style={styles.errorActions}>
+        <TouchableOpacity
+          style={[styles.errorButton, { backgroundColor: colors.primary }]}
+          onPress={onRetry}
+          activeOpacity={0.7}
+        >
+          <Text style={[styles.errorButtonText, { color: colors.surface }]}>
+            Retry
+          </Text>
+        </TouchableOpacity>
+        
+        <TouchableOpacity
+          style={[styles.errorButton, { backgroundColor: colors.error }]}
+          onPress={onReset}
+          activeOpacity={0.7}
+        >
+          <Text style={[styles.errorButtonText, { color: colors.surface }]}>
+            Reset Database
+          </Text>
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
+};
+
+/**
  * App content wrapper that handles onboarding logic.
  * Shows onboarding on first launch, otherwise shows the main app.
  */
@@ -43,7 +85,7 @@ const AppContent: React.FC = () => {
     if (hasHydrated) {
       setShowOnboarding(!hasCompletedOnboarding);
     }
-  }, [hasHydrated]);
+  }, [hasHydrated, hasCompletedOnboarding]);
 
   if (!hasHydrated) return null;
 
@@ -71,49 +113,86 @@ const AppContent: React.FC = () => {
 export default function App() {
   const [isInitialized, setIsInitialized] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isRetrying, setIsRetrying] = useState(false);
+  
+  // Always call useTheme to avoid hooks violation
+  const { isDarkMode } = useTheme();
 
-  useEffect(() => {
-    const initializeApp = async () => {
-      try {
-        console.log('[App] Starting initialization');
-        // Run database migrations
-        console.log('[App] Running migrations...');
-        await runMigrations();
-        console.log('[App] Migrations complete');
+  const initializeApp = useCallback(async () => {
+    try {
+      console.log('[App] Starting initialization');
+      setError(null);
+      
+      // Run database migrations
+      console.log('[App] Running migrations...');
+      await runMigrations();
+      console.log('[App] Migrations complete');
 
-        // Configure notifications
-        console.log('[App] Configuring notifications...');
-        await configureNotifications();
-        console.log('[App] Notifications configured');
+      // Configure notifications
+      console.log('[App] Configuring notifications...');
+      await configureNotifications();
+      console.log('[App] Notifications configured');
 
-        // Uncomment the line below to seed fake data (for testing)
-        // await seedFakeData();
+      // Uncomment the line below to seed fake data (for testing)
+      // await seedFakeData();
 
-        setIsInitialized(true);
-        console.log('[App] Initialization complete');
-      } catch (err) {
-        console.error('[App] Failed to initialize app:', err);
-        setError('Failed to initialize the app. Please restart.');
+      setIsInitialized(true);
+      console.log('[App] Initialization complete');
+    } catch (err) {
+      console.error('[App] Failed to initialize app:', err);
+      
+      // Provide more specific error messages
+      let errorMessage = 'Failed to initialize the app. Please restart.';
+      
+      if (err instanceof Error) {
+        if (err.message.includes('Database has been reset')) {
+          errorMessage = err.message;
+        } else if (err.message.includes('Database has been repaired')) {
+          errorMessage = err.message;
+        } else if (err.message.includes('Database migration, repair, and reset all failed')) {
+          errorMessage = 'Critical database error. Please reinstall the app.';
+        } else {
+          errorMessage = `Initialization failed: ${err.message}`;
+        }
       }
-    };
-
-    initializeApp();
+      
+      setError(errorMessage);
+    }
   }, []);
 
-  if (error) {
-    const { isDarkMode } = useTheme();
-    const colors = getThemeColors(isDarkMode);
+  const handleRetry = useCallback(async () => {
+    setIsRetrying(true);
+    await initializeApp();
+    setIsRetrying(false);
+  }, [initializeApp]);
 
-    return (
-      <View
-        style={[styles.errorContainer, { backgroundColor: colors.background }]}
-      >
-        <Text style={[styles.errorText, { color: colors.error }]}>{error}</Text>
-      </View>
-    );
+  const handleReset = useCallback(async () => {
+    try {
+      setIsRetrying(true);
+      setError(null);
+      
+      console.log('[App] Resetting database...');
+      await resetDatabase();
+      
+      // Try to initialize again
+      await initializeApp();
+    } catch (err) {
+      console.error('[App] Database reset failed:', err);
+      setError('Database reset failed. Please reinstall the app.');
+    } finally {
+      setIsRetrying(false);
+    }
+  }, [initializeApp]);
+
+  useEffect(() => {
+    initializeApp();
+  }, [initializeApp]);
+
+  if (error) {
+    return <ErrorScreen error={error} onRetry={handleRetry} onReset={handleReset} />;
   }
 
-  if (!isInitialized) {
+  if (!isInitialized || isRetrying) {
     return <LoadingScreen />;
   }
 
@@ -145,5 +224,21 @@ const styles = StyleSheet.create({
   errorText: {
     fontSize: 16,
     textAlign: 'center',
+    marginBottom: 24,
+  },
+  errorActions: {
+    flexDirection: 'row',
+    gap: 16,
+  },
+  errorButton: {
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderRadius: 8,
+    minWidth: 100,
+    alignItems: 'center',
+  },
+  errorButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
   },
 });
