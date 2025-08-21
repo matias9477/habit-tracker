@@ -103,8 +103,8 @@ export const HabitDetailsScreen: React.FC = () => {
         habitCreatedAt: latestHabit.created_at,
       });
 
-      // Get data for the last 7 days (Monday to Sunday)
-      // We need to find the most recent Monday and work forward
+      // Get data for the current week (Monday to Sunday)
+      // Find the most recent Monday
       const todayDayOfWeek = today.getDay(); // 0 = Sunday, 1 = Monday, etc.
       const daysSinceMonday = todayDayOfWeek === 0 ? 6 : todayDayOfWeek - 1;
       const monday = new Date(today);
@@ -114,6 +114,7 @@ export const HabitDetailsScreen: React.FC = () => {
         todayDayOfWeek,
         daysSinceMonday,
         monday: toLocalDateString(monday),
+        today: toLocalDateString(today),
       });
 
       // Generate data for Monday through Sunday
@@ -154,9 +155,11 @@ export const HabitDetailsScreen: React.FC = () => {
               dayName: dayNames[date.getDay()],
               isAfterCreation: date >= habitCreatedAt,
               completionsFound: completions.length,
+              allCompletions: completions, // Show all completions found for this date
               completion,
               value,
               goalType: latestHabit.goal_type,
+              isToday: date.toDateString() === today.toDateString(),
             }
           );
 

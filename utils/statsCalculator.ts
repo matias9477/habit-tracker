@@ -3,6 +3,7 @@ import { getAllHabits } from '../db/habits';
 import {
   getTotalCompletionsForHabit,
   getStreakForHabit,
+  getCompletionsForDate,
 } from '../db/completions';
 
 export interface HabitStats {
@@ -143,25 +144,54 @@ export const calculateHabitTrends = async (
 };
 
 /**
- * Get weekly completion data for chart visualization.
- * @param habits - Array of habits
+ * Get weekly progress data for all habits.
+ * @param habits - Array of habits with completion data
  * @returns Promise<{ date: string; completed: number; total: number }[]> - Weekly data
  */
 export const getWeeklyData = async (
   habits: HabitWithCompletion[]
 ): Promise<{ date: string; completed: number; total: number }[]> => {
+  if (habits.length === 0) {
+    return [];
+  }
+
   const weekData = [];
   const today = new Date();
 
-  for (let i = 6; i >= 0; i--) {
-    const date = new Date(today);
-    date.setDate(date.getDate() - i);
+  // Get data for the current week (Monday to Sunday)
+  // Find the most recent Monday
+  const todayDayOfWeek = today.getDay(); // 0 = Sunday, 1 = Monday, etc.
+  const daysSinceMonday = todayDayOfWeek === 0 ? 6 : todayDayOfWeek - 1;
+  const monday = new Date(today);
+  monday.setDate(today.getDate() - daysSinceMonday);
 
-    // This is a simplified calculation - in a real app, you'd query the DB
-    const completed =
-      i === 0
-        ? habits.filter(h => h.isCompletedToday).length
-        : Math.floor(Math.random() * habits.length);
+  // Generate data for Monday through Sunday
+  for (let i = 0; i < 7; i++) {
+    const date = new Date(monday);
+    date.setDate(monday.getDate() + i);
+
+    // Use local date string instead of UTC to avoid timezone issues
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const dateString = `${year}-${month}-${day}`;
+
+    // Get real completion data from database for this date
+    const completions = await getCompletionsForDate(dateString);
+
+    // Count how many habits were completed on this date
+    let completed = 0;
+    for (const habit of habits) {
+      // Check if habit was created before or on this date
+      const habitCreatedAt = new Date(habit.created_at);
+      if (date >= habitCreatedAt) {
+        // Check if this habit was completed on this date
+        const completion = completions.find(c => c.habit_id === habit.id);
+        if (completion) {
+          completed++;
+        }
+      }
+    }
 
     weekData.push({
       date: date.toLocaleDateString('en-US', { weekday: 'short' }),
@@ -248,7 +278,7 @@ export const getCategoryStats = async (
 export const getHabitAnalytics = async (habitId: number) => {
   const totalCompletions = await getTotalCompletionsForHabit(habitId);
   const currentStreak = await getStreakForHabit(habitId);
-  
+
   return {
     totalCompletions,
     currentStreak,
@@ -275,7 +305,7 @@ export const getGeneralAnalytics = async () => {
   for (const habit of habits) {
     const completions = await getTotalCompletionsForHabit(habit.id);
     const streak = await getStreakForHabit(habit.id);
-    
+
     totalCompletions += completions;
     if (streak > bestStreak) bestStreak = streak;
     if (completions > maxCompletions) {
@@ -293,11 +323,11 @@ export const getGeneralAnalytics = async () => {
       mostConsistentHabit = habit;
     }
   }
-  
+
   const averageCompletions = habits.length
     ? totalCompletions / habits.length
     : 0;
-    
+
   return {
     totalCompletions,
     averageCompletions,
