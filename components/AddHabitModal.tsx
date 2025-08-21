@@ -13,13 +13,13 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { getThemeColors, useTheme } from '../utils/theme';
-import DateTimePickerModal from 'react-native-modal-datetime-picker';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import { GoalTypeSelector } from './shared/GoalTypeSelector';
 import { CategorySelector } from './shared/CategorySelector';
 import { CustomEmojiInput } from './shared/CustomEmojiInput';
 import { ThemedInput } from './shared/ThemedInput';
 import { ThemedButton } from './shared/ThemedButton';
-import DateTimePicker from '@react-native-community/datetimepicker';
+import { shouldShowDebugFeatures } from '../utils/environment';
 
 /**
  * Props for the AddHabitModal component.
@@ -256,7 +256,7 @@ export const AddHabitModal: React.FC<AddHabitModalProps> = ({
             </View>
 
             {/* Debug Section - Remove in production */}
-            {__DEV__ && (
+            {shouldShowDebugFeatures() && (
               <View style={styles.debugSection}>
                 <Text
                   style={[styles.debugText, { color: colors.textSecondary }]}

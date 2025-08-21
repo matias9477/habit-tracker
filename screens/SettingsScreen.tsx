@@ -15,6 +15,7 @@ import { useOnboardingStore } from '../store/onboardingStore';
 import { useThemeStore } from '../store/themeStore';
 import { getThemeColors, useTheme } from '../utils/theme';
 import { getAppVersion } from '../utils/version';
+import { shouldShowDebugFeatures, getEnvironment } from '../utils/environment';
 import {
   configureNotifications,
   sendTestNotification,
@@ -424,6 +425,11 @@ export const SettingsScreen: React.FC = () => {
             'information-circle-outline'
           )}
           {renderSettingItem(
+            'Environment',
+            getEnvironment(),
+            'information-circle-outline'
+          )}
+          {renderSettingItem(
             'Privacy Policy',
             'Read our privacy policy',
             'shield-outline',
@@ -444,7 +450,7 @@ export const SettingsScreen: React.FC = () => {
         </View>
 
         {/* Development section - only show in development */}
-        {__DEV__ && (
+        {shouldShowDebugFeatures() && (
           <View style={styles.section}>
             <Text style={[styles.sectionTitle, { color: colors.text }]}>
               Development
