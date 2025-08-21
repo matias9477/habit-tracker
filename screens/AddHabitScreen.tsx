@@ -255,7 +255,6 @@ export const AddHabitScreen: React.FC = () => {
             onPress={handleSubmit}
             disabled={!name.trim() || isSubmitting}
             loading={isSubmitting}
-            style={styles.submitButton}
           />
         </View>
       </KeyboardAvoidingView>
@@ -395,12 +394,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     borderTopWidth: 1,
     borderTopColor: '#e0e0e0',
-  },
-  submitButton: {
-    backgroundColor: '#4CAF50',
-    borderRadius: 8,
-    paddingVertical: 16,
-    alignItems: 'center',
   },
   // Emoji Modal Styles
   emojiModalContainer: {

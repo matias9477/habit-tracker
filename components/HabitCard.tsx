@@ -80,7 +80,7 @@ export const HabitCard: React.FC<HabitCardProps> = ({
           style={[
             styles.toggleButton,
             { backgroundColor: colors.surface, borderColor: colors.border },
-            isCompleted && { backgroundColor: colors.success },
+            isCompleted && { backgroundColor: '#fcba03' },
             currentCount > 0 &&
               !isCompleted && { backgroundColor: colors.primary },
           ]}
@@ -110,7 +110,7 @@ export const HabitCard: React.FC<HabitCardProps> = ({
         style={[
           styles.toggleButton,
           { backgroundColor: colors.surface, borderColor: colors.border },
-          habit.isCompletedToday && { backgroundColor: colors.success },
+          habit.isCompletedToday && { backgroundColor: '#fcba03' },
         ]}
         onPress={handleToggle}
         activeOpacity={0.8}
@@ -136,8 +136,8 @@ export const HabitCard: React.FC<HabitCardProps> = ({
         (habit.goal_type === 'count'
           ? (habit.currentCount || 0) >= (habit.targetCount || 1)
           : habit.isCompletedToday) && {
-          backgroundColor: colors.primaryLight + '20',
-          borderColor: colors.success,
+          backgroundColor: '#fcba03',
+          borderColor: '#fcba03',
           borderWidth: 1,
         },
       ]}
@@ -160,7 +160,7 @@ export const HabitCard: React.FC<HabitCardProps> = ({
             >
               {habit.name}
             </Text>
-            <Text style={[styles.streak, { color: colors.textSecondary }]}>
+            <Text style={[styles.streak, { color: '#1a1a1a' }]}>
               {habit.streak} day{habit.streak !== 1 ? 's' : ''} streak
             </Text>
             {habit.goal_type === 'count' && (
@@ -169,7 +169,7 @@ export const HabitCard: React.FC<HabitCardProps> = ({
               </Text>
             )}
             {onPress && (
-              <Text style={[styles.editHint, { color: colors.textSecondary }]}>
+              <Text style={[styles.editHint, { color: '#1a1a1a' }]}>
                 Tap to view details
               </Text>
             )}
@@ -201,8 +201,8 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   completedCard: {
-    backgroundColor: '#f0f8ff',
-    borderColor: '#4CAF50',
+    backgroundColor: '#fef4d6',
+    borderColor: '#fcba03',
     borderWidth: 1,
   },
   content: {
@@ -230,15 +230,15 @@ const styles = StyleSheet.create({
   },
   completedText: {
     textDecorationLine: 'line-through',
-    color: '#666',
+    color: '#333',
   },
   streak: {
     fontSize: 14,
-    color: '#666',
+    color: '#333',
   },
   goalType: {
     fontSize: 12,
-    color: '#4CAF50',
+    color: '#fcba03',
     fontWeight: '500',
     marginTop: 2,
   },
@@ -255,8 +255,8 @@ const styles = StyleSheet.create({
     minHeight: 48,
   },
   toggleButtonCompleted: {
-    backgroundColor: '#4CAF50',
-    borderColor: '#4CAF50',
+    backgroundColor: '#fcba03',
+    borderColor: '#fcba03',
   },
   toggleButtonPartial: {
     backgroundColor: '#FF9800',
@@ -284,7 +284,7 @@ const styles = StyleSheet.create({
   },
   countText: {
     fontSize: 12,
-    color: '#666',
+    color: '#333',
     fontWeight: '500',
   },
   progressBar: {
@@ -295,12 +295,12 @@ const styles = StyleSheet.create({
   },
   progressFill: {
     height: '100%',
-    backgroundColor: '#4CAF50',
+    backgroundColor: '#fcba03',
     borderRadius: 2,
   },
   editHint: {
     fontSize: 10,
-    color: '#999',
+    color: '#333',
     fontStyle: 'italic',
     marginTop: 2,
   },

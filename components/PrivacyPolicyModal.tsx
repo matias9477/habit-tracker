@@ -141,7 +141,7 @@ export const PrivacyPolicyModal: React.FC<PrivacyPolicyModalProps> = ({
         {/* Footer */}
         <View style={[styles.footer, { backgroundColor: colors.surface }]}>
           <TouchableOpacity
-            style={[styles.acceptButton, { backgroundColor: colors.primary }]}
+            style={[styles.acceptButton, { backgroundColor: '#fcba03' }]}
             onPress={onClose}
           >
             <Text style={styles.acceptButtonText}>I Understand</Text>
@@ -211,7 +211,7 @@ const styles = StyleSheet.create({
     borderTopColor: '#e0e0e0',
   },
   acceptButton: {
-    backgroundColor: '#4CAF50',
+    backgroundColor: '#fcba03',
     borderRadius: 8,
     paddingVertical: 16,
     alignItems: 'center',

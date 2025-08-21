@@ -9,7 +9,7 @@
     "splash": {
       "image": "./assets/splash.png",
       "resizeMode": "cover",
-      "backgroundColor": "#4CAF50"
+      "backgroundColor": "#fcba03"
     },
     "assetBundlePatterns": [
       "**/*"
@@ -26,7 +26,7 @@
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#4CAF50"
+        "backgroundColor": "#fcba03"
       },
       "package": "com.matiasturra.consistency",
       "versionCode": 2,
@@ -42,7 +42,7 @@
         "expo-notifications",
         {
           "icon": "./assets/notification-icon.png",
-          "color": "#4CAF50"
+          "color": "#fcba03"
         }
       ]
     ],

@@ -201,7 +201,7 @@ const styles = StyleSheet.create({
   },
   skipButton: {
     fontSize: 16,
-    color: '#4CAF50',
+    color: '#fcba03',
     fontWeight: '500',
   },
   content: {
@@ -274,7 +274,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 4,
   },
   actionButton: {
-    backgroundColor: '#4CAF50',
+    backgroundColor: '#fcba03',
     borderRadius: 8,
     paddingVertical: 16,
     alignItems: 'center',

@@ -363,16 +363,17 @@ export const StatsScreen: React.FC = () => {
             <View
               style={[styles.actionCard, { backgroundColor: colors.surface }]}
             >
-              <Ionicons
-                name="warning-outline"
-                size={20}
-                color={colors.error || '#F44336'}
-              />
-              <Text
-                style={[styles.actionText, { color: colors.textSecondary }]}
-              >
-                Focus on: {stats.needsAttention.join(', ')}
-              </Text>
+              <View style={styles.actionHeader}>
+                <Ionicons
+                  name="warning-outline"
+                  size={20}
+                  color={colors.error || '#F44336'}
+                  style={styles.actionIcon}
+                />
+                <Text style={[styles.actionText, { color: colors.text }]}>
+                  Focus on: {stats.needsAttention.join(', ')}
+                </Text>
+              </View>
               <Text style={[styles.actionTip, { color: colors.textSecondary }]}>
                 Tip: Start with just one habit and build momentum
               </Text>
@@ -598,19 +599,23 @@ const styles = StyleSheet.create({
   actionCard: {
     borderRadius: 12,
     padding: 16,
-    flexDirection: 'row',
-    alignItems: 'flex-start',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
     shadowRadius: 2,
     elevation: 2,
   },
+  actionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  actionIcon: {
+    marginRight: 8,
+  },
   actionText: {
     fontSize: 14,
-    flex: 1,
-    marginLeft: 8,
-    lineHeight: 20,
+    fontWeight: '500',
   },
   actionTip: {
     fontSize: 12,

@@ -18,13 +18,13 @@ export const getThemeColors = (isDarkMode: boolean) => {
       textSecondary: '#B3B3B3',
       textTertiary: '#808080',
 
-      // Primary colors
-      primary: '#4CAF50',
-      primaryLight: '#66BB6A',
-      primaryDark: '#388E3C',
+      // Primary colors - Changed from green to yellow
+      primary: '#fcba03',
+      primaryLight: '#fdcb2a',
+      primaryDark: '#e6a800',
 
-      // Status colors
-      success: '#4CAF50',
+      // Status colors - Changed success from green to yellow
+      success: '#fcba03',
       error: '#F44336',
       warning: '#FF9800',
       info: '#2196F3',
@@ -39,8 +39,8 @@ export const getThemeColors = (isDarkMode: boolean) => {
       switchThumb: '#FFFFFF',
       switchThumbDisabled: '#666666',
 
-      // Loading color
-      loading: '#4CAF50',
+      // Loading color - Changed from green to yellow
+      loading: '#fcba03',
     };
   } else {
     return {
@@ -54,13 +54,13 @@ export const getThemeColors = (isDarkMode: boolean) => {
       textSecondary: '#666666',
       textTertiary: '#999999',
 
-      // Primary colors
-      primary: '#4CAF50',
-      primaryLight: '#E8F5E8',
-      primaryDark: '#388E3C',
+      // Primary colors - Changed from green to yellow
+      primary: '#fcba03',
+      primaryLight: '#fef4d6',
+      primaryDark: '#e6a800',
 
-      // Status colors
-      success: '#4CAF50',
+      // Status colors - Changed success from green to yellow
+      success: '#fcba03',
       error: '#F44336',
       warning: '#FF9800',
       info: '#2196F3',
@@ -75,8 +75,8 @@ export const getThemeColors = (isDarkMode: boolean) => {
       switchThumb: '#FFFFFF',
       switchThumbDisabled: '#CCCCCC',
 
-      // Loading color
-      loading: '#4CAF50',
+      // Loading color - Changed from green to yellow
+      loading: '#fcba03',
     };
   }
 };

@@ -195,7 +195,6 @@ export const AddHabitModal: React.FC<AddHabitModalProps> = ({
               onPress={handleSubmit}
               disabled={!name.trim() || isSubmitting}
               loading={isSubmitting}
-              style={styles.submitButton}
             />
           </View>
         </KeyboardAvoidingView>
@@ -269,8 +268,8 @@ const styles = StyleSheet.create({
     backgroundColor: '#f8f8f8',
   },
   customEmojiToggleActive: {
-    backgroundColor: '#e8f5e8',
-    borderColor: '#4CAF50',
+    backgroundColor: '#fef4d6',
+    borderColor: '#fcba03',
     borderWidth: 1,
   },
   customEmojiToggleText: {
@@ -278,7 +277,7 @@ const styles = StyleSheet.create({
     color: '#666',
   },
   customEmojiToggleTextActive: {
-    color: '#4CAF50',
+    color: '#fcba03',
     fontWeight: '600',
   },
   customEmojiInputContainer: {
@@ -329,8 +328,8 @@ const styles = StyleSheet.create({
     borderColor: '#e0e0e0',
   },
   selectedIconButton: {
-    borderColor: '#4CAF50',
-    backgroundColor: '#e8f5e8',
+    borderColor: '#fcba03',
+    backgroundColor: '#fef4d6',
   },
   iconText: {
     fontSize: 24,
@@ -347,8 +346,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   selectedGoalTypeButton: {
-    borderColor: '#4CAF50',
-    backgroundColor: '#e8f5e8',
+    borderColor: '#fcba03',
+    backgroundColor: '#fef4d6',
   },
   goalTypeContent: {
     flex: 1,
@@ -360,31 +359,25 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   selectedGoalTypeLabel: {
-    color: '#4CAF50',
+    color: '#fcba03',
   },
   goalTypeDescription: {
     fontSize: 14,
     color: '#666',
   },
   selectedGoalTypeDescription: {
-    color: '#4CAF50',
+    color: '#fcba03',
   },
   checkmark: {
     fontSize: 18,
-    color: '#4CAF50',
-    fontWeight: 'bold',
+    color: '#fcba03',
+    marginLeft: 8,
   },
   footer: {
     padding: 20,
     backgroundColor: '#fff',
     borderTopWidth: 1,
     borderTopColor: '#e0e0e0',
-  },
-  submitButton: {
-    backgroundColor: '#4CAF50',
-    borderRadius: 8,
-    paddingVertical: 16,
-    alignItems: 'center',
   },
   submitButtonDisabled: {
     backgroundColor: '#ccc',
