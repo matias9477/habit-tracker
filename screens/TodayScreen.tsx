@@ -152,8 +152,21 @@ export const TodayScreen: React.FC = () => {
     if (direction === 'prev') {
       newDate.setDate(newDate.getDate() - 1);
 
-      // Don't go further back than the earliest habit date
-      if (earliestHabitDate && newDate < earliestHabitDate) {
+      // Determine the earliest allowed date
+      let earliestAllowedDate: Date;
+
+      if (earliestHabitDate) {
+        // If we have habits, don't go further back than the first habit creation date
+        earliestAllowedDate = earliestHabitDate;
+      } else {
+        // If no habits exist, don't go further back than today
+        earliestAllowedDate = new Date(today);
+        earliestAllowedDate.setHours(0, 0, 0, 0); // Start of today
+      }
+
+      // Don't go further back than the earliest allowed date
+      if (newDate < earliestAllowedDate) {
+        // Navigation limit reached - visual feedback is handled by DateHeader
         return;
       }
     } else {
@@ -163,10 +176,42 @@ export const TodayScreen: React.FC = () => {
       const maxFutureDate = new Date(today);
       maxFutureDate.setDate(maxFutureDate.getDate() + 2);
       if (newDate > maxFutureDate) {
+        // Navigation limit reached - visual feedback is handled by DateHeader
         return;
       }
     }
     setSelectedDate(newDate);
+  };
+
+  // Calculate navigation limits for the DateHeader
+  const canGoBack = () => {
+    const today = new Date();
+    let earliestAllowedDate: Date;
+
+    if (earliestHabitDate) {
+      // If we have habits, don't go further back than the first habit creation date
+      earliestAllowedDate = earliestHabitDate;
+    } else {
+      // If no habits exist, don't go further back than today
+      earliestAllowedDate = new Date(today);
+      earliestAllowedDate.setHours(0, 0, 0, 0); // Start of today
+    }
+
+    const previousDate = new Date(selectedDate);
+    previousDate.setDate(previousDate.getDate() - 1);
+
+    return previousDate >= earliestAllowedDate;
+  };
+
+  const canGoForward = () => {
+    const today = new Date();
+    const maxFutureDate = new Date(today);
+    maxFutureDate.setDate(maxFutureDate.getDate() + 2);
+
+    const nextDate = new Date(selectedDate);
+    nextDate.setDate(nextDate.getDate() + 1);
+
+    return nextDate <= maxFutureDate;
   };
 
   const handleTodayPress = () => {
@@ -235,12 +280,28 @@ export const TodayScreen: React.FC = () => {
       );
     };
 
+    const isPastDate = () => {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const selectedDateStart = new Date(selectedDate);
+      selectedDateStart.setHours(0, 0, 0, 0);
+      return selectedDateStart < today;
+    };
+
+    const isFutureDate = () => {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const selectedDateStart = new Date(selectedDate);
+      selectedDateStart.setHours(0, 0, 0, 0);
+      return selectedDateStart > today;
+    };
+
     // If it's today and no habits exist, show the "create first habit" message
     if (isToday()) {
       return (
         <View style={styles.emptyContainer}>
           <Text style={[styles.emptyTitle, { color: colors.text }]}>
-            Let’s add your first habit!
+            Let's add your first habit!
           </Text>
           <Text style={[styles.emptySubtitle, { color: colors.textSecondary }]}>
             Start building your routine by adding a new habit.
@@ -263,18 +324,68 @@ export const TodayScreen: React.FC = () => {
               Add Habit
             </Text>
           </TouchableOpacity>
+          <Text style={[styles.navigationHint, { color: colors.textTertiary }]}>
+            💡 You can navigate to past dates once you have habits
+          </Text>
         </View>
       );
     }
 
-    // For other dates, show "no habits available for this date"
+    // For past dates, show more specific message
+    if (isPastDate()) {
+      if (earliestHabitDate && selectedDate < earliestHabitDate) {
+        return (
+          <View style={styles.emptyContainer}>
+            <Text style={[styles.emptyTitle, { color: colors.text }]}>
+              No habits available for this date
+            </Text>
+            <Text
+              style={[styles.emptySubtitle, { color: colors.textSecondary }]}
+            >
+              Your first habit was created on{' '}
+              {earliestHabitDate.toLocaleDateString()}.
+            </Text>
+          </View>
+        );
+      } else {
+        return (
+          <View style={styles.emptyContainer}>
+            <Text style={[styles.emptyTitle, { color: colors.text }]}>
+              No habits available for this date
+            </Text>
+            <Text
+              style={[styles.emptySubtitle, { color: colors.textSecondary }]}
+            >
+              Habits created after this date won't appear here.
+            </Text>
+          </View>
+        );
+      }
+    }
+
+    // For future dates
+    if (isFutureDate()) {
+      return (
+        <View style={styles.emptyContainer}>
+          <Text style={[styles.emptyTitle, { color: colors.text }]}>
+            Future date
+          </Text>
+          <Text style={[styles.emptySubtitle, { color: colors.textSecondary }]}>
+            You can plan ahead, but habits can only be completed on past or
+            current dates.
+          </Text>
+        </View>
+      );
+    }
+
+    // Fallback
     return (
       <View style={styles.emptyContainer}>
         <Text style={[styles.emptyTitle, { color: colors.text }]}>
           No habits available for this date
         </Text>
         <Text style={[styles.emptySubtitle, { color: colors.textSecondary }]}>
-          Habits created after this date won’t appear here.
+          Habits created after this date won't appear here.
         </Text>
       </View>
     );
@@ -287,6 +398,9 @@ export const TodayScreen: React.FC = () => {
           date={selectedDate}
           onDateChange={handleDateChange}
           onTodayPress={handleTodayPress}
+          canGoBack={canGoBack()}
+          canGoForward={canGoForward()}
+          earliestHabitDate={earliestHabitDate}
         />
       </View>
 
@@ -455,5 +569,10 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 24,
     fontWeight: 'bold',
+  },
+  navigationHint: {
+    marginTop: 20,
+    fontSize: 14,
+    textAlign: 'center',
   },
 });

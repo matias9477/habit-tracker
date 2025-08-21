@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { getThemeColors, useTheme } from '../utils/theme';
 
@@ -10,6 +10,9 @@ interface DateHeaderProps {
   date: Date;
   onDateChange: (direction: 'prev' | 'next') => void;
   onTodayPress: () => void;
+  canGoBack: boolean;
+  canGoForward: boolean;
+  earliestHabitDate?: Date | null;
 }
 
 /**
@@ -21,6 +24,9 @@ export const DateHeader: React.FC<DateHeaderProps> = ({
   date,
   onDateChange,
   onTodayPress,
+  canGoBack,
+  canGoForward,
+  earliestHabitDate,
 }) => {
   const { isDarkMode } = useTheme();
   const colors = getThemeColors(isDarkMode);
@@ -68,6 +74,23 @@ export const DateHeader: React.FC<DateHeaderProps> = ({
     }
   };
 
+  const showNavigationInfo = () => {
+    let message = 'Navigation limits:\n';
+
+    if (earliestHabitDate) {
+      message += `• Earliest: ${earliestHabitDate.toLocaleDateString()}\n`;
+    } else {
+      message += '• Earliest: Today (no habits yet)\n';
+    }
+
+    const today = new Date();
+    const maxFuture = new Date(today);
+    maxFuture.setDate(maxFuture.getDate() + 2);
+    message += `• Latest: ${maxFuture.toLocaleDateString()}`;
+
+    Alert.alert('Navigation Info', message, [{ text: 'OK' }]);
+  };
+
   return (
     <View
       style={[
@@ -77,14 +100,21 @@ export const DateHeader: React.FC<DateHeaderProps> = ({
     >
       <View style={styles.navigationContainer}>
         <TouchableOpacity
-          style={[styles.navButton, { backgroundColor: colors.border }]}
-          onPress={() => onDateChange('prev')}
-          activeOpacity={0.7}
+          style={[
+            styles.navButton,
+            {
+              backgroundColor: canGoBack ? colors.border : colors.textTertiary,
+              opacity: canGoBack ? 1 : 0.5,
+            },
+          ]}
+          onPress={() => canGoBack && onDateChange('prev')}
+          activeOpacity={canGoBack ? 0.7 : 1}
+          disabled={!canGoBack}
         >
           <Ionicons
             name="chevron-back"
             size={16}
-            color={colors.textSecondary}
+            color={canGoBack ? colors.textSecondary : colors.textTertiary}
           />
         </TouchableOpacity>
 
@@ -100,6 +130,17 @@ export const DateHeader: React.FC<DateHeaderProps> = ({
             <Text style={[styles.dayNumber, { color: colors.text }]}>
               {formatDayNumber(date)}
             </Text>
+            <TouchableOpacity
+              style={styles.infoButton}
+              onPress={showNavigationInfo}
+              activeOpacity={0.7}
+            >
+              <Ionicons
+                name="information-circle-outline"
+                size={16}
+                color={colors.textTertiary}
+              />
+            </TouchableOpacity>
           </View>
           <Text
             style={[
@@ -110,17 +151,45 @@ export const DateHeader: React.FC<DateHeaderProps> = ({
           >
             {formatRelativeDate(date)}
           </Text>
+          {/* Show navigation limit message */}
+          {!canGoBack && (
+            <Text style={[styles.limitMessage, { color: colors.textTertiary }]}>
+              {earliestHabitDate
+                ? `Earliest: ${earliestHabitDate.toLocaleDateString()}`
+                : 'Earliest: Today'}
+            </Text>
+          )}
+          {!canGoForward && (
+            <Text style={[styles.limitMessage, { color: colors.textTertiary }]}>
+              Latest:{' '}
+              {(() => {
+                const today = new Date();
+                const maxFuture = new Date(today);
+                maxFuture.setDate(maxFuture.getDate() + 2);
+                return maxFuture.toLocaleDateString();
+              })()}
+            </Text>
+          )}
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={[styles.navButton, { backgroundColor: colors.border }]}
-          onPress={() => onDateChange('next')}
-          activeOpacity={0.7}
+          style={[
+            styles.navButton,
+            {
+              backgroundColor: canGoForward
+                ? colors.border
+                : colors.textTertiary,
+              opacity: canGoForward ? 1 : 0.5,
+            },
+          ]}
+          onPress={() => canGoForward && onDateChange('next')}
+          activeOpacity={canGoForward ? 0.7 : 1}
+          disabled={!canGoForward}
         >
           <Ionicons
             name="chevron-forward"
             size={16}
-            color={colors.textSecondary}
+            color={canGoForward ? colors.textSecondary : colors.textTertiary}
           />
         </TouchableOpacity>
       </View>
@@ -168,5 +237,12 @@ const styles = StyleSheet.create({
   relativeDate: {
     fontSize: 12,
     fontWeight: '500',
+  },
+  limitMessage: {
+    fontSize: 10,
+    marginTop: 4,
+  },
+  infoButton: {
+    marginLeft: 8,
   },
 });
