@@ -243,41 +243,69 @@ export const getCompletionsForDate = async (
       [date]
     );
 
-    console.log(`[getCompletionsForDate] Date: ${date}, Found:`, result);
-
     return result;
   } catch (error) {
-    console.error('Get completions for date error', error);
+    // console.error('Get completions for date error', error);
     return [];
   }
 };
 
 /**
- * Gets the current streak for a habit (number of consecutive days up to today).
+ * Gets the current streak for a habit (number of consecutive days up to the most recent completion).
+ * A streak is the number of consecutive days the habit was completed, ending at the most recent completion.
+ * If completed yesterday but not today, streak = 1. If completed today, streak = 2 (assuming yesterday was also completed).
  */
 export const getStreakForHabit = async (habitId: number): Promise<number> => {
-  // This logic assumes completions are not missing for the streak period
-  const today = new Date();
-  let streak = 0;
-  for (let i = 0; ; i++) {
-    const date = new Date(today);
-    date.setDate(today.getDate() - i);
+  try {
+    const db = await getDatabase();
 
-    // Use local date string instead of UTC to avoid timezone issues
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    const dateStr = `${year}-${month}-${day}`;
+    // Get all completions for this habit, ordered by date descending
+    const result = await db.getAllAsync<{ date: string }>(
+      'SELECT DISTINCT date FROM habit_completions WHERE habit_id = ? ORDER BY date DESC',
+      [habitId]
+    );
 
-    // eslint-disable-next-line no-await-in-loop
-    const completions = await getCompletionsForDate(dateStr);
-    if (completions.some(c => c.habit_id === habitId)) {
-      streak++;
-    } else {
-      break;
+    if (result.length === 0) return 0;
+
+    // Find the most recent completion date
+    const mostRecentCompletion = result[0]?.date;
+
+    if (!mostRecentCompletion) return 0;
+
+    // Convert to Date object for comparison
+    const mostRecentDate = new Date(mostRecentCompletion);
+    const today = new Date();
+
+    // If most recent completion is not today, we need to check if it's consecutive
+    // Start from the most recent completion and go backwards
+    let streak = 0;
+    let currentDate = new Date(mostRecentDate);
+
+    // Count consecutive days backwards from the most recent completion
+    for (let i = 0; i < 365; i++) {
+      // Limit to 1 year to prevent infinite loops
+      const dateStr = currentDate.toISOString().split('T')[0];
+
+      // Check if this habit was completed on this date
+      const wasCompleted = result.some(
+        completion => completion.date === dateStr
+      );
+
+      if (wasCompleted) {
+        streak++;
+        // Move to previous day
+        currentDate.setDate(currentDate.getDate() - 1);
+      } else {
+        // Streak broken, stop counting
+        break;
+      }
     }
+
+    return streak;
+  } catch (error) {
+    // console.error('Get streak error:', error);
+    return 0;
   }
-  return streak;
 };
 
 /**
