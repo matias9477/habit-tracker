@@ -89,7 +89,8 @@ export const TodayScreen: React.FC = () => {
     goalType: string,
     targetCount?: number,
     customEmoji?: string,
-    targetTimeMinutes?: number
+    reminderEnabled?: boolean,
+    reminderTime?: string
   ) => {
     const success = await addHabit(
       name,
@@ -97,7 +98,9 @@ export const TodayScreen: React.FC = () => {
       goalType,
       targetCount,
       customEmoji,
-      targetTimeMinutes
+      undefined, // targetTimeMinutes - not supported in AddHabitModal yet
+      reminderEnabled,
+      reminderTime
     );
     if (success) {
       setIsAddModalVisible(false);

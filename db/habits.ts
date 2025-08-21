@@ -12,6 +12,8 @@ export type Habit = {
   goal_type: string;
   target_count?: number;
   target_time_minutes?: number;
+  reminder_enabled: boolean;
+  reminder_time?: string; // Format: "HH:MM"
   is_active: boolean;
   created_at: string;
   updated_at: string;
@@ -27,7 +29,9 @@ export const insertHabit = async (
   goalType: string = 'binary',
   customEmoji?: string,
   targetCount?: number,
-  targetTimeMinutes?: number
+  targetTimeMinutes?: number,
+  reminderEnabled: boolean = false,
+  reminderTime?: string
 ): Promise<number | null> => {
   try {
     const db = await getDatabase();
@@ -42,7 +46,7 @@ export const insertHabit = async (
     const finalTargetCount = targetCount || (goalType === 'count' ? 1 : null);
 
     const result = await db.runAsync(
-      'INSERT INTO habits (name, icon, category, custom_emoji, goal_type, target_count, target_time_minutes, is_active, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+      'INSERT INTO habits (name, icon, category, custom_emoji, goal_type, target_count, target_time_minutes, reminder_enabled, reminder_time, is_active, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
       [
         name,
         icon,
@@ -51,6 +55,8 @@ export const insertHabit = async (
         goalType,
         finalTargetCount,
         targetTimeMinutes || null,
+        reminderEnabled ? 1 : 0,
+        reminderTime || null,
         1, // is_active = true
         now,
         now,
@@ -121,7 +127,9 @@ export const updateHabit = async (
   goalType: string,
   customEmoji?: string,
   targetCount?: number,
-  targetTimeMinutes?: number
+  targetTimeMinutes?: number,
+  reminderEnabled?: boolean,
+  reminderTime?: string
 ): Promise<boolean> => {
   try {
     const db = await getDatabase();
@@ -135,7 +143,7 @@ export const updateHabit = async (
     const now = `${year}-${month}-${day}`;
 
     await db.runAsync(
-      'UPDATE habits SET name = ?, icon = ?, category = ?, custom_emoji = ?, goal_type = ?, target_count = ?, target_time_minutes = ?, updated_at = ? WHERE id = ?',
+      'UPDATE habits SET name = ?, icon = ?, category = ?, custom_emoji = ?, goal_type = ?, target_count = ?, target_time_minutes = ?, reminder_enabled = ?, reminder_time = ?, updated_at = ? WHERE id = ?',
       [
         name,
         icon,
@@ -144,6 +152,8 @@ export const updateHabit = async (
         goalType,
         finalTargetCount,
         targetTimeMinutes || null,
+        reminderEnabled ? 1 : 0,
+        reminderTime || null,
         now,
         id,
       ]

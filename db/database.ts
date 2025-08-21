@@ -90,6 +90,8 @@ const migrateToVersion1 = async (db: SQLite.SQLiteDatabase): Promise<void> => {
           goal_type TEXT NOT NULL DEFAULT 'binary' CHECK (goal_type IN ('binary', 'count', 'time')),
           target_count INTEGER DEFAULT 1 CHECK (target_count > 0 AND target_count <= 1000),
           target_time_minutes INTEGER DEFAULT NULL CHECK (target_time_minutes IS NULL OR (target_time_minutes > 0 AND target_time_minutes <= 1440)),
+          reminder_enabled BOOLEAN DEFAULT 0 CHECK (reminder_enabled IN (0, 1)),
+          reminder_time TEXT CHECK (reminder_time IS NULL OR (reminder_time LIKE '__:__' AND CAST(substr(reminder_time, 1, 2) AS INTEGER) BETWEEN 0 AND 23 AND CAST(substr(reminder_time, 4, 2) AS INTEGER) BETWEEN 0 AND 59)),
           is_active BOOLEAN DEFAULT 1 CHECK (is_active IN (0, 1)),
           created_at TEXT NOT NULL DEFAULT (datetime('now', 'utc')),
           updated_at TEXT NOT NULL DEFAULT (datetime('now', 'utc'))
@@ -107,6 +109,14 @@ const migrateToVersion1 = async (db: SQLite.SQLiteDatabase): Promise<void> => {
         {
           column: 'target_time_minutes',
           sql: 'ADD COLUMN target_time_minutes INTEGER DEFAULT NULL CHECK (target_time_minutes IS NULL OR (target_time_minutes > 0 AND target_time_minutes <= 1440))',
+        },
+        {
+          column: 'reminder_enabled',
+          sql: 'ADD COLUMN reminder_enabled BOOLEAN DEFAULT 0 CHECK (reminder_enabled IN (0, 1))',
+        },
+        {
+          column: 'reminder_time',
+          sql: 'ADD COLUMN reminder_time TEXT CHECK (reminder_time IS NULL OR (reminder_time LIKE "__:__" AND CAST(substr(reminder_time, 1, 2) AS INTEGER) BETWEEN 0 AND 23 AND CAST(substr(reminder_time, 4, 2) AS INTEGER) BETWEEN 0 AND 59))',
         },
         {
           column: 'updated_at',
@@ -578,6 +588,8 @@ export const repairDatabase = async (): Promise<boolean> => {
           goal_type TEXT NOT NULL DEFAULT 'binary' CHECK (goal_type IN ('binary', 'count', 'time')),
           target_count INTEGER DEFAULT 1 CHECK (target_count > 0 AND target_count <= 1000),
           target_time_minutes INTEGER DEFAULT NULL CHECK (target_time_minutes IS NULL OR (target_time_minutes > 0 AND target_time_minutes <= 1440)),
+          reminder_enabled BOOLEAN DEFAULT 0 CHECK (reminder_enabled IN (0, 1)),
+          reminder_time TEXT CHECK (reminder_time IS NULL OR (reminder_time LIKE "__:__" AND CAST(substr(reminder_time, 1, 2) AS INTEGER) BETWEEN 0 AND 23 AND CAST(substr(reminder_time, 4, 2) AS INTEGER) BETWEEN 0 AND 59)),
           is_active BOOLEAN DEFAULT 1 CHECK (is_active IN (0, 1)),
           created_at TEXT NOT NULL DEFAULT (datetime('now', 'utc')),
           updated_at TEXT NOT NULL DEFAULT (datetime('now', 'utc'))
@@ -677,5 +689,27 @@ export const repairDatabase = async (): Promise<boolean> => {
   } catch (error) {
     console.error('Database repair failed:', error);
     return false;
+  }
+};
+
+/**
+ * Reinitializes the database by running all migrations.
+ * Use this when you need to force database schema updates.
+ */
+export const reinitializeDatabase = async (): Promise<void> => {
+  console.log('Reinitializing database...');
+  const db = await getDatabase();
+
+  try {
+    // Drop the schema version table to force re-migration
+    await db.execAsync('DROP TABLE IF EXISTS schema_version;');
+    console.log('Dropped schema version table');
+
+    // Run the migrations which will recreate everything
+    await runMigrations();
+    console.log('Database reinitialized successfully');
+  } catch (error) {
+    console.error('Failed to reinitialize database:', error);
+    throw error;
   }
 };

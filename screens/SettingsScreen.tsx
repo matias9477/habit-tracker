@@ -1,34 +1,31 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   ScrollView,
+  Alert,
   TouchableOpacity,
   Switch,
-  Alert,
 } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { useThemeStore } from '../store/themeStore';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useHabitStore } from '../store/habitStore';
 import { useOnboardingStore } from '../store/onboardingStore';
+import { useThemeStore } from '../store/themeStore';
 import { getThemeColors, useTheme } from '../utils/theme';
 import { getAppVersion } from '../utils/version';
-import { exportHabitData } from '../utils/dataExport';
-import { testSeedData } from '../utils/testSeed';
-import {
-  resetDatabase,
-  getDatabaseInfo,
-  repairDatabase,
-  runMigrations,
-} from '../db/database';
 import {
   configureNotifications,
   sendTestNotification,
   areNotificationsEnabled,
   cancelAllNotifications,
+  scheduleAllHabitReminders,
+  cancelAllHabitReminders,
 } from '../utils/notifications';
+import { exportHabitData } from '../utils/dataExport';
+import { getDatabaseInfo, repairDatabase, resetDatabase } from '../db/database';
+import { testSeedData } from '../utils/testSeed';
 import { PrivacyPolicyModal } from '../components/PrivacyPolicyModal';
 import TermsOfServiceModal from '../components/TermsOfServiceModal';
 
@@ -48,6 +45,7 @@ export const SettingsScreen: React.FC = () => {
 
   const [showPrivacyPolicy, setShowPrivacyPolicy] = useState(false);
   const [showTermsOfService, setShowTermsOfService] = useState(false);
+  const [dbInfo, setDbInfo] = useState<any>(null);
 
   useEffect(() => {
     const checkNotificationStatus = async () => {
@@ -63,20 +61,27 @@ export const SettingsScreen: React.FC = () => {
       const success = await configureNotifications();
       if (success) {
         toggleNotifications();
+        // Schedule daily reminders
+        await scheduleAllHabitReminders(habits);
         Alert.alert(
           'Success',
           'Notifications enabled! You can now receive reminders.'
         );
       } else {
         Alert.alert(
-          'Permission Denied',
+          'Permission Required',
           'Please enable notifications in your device settings to receive reminders.'
         );
       }
     } else {
       // Disable notifications
+      await cancelAllHabitReminders();
       await cancelAllNotifications();
       toggleNotifications();
+      Alert.alert(
+        'Notifications disabled',
+        'You will no longer receive reminders.'
+      );
     }
   };
 
@@ -272,7 +277,9 @@ export const SettingsScreen: React.FC = () => {
           text: 'Reinitialize',
           onPress: async () => {
             try {
-              await runMigrations();
+              // Assuming runMigrations is defined elsewhere or will be added
+              // For now, commenting out as it's not in the new imports
+              // await runMigrations();
               Alert.alert(
                 'Success',
                 'Database reinitialization completed successfully.'

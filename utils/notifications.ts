@@ -87,14 +87,16 @@ export const sendTestNotification = async (): Promise<string> => {
 };
 
 /**
- * Schedule a daily reminder notification for a habit.
- * @param habitName - Name of the habit
- * @param time - Time in HH:MM format (e.g., "09:00")
+ * Schedule a daily reminder for a specific habit.
+ * @param habitId - The habit ID
+ * @param habitName - The habit name
+ * @param reminderTime - Time in HH:MM format (e.g., "09:00")
  * @returns Promise<string> - Notification identifier
  */
 export const scheduleHabitReminder = async (
+  habitId: number,
   habitName: string,
-  time: string
+  reminderTime: string
 ): Promise<string> => {
   if (isExpoGo()) {
     // Notifications are not supported in Expo Go
@@ -102,13 +104,17 @@ export const scheduleHabitReminder = async (
   }
 
   try {
-    const [hour, minute] = time.split(':').map(Number);
+    const [hour, minute] = reminderTime.split(':').map(Number);
 
     const identifier = await Notifications.scheduleNotificationAsync({
       content: {
-        title: 'Consistency Reminder',
-        body: `Time to work on your habit: ${habitName}`,
-        data: { type: 'habit_reminder', habitName },
+        title: 'Habit Reminder',
+        body: `Time to work on: ${habitName}`,
+        data: {
+          type: 'habit_reminder',
+          habitId,
+          habitName,
+        },
       },
       trigger: {
         type: SchedulableTriggerInputTypes.DAILY,
@@ -117,10 +123,104 @@ export const scheduleHabitReminder = async (
       },
     });
 
+    console.log(
+      `[Notifications] Habit reminder scheduled for ${habitName} at ${reminderTime} with ID: ${identifier}`
+    );
     return identifier;
   } catch (error) {
     console.error('Error scheduling habit reminder:', error);
     return '';
+  }
+};
+
+/**
+ * Cancel a specific habit's reminder.
+ * @param habitId - The habit ID to cancel reminders for
+ */
+export const cancelHabitReminder = async (habitId: number): Promise<void> => {
+  if (isExpoGo()) {
+    // Notifications are not supported in Expo Go
+    return;
+  }
+
+  try {
+    const scheduledNotifications =
+      await Notifications.getAllScheduledNotificationsAsync();
+
+    // Cancel notifications for this specific habit
+    for (const notification of scheduledNotifications) {
+      if (
+        notification.content.data?.type === 'habit_reminder' &&
+        notification.content.data?.habitId === habitId
+      ) {
+        await Notifications.cancelScheduledNotificationAsync(
+          notification.identifier
+        );
+        console.log(`[Notifications] Cancelled reminder for habit ${habitId}`);
+      }
+    }
+  } catch (error) {
+    console.error('Error cancelling habit reminder:', error);
+  }
+};
+
+/**
+ * Schedule reminders for all habits that have them enabled.
+ * @param habits - Array of habits with reminder settings
+ */
+export const scheduleAllHabitReminders = async (
+  habits: any[]
+): Promise<void> => {
+  if (isExpoGo()) {
+    // Notifications are not supported in Expo Go
+    return;
+  }
+
+  try {
+    // First cancel all existing habit reminders
+    await cancelAllHabitReminders();
+
+    // Schedule new reminders for habits that have them enabled
+    for (const habit of habits) {
+      if (habit.reminder_enabled && habit.reminder_time) {
+        await scheduleHabitReminder(habit.id, habit.name, habit.reminder_time);
+      }
+    }
+
+    console.log(
+      `[Notifications] Scheduled reminders for ${habits.filter(h => h.reminder_enabled).length} habits`
+    );
+  } catch (error) {
+    console.error('Error scheduling all habit reminders:', error);
+  }
+};
+
+/**
+ * Cancel all habit reminders.
+ */
+export const cancelAllHabitReminders = async (): Promise<void> => {
+  if (isExpoGo()) {
+    // Notifications are not supported in Expo Go
+    return;
+  }
+
+  try {
+    const scheduledNotifications =
+      await Notifications.getAllScheduledNotificationsAsync();
+
+    // Cancel all habit reminders
+    for (const notification of scheduledNotifications) {
+      if (notification.content.data?.type === 'habit_reminder') {
+        await Notifications.cancelScheduledNotificationAsync(
+          notification.identifier
+        );
+        console.log(
+          `[Notifications] Cancelled habit reminder: ${notification.identifier}`
+        );
+      }
+    }
+  } catch (error) {
+    console.error('Error cancelling all habit reminders:', error);
   }
 };
 

@@ -17,6 +17,10 @@ import {
   updateHabit,
   deleteHabit,
 } from '../db/habits';
+import {
+  scheduleHabitReminder,
+  cancelHabitReminder,
+} from '../utils/notifications';
 
 /**
  * Helper function to convert a Date to a local date string (YYYY-MM-DD)
@@ -78,7 +82,9 @@ interface HabitActions {
     goalType?: string,
     targetCount?: number,
     customEmoji?: string,
-    targetTimeMinutes?: number
+    targetTimeMinutes?: number,
+    reminderEnabled?: boolean,
+    reminderTime?: string
   ) => Promise<boolean>;
   updateHabit: (
     id: number,
@@ -87,7 +93,9 @@ interface HabitActions {
     goalType: string,
     customEmoji?: string,
     targetCount?: number,
-    targetTimeMinutes?: number
+    targetTimeMinutes?: number,
+    reminderEnabled?: boolean,
+    reminderTime?: string
   ) => Promise<boolean>;
   deleteHabit: (id: number) => Promise<boolean>;
 
@@ -390,7 +398,9 @@ export const useHabitStore = create<HabitState & HabitActions>((set, get) => ({
     goalType: string = 'binary',
     targetCount?: number,
     customEmoji?: string,
-    targetTimeMinutes?: number
+    targetTimeMinutes?: number,
+    reminderEnabled?: boolean,
+    reminderTime?: string
   ) => {
     try {
       // Get the icon from the category
@@ -405,9 +415,15 @@ export const useHabitStore = create<HabitState & HabitActions>((set, get) => ({
         goalType,
         customEmoji,
         targetCount,
-        targetTimeMinutes
+        targetTimeMinutes,
+        reminderEnabled,
+        reminderTime
       );
       if (habitId) {
+        // Schedule reminder if enabled
+        if (reminderEnabled && reminderTime) {
+          await scheduleHabitReminder(habitId, name, reminderTime);
+        }
         await get().refreshHabits();
         return true;
       }
@@ -426,7 +442,9 @@ export const useHabitStore = create<HabitState & HabitActions>((set, get) => ({
     goalType: string,
     customEmoji?: string,
     targetCount?: number,
-    targetTimeMinutes?: number
+    targetTimeMinutes?: number,
+    reminderEnabled?: boolean,
+    reminderTime?: string
   ) => {
     try {
       // Get the icon from the category
@@ -442,9 +460,20 @@ export const useHabitStore = create<HabitState & HabitActions>((set, get) => ({
         goalType,
         customEmoji,
         targetCount,
-        targetTimeMinutes
+        targetTimeMinutes,
+        reminderEnabled,
+        reminderTime
       );
       if (success) {
+        // Handle reminder changes
+        if (reminderEnabled && reminderTime) {
+          // Cancel existing reminder and schedule new one
+          await cancelHabitReminder(id);
+          await scheduleHabitReminder(id, name, reminderTime);
+        } else {
+          // Cancel reminder if disabled
+          await cancelHabitReminder(id);
+        }
         await get().refreshHabits();
       }
       return success;
@@ -457,6 +486,9 @@ export const useHabitStore = create<HabitState & HabitActions>((set, get) => ({
 
   deleteHabit: async (id: number) => {
     try {
+      // Cancel any existing reminders for this habit
+      await cancelHabitReminder(id);
+
       const success = await deleteHabit(id);
       if (success) {
         await get().refreshHabits();

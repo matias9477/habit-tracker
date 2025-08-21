@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -13,11 +13,13 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { getThemeColors, useTheme } from '../utils/theme';
+import DateTimePickerModal from 'react-native-modal-datetime-picker';
 import { GoalTypeSelector } from './shared/GoalTypeSelector';
 import { CategorySelector } from './shared/CategorySelector';
 import { CustomEmojiInput } from './shared/CustomEmojiInput';
 import { ThemedInput } from './shared/ThemedInput';
 import { ThemedButton } from './shared/ThemedButton';
+import DateTimePicker from '@react-native-community/datetimepicker';
 
 /**
  * Props for the AddHabitModal component.
@@ -30,7 +32,9 @@ interface AddHabitModalProps {
     category: string,
     goalType: string,
     targetCount?: number,
-    customEmoji?: string
+    customEmoji?: string,
+    reminderEnabled?: boolean,
+    reminderTime?: string
   ) => Promise<boolean>;
 }
 
@@ -54,7 +58,15 @@ export const AddHabitModal: React.FC<AddHabitModalProps> = ({
   const [goalType, setGoalType] = useState('binary');
   const [targetCount, setTargetCount] = useState('1');
   const [customEmoji, setCustomEmoji] = useState<string>('');
+  const [reminderEnabled, setReminderEnabled] = useState(false);
+  const [reminderTime, setReminderTime] = useState('09:00');
+  const [showTimePicker, setShowTimePicker] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Debug useEffect
+  useEffect(() => {
+    console.log('[AddHabitModal] showTimePicker changed to:', showTimePicker);
+  }, [showTimePicker]);
 
   const handleSubmit = async () => {
     if (!name.trim()) {
@@ -72,7 +84,9 @@ export const AddHabitModal: React.FC<AddHabitModalProps> = ({
         selectedCategory,
         goalType,
         finalTargetCount,
-        customEmoji || undefined
+        customEmoji || undefined,
+        reminderEnabled,
+        reminderTime
       );
       if (success) {
         handleClose();
@@ -90,7 +104,8 @@ export const AddHabitModal: React.FC<AddHabitModalProps> = ({
     setGoalType('binary');
     setTargetCount('1');
     setCustomEmoji('');
-    setIsSubmitting(false);
+    setReminderEnabled(false);
+    setReminderTime('09:00');
     onClose();
   };
 
@@ -114,16 +129,22 @@ export const AddHabitModal: React.FC<AddHabitModalProps> = ({
           style={[styles.container, { backgroundColor: colors.background }]}
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         >
-          <View style={[styles.header, { backgroundColor: colors.surface }]}>
+          <View
+            style={[
+              styles.header,
+              {
+                backgroundColor: colors.surface,
+                borderBottomColor: colors.border,
+              },
+            ]}
+          >
+            <TouchableOpacity onPress={handleClose} style={styles.closeButton}>
+              <Ionicons name="close" size={24} color={colors.text} />
+            </TouchableOpacity>
             <Text style={[styles.title, { color: colors.text }]}>
               Add New Habit
             </Text>
-            <TouchableOpacity
-              onPress={handleClose}
-              style={[styles.closeButton, { backgroundColor: colors.border }]}
-            >
-              <Ionicons name="close" size={20} color={colors.text} />
-            </TouchableOpacity>
+            <View style={{ width: 32 }} />
           </View>
 
           <ScrollView
@@ -163,6 +184,90 @@ export const AddHabitModal: React.FC<AddHabitModalProps> = ({
               onGoalTypeChange={setGoalType}
             />
 
+            {/* Reminder Settings */}
+            <View style={styles.section}>
+              <Text style={[styles.sectionTitle, { color: colors.text }]}>
+                Daily Reminder
+              </Text>
+              <View
+                style={[
+                  styles.reminderToggle,
+                  { backgroundColor: colors.background },
+                ]}
+              >
+                <Text style={[styles.reminderLabel, { color: colors.text }]}>
+                  Get reminded daily
+                </Text>
+                <TouchableOpacity
+                  style={[
+                    styles.toggleButton,
+                    {
+                      backgroundColor: reminderEnabled
+                        ? colors.primary
+                        : colors.border,
+                    },
+                  ]}
+                  onPress={() => setReminderEnabled(!reminderEnabled)}
+                  activeOpacity={0.7}
+                >
+                  <View
+                    style={[
+                      styles.toggleThumb,
+                      {
+                        transform: [{ translateX: reminderEnabled ? 22 : 0 }],
+                      },
+                    ]}
+                  />
+                </TouchableOpacity>
+              </View>
+
+              {reminderEnabled && (
+                <View style={styles.timeInputContainer}>
+                  <Text style={[styles.timeInputLabel, { color: colors.text }]}>
+                    Reminder time
+                  </Text>
+                  <TouchableOpacity
+                    style={[
+                      styles.timePickerButton,
+                      {
+                        backgroundColor: colors.surface,
+                        borderColor: colors.border,
+                      },
+                    ]}
+                    onPress={() => {
+                      console.log('[AddHabitModal] Time picker button pressed');
+                      setShowTimePicker(true);
+                    }}
+                    activeOpacity={0.7}
+                  >
+                    <Text
+                      style={[styles.timePickerText, { color: colors.text }]}
+                    >
+                      {reminderTime}
+                    </Text>
+                    <Ionicons
+                      name="time-outline"
+                      size={20}
+                      color={colors.textSecondary}
+                    />
+                  </TouchableOpacity>
+                </View>
+              )}
+            </View>
+
+            {/* Debug Section - Remove in production */}
+            {__DEV__ && (
+              <View style={styles.debugSection}>
+                <Text
+                  style={[styles.debugText, { color: colors.textSecondary }]}
+                >
+                  Debug: reminderEnabled={reminderEnabled.toString()},
+                  reminderTime={reminderTime}, showTimePicker=
+                  {showTimePicker.toString()}
+                </Text>
+              </View>
+            )}
+
             {/* Target Count for Count Goals */}
             {goalType === 'count' && (
               <View style={styles.section}>
@@ -198,6 +303,101 @@ export const AddHabitModal: React.FC<AddHabitModalProps> = ({
             />
           </View>
         </KeyboardAvoidingView>
+
+        {/* Time Picker Overlay - This was working! */}
+        {showTimePicker && (
+          <View style={styles.timePickerOverlay}>
+            <View
+              style={[
+                styles.timePickerContent,
+                { backgroundColor: colors.surface },
+              ]}
+            >
+              <View style={styles.timePickerHeader}>
+                <TouchableOpacity
+                  onPress={() => setShowTimePicker(false)}
+                  style={styles.timePickerCancelButton}
+                >
+                  <Text
+                    style={[
+                      styles.timePickerButtonText,
+                      { color: colors.textSecondary },
+                    ]}
+                  >
+                    Cancel
+                  </Text>
+                </TouchableOpacity>
+                <Text style={[styles.timePickerTitle, { color: colors.text }]}>
+                  Set Reminder Time
+                </Text>
+                <TouchableOpacity
+                  onPress={() => setShowTimePicker(false)}
+                  style={styles.timePickerDoneButton}
+                >
+                  <Text
+                    style={[
+                      styles.timePickerButtonText,
+                      { color: colors.primary },
+                    ]}
+                  >
+                    Done
+                  </Text>
+                </TouchableOpacity>
+              </View>
+              <DateTimePicker
+                value={(() => {
+                  // Create a date object with the current reminder time, avoiding timezone issues
+                  const [hours, minutes] = reminderTime.split(':').map(Number);
+                  const date = new Date();
+                  if (hours !== undefined && minutes !== undefined) {
+                    date.setHours(hours, minutes, 0, 0);
+                    console.log('[AddHabitModal] Creating picker date with:', {
+                      hours,
+                      minutes,
+                      date,
+                    });
+                  }
+                  return date;
+                })()}
+                mode="time"
+                display="spinner"
+                textColor={isDarkMode ? '#ffffff' : '#000000'}
+                onChange={(event, date) => {
+                  if (event.type === 'set' && date) {
+                    console.log('[AddHabitModal] Raw date from picker:', date);
+                    console.log('[AddHabitModal] Date hours:', date.getHours());
+                    console.log(
+                      '[AddHabitModal] Date minutes:',
+                      date.getMinutes()
+                    );
+
+                    // Use the picker's time directly without timezone conversion
+                    const hours = date.getHours();
+                    const minutes = date.getMinutes();
+
+                    // Ensure hours are in 24-hour format for consistency
+                    const newTime = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+                    console.log(
+                      '[AddHabitModal] Raw hours from picker:',
+                      hours
+                    );
+                    console.log(
+                      '[AddHabitModal] Raw minutes from picker:',
+                      minutes
+                    );
+                    console.log('[AddHabitModal] Calculated newTime:', newTime);
+                    console.log(
+                      '[AddHabitModal] Setting reminderTime to:',
+                      newTime
+                    );
+                    setReminderTime(newTime);
+                  }
+                }}
+                style={styles.timePicker}
+              />
+            </View>
+          </View>
+        )}
       </Modal>
     </>
   );
@@ -206,7 +406,6 @@ export const AddHabitModal: React.FC<AddHabitModalProps> = ({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
   },
   header: {
     flexDirection: 'row',
@@ -214,20 +413,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 20,
     paddingVertical: 16,
-    backgroundColor: '#fff',
     borderBottomWidth: 1,
-    borderBottomColor: '#e0e0e0',
   },
   title: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#333',
   },
   closeButton: {
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: '#f0f0f0',
+    backgroundColor: '#fcba03',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -389,5 +585,117 @@ const styles = StyleSheet.create({
   },
   submitButtonTextDisabled: {
     color: '#999',
+  },
+  reminderToggle: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 12,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+  },
+  reminderLabel: {
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  toggleButton: {
+    width: 51,
+    height: 31,
+    borderRadius: 15.5,
+    borderWidth: 1,
+    borderColor: '#ccc',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 2,
+    position: 'relative',
+  },
+  toggleThumb: {
+    width: 25,
+    height: 25,
+    borderRadius: 12.5,
+    backgroundColor: '#fff',
+    position: 'absolute',
+    left: 2,
+    top: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.2,
+    shadowRadius: 1,
+    elevation: 2,
+  },
+  timeInputContainer: {
+    marginTop: 12,
+  },
+  timeInputLabel: {
+    fontSize: 14,
+    fontWeight: '500',
+    marginBottom: 8,
+  },
+  timePickerButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderRadius: 8,
+    borderWidth: 1,
+    minHeight: 48,
+  },
+  timePickerText: {
+    fontSize: 16,
+    fontWeight: '500',
+  },
+  debugSection: {
+    marginTop: 10,
+    padding: 10,
+    backgroundColor: '#f0f0f0',
+    borderRadius: 5,
+    alignSelf: 'flex-start',
+  },
+  debugText: {
+    fontSize: 12,
+  },
+  timePickerOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  timePickerContent: {
+    width: '80%',
+    borderRadius: 10,
+    overflow: 'hidden',
+  },
+  timePickerHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#e0e0e0',
+  },
+  timePickerCancelButton: {
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+  },
+  timePickerTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  timePickerDoneButton: {
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+  },
+  timePickerButtonText: {
+    fontSize: 16,
+  },
+  timePicker: {
+    width: '100%',
   },
 });

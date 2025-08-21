@@ -1,15 +1,26 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { StatusBar } from 'expo-status-bar';
-import { View, Text, StyleSheet, ActivityIndicator, TouchableOpacity } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ActivityIndicator,
+  TouchableOpacity,
+} from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { runMigrations, resetDatabase } from './db/database';
+import {
+  runMigrations,
+  resetDatabase,
+  reinitializeDatabase,
+} from './db/database';
 import { MainStackNavigator } from './navigation/MainTabNavigator';
 import { configureNotifications } from './utils/notifications';
 import { useOnboardingStore } from './store/onboardingStore';
 import { OnboardingScreen } from './screens/OnboardingScreen';
 import { getThemeColors, useTheme } from './utils/theme';
 import { ErrorBoundary } from './components/ErrorBoundary';
+import { useThemeStore } from './store/themeStore';
 
 /**
  * Loading screen component shown while the database is being initialized.
@@ -33,11 +44,11 @@ const LoadingScreen: React.FC = () => {
 /**
  * Error screen component shown when initialization fails.
  */
-const ErrorScreen: React.FC<{ error: string; onRetry: () => void; onReset: () => void }> = ({ 
-  error, 
-  onRetry, 
-  onReset 
-}) => {
+const ErrorScreen: React.FC<{
+  error: string;
+  onRetry: () => void;
+  onReset: () => void;
+}> = ({ error, onRetry, onReset }) => {
   const { isDarkMode } = useTheme();
   const colors = getThemeColors(isDarkMode);
 
@@ -46,7 +57,7 @@ const ErrorScreen: React.FC<{ error: string; onRetry: () => void; onReset: () =>
       style={[styles.errorContainer, { backgroundColor: colors.background }]}
     >
       <Text style={[styles.errorText, { color: colors.error }]}>{error}</Text>
-      
+
       <View style={styles.errorActions}>
         <TouchableOpacity
           style={[styles.errorButton, { backgroundColor: colors.primary }]}
@@ -57,7 +68,7 @@ const ErrorScreen: React.FC<{ error: string; onRetry: () => void; onReset: () =>
             Retry
           </Text>
         </TouchableOpacity>
-        
+
         <TouchableOpacity
           style={[styles.errorButton, { backgroundColor: colors.error }]}
           onPress={onReset}
@@ -114,7 +125,7 @@ export default function App() {
   const [isInitialized, setIsInitialized] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isRetrying, setIsRetrying] = useState(false);
-  
+
   // Always call useTheme to avoid hooks violation
   const { isDarkMode } = useTheme();
 
@@ -122,7 +133,12 @@ export default function App() {
     try {
       console.log('[App] Starting initialization');
       setError(null);
-      
+
+      // Force database reinitialization to add missing reminder columns
+      console.log('[App] Reinitializing database for reminder columns...');
+      await reinitializeDatabase();
+      console.log('[App] Database reinitialization complete');
+
       // Run database migrations
       console.log('[App] Running migrations...');
       await runMigrations();
@@ -140,22 +156,26 @@ export default function App() {
       console.log('[App] Initialization complete');
     } catch (err) {
       console.error('[App] Failed to initialize app:', err);
-      
+
       // Provide more specific error messages
       let errorMessage = 'Failed to initialize the app. Please restart.';
-      
+
       if (err instanceof Error) {
         if (err.message.includes('Database has been reset')) {
           errorMessage = err.message;
         } else if (err.message.includes('Database has been repaired')) {
           errorMessage = err.message;
-        } else if (err.message.includes('Database migration, repair, and reset all failed')) {
+        } else if (
+          err.message.includes(
+            'Database migration, repair, and reset all failed'
+          )
+        ) {
           errorMessage = 'Critical database error. Please reinstall the app.';
         } else {
           errorMessage = `Initialization failed: ${err.message}`;
         }
       }
-      
+
       setError(errorMessage);
     }
   }, []);
@@ -170,10 +190,10 @@ export default function App() {
     try {
       setIsRetrying(true);
       setError(null);
-      
+
       console.log('[App] Resetting database...');
       await resetDatabase();
-      
+
       // Try to initialize again
       await initializeApp();
     } catch (err) {
@@ -189,7 +209,9 @@ export default function App() {
   }, [initializeApp]);
 
   if (error) {
-    return <ErrorScreen error={error} onRetry={handleRetry} onReset={handleReset} />;
+    return (
+      <ErrorScreen error={error} onRetry={handleRetry} onReset={handleReset} />
+    );
   }
 
   if (!isInitialized || isRetrying) {
