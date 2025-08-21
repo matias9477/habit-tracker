@@ -18,12 +18,26 @@ export type HabitCompletion = {
  */
 export const markHabitCompleted = async (
   habitId: number,
-  date: string = new Date().toISOString().slice(0, 10),
+  date: string = (() => {
+    // Use local date instead of UTC to avoid timezone issues
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const day = String(today.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  })(),
   notes?: string
 ): Promise<number | null> => {
   try {
     const db = await getDatabase();
-    const now = new Date().toISOString();
+
+    // Use local date instead of UTC to avoid timezone issues
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const day = String(today.getDate()).padStart(2, '0');
+    const now = `${year}-${month}-${day}`;
+
     const result = await db.runAsync(
       'INSERT OR IGNORE INTO habit_completions (habit_id, date, notes, completed_at) VALUES (?, ?, ?, ?)',
       [habitId, date, notes || null, now]
@@ -40,7 +54,14 @@ export const markHabitCompleted = async (
  */
 export const unmarkHabitCompleted = async (
   habitId: number,
-  date: string = new Date().toISOString().slice(0, 10)
+  date: string = (() => {
+    // Use local date instead of UTC to avoid timezone issues
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const day = String(today.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  })()
 ): Promise<boolean> => {
   try {
     const db = await getDatabase();
@@ -60,7 +81,14 @@ export const unmarkHabitCompleted = async (
  */
 export const incrementHabitCount = async (
   habitId: number,
-  date: string = new Date().toISOString().slice(0, 10)
+  date: string = (() => {
+    // Use local date instead of UTC to avoid timezone issues
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const day = String(today.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  })()
 ): Promise<number> => {
   try {
     const db = await getDatabase();
@@ -75,6 +103,14 @@ export const incrementHabitCount = async (
     if (existing) {
       // Update existing record
       const newCount = (existing.count || 0) + 1;
+
+      // Use local date instead of UTC to avoid timezone issues
+      const today = new Date();
+      const year = today.getFullYear();
+      const month = String(today.getMonth() + 1).padStart(2, '0');
+      const day = String(today.getDate()).padStart(2, '0');
+      const now = `${year}-${month}-${day}`;
+
       await db.runAsync(
         'UPDATE habit_completions SET count = ?, completed_at = ? WHERE habit_id = ? AND date = ?',
         [newCount, now, habitId, date]
@@ -82,6 +118,14 @@ export const incrementHabitCount = async (
       return newCount;
     } else {
       // Create new record
+
+      // Use local date instead of UTC to avoid timezone issues
+      const today = new Date();
+      const year = today.getFullYear();
+      const month = String(today.getMonth() + 1).padStart(2, '0');
+      const day = String(today.getDate()).padStart(2, '0');
+      const now = `${year}-${month}-${day}`;
+
       const result = await db.runAsync(
         'INSERT INTO habit_completions (habit_id, date, count, completed_at) VALUES (?, ?, 1, ?)',
         [habitId, date, now]
@@ -142,7 +186,14 @@ export const decrementHabitCount = async (
  */
 export const getHabitCountForDate = async (
   habitId: number,
-  date: string = new Date().toISOString().slice(0, 10)
+  date: string = (() => {
+    // Use local date instead of UTC to avoid timezone issues
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const day = String(today.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  })()
 ): Promise<number> => {
   try {
     const db = await getDatabase();
@@ -158,6 +209,28 @@ export const getHabitCountForDate = async (
 };
 
 /**
+ * Gets all completions for a specific habit.
+ */
+export const getAllCompletionsForHabit = async (
+  habitId: number
+): Promise<HabitCompletion[]> => {
+  try {
+    const db = await getDatabase();
+    const result = await db.getAllAsync<HabitCompletion>(
+      'SELECT * FROM habit_completions WHERE habit_id = ? ORDER BY date DESC',
+      [habitId]
+    );
+
+    console.log(`[getAllCompletionsForHabit] Habit ${habitId}, Found:`, result);
+
+    return result;
+  } catch (error) {
+    console.error('Get all completions for habit error', error);
+    return [];
+  }
+};
+
+/**
  * Fetches all completions for a given date.
  */
 export const getCompletionsForDate = async (
@@ -165,10 +238,14 @@ export const getCompletionsForDate = async (
 ): Promise<HabitCompletion[]> => {
   try {
     const db = await getDatabase();
-    return await db.getAllAsync<HabitCompletion>(
+    const result = await db.getAllAsync<HabitCompletion>(
       'SELECT * FROM habit_completions WHERE date = ?',
       [date]
     );
+
+    console.log(`[getCompletionsForDate] Date: ${date}, Found:`, result);
+
+    return result;
   } catch (error) {
     console.error('Get completions for date error', error);
     return [];
@@ -185,7 +262,13 @@ export const getStreakForHabit = async (habitId: number): Promise<number> => {
   for (let i = 0; ; i++) {
     const date = new Date(today);
     date.setDate(today.getDate() - i);
-    const dateStr = date.toISOString().slice(0, 10);
+
+    // Use local date string instead of UTC to avoid timezone issues
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const dateStr = `${year}-${month}-${day}`;
+
     // eslint-disable-next-line no-await-in-loop
     const completions = await getCompletionsForDate(dateStr);
     if (completions.some(c => c.habit_id === habitId)) {
@@ -222,7 +305,14 @@ export const getTotalCompletionsForHabit = async (
 export const recordHabitTime = async (
   habitId: number,
   timeMinutes: number,
-  date: string = new Date().toISOString().slice(0, 10),
+  date: string = (() => {
+    // Use local date instead of UTC to avoid timezone issues
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const day = String(today.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  })(),
   notes?: string
 ): Promise<number | null> => {
   try {
@@ -237,6 +327,14 @@ export const recordHabitTime = async (
 
     if (existing) {
       // Update existing record
+
+      // Use local date instead of UTC to avoid timezone issues
+      const today = new Date();
+      const year = today.getFullYear();
+      const month = String(today.getMonth() + 1).padStart(2, '0');
+      const day = String(today.getDate()).padStart(2, '0');
+      const now = `${year}-${month}-${day}`;
+
       await db.runAsync(
         'UPDATE habit_completions SET time_minutes = ?, notes = ?, completed_at = ? WHERE habit_id = ? AND date = ?',
         [timeMinutes, notes || null, now, habitId, date]
@@ -244,6 +342,14 @@ export const recordHabitTime = async (
       return existing.id;
     } else {
       // Create new record
+
+      // Use local date instead of UTC to avoid timezone issues
+      const today = new Date();
+      const year = today.getFullYear();
+      const month = String(today.getMonth() + 1).padStart(2, '0');
+      const day = String(today.getDate()).padStart(2, '0');
+      const now = `${year}-${month}-${day}`;
+
       const result = await db.runAsync(
         'INSERT INTO habit_completions (habit_id, date, time_minutes, notes, completed_at) VALUES (?, ?, ?, ?, ?)',
         [habitId, date, timeMinutes, notes || null, now]

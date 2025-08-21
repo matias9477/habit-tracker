@@ -9,58 +9,91 @@ import { markHabitCompleted, incrementHabitCount } from '@/db/completions';
 export const seedFakeData = async () => {
   try {
     // Create some realistic habits with different creation dates
+    const today = new Date();
     const habits = [
       {
         name: 'Drink Water',
         icon: '💧',
         goalType: 'count',
         targetCount: 8,
-        createdAt: new Date(2025, 6, 1), // July 1st
+        createdAt: new Date(
+          today.getFullYear(),
+          today.getMonth(),
+          today.getDate() - 30
+        ), // 30 days ago
       },
       {
         name: 'Exercise',
         icon: '🏃‍♂️',
         goalType: 'binary',
-        createdAt: new Date(2025, 6, 5), // July 5th
+        createdAt: new Date(
+          today.getFullYear(),
+          today.getMonth(),
+          today.getDate() - 25
+        ), // 25 days ago
       },
       {
         name: 'Read',
         icon: '📚',
         goalType: 'count',
         targetCount: 30, // minutes
-        createdAt: new Date(2025, 6, 10), // July 10th
+        createdAt: new Date(
+          today.getFullYear(),
+          today.getMonth(),
+          today.getDate() - 20
+        ), // 20 days ago
       },
       {
         name: 'Meditate',
         icon: '🧘‍♀️',
         goalType: 'binary',
-        createdAt: new Date(2025, 6, 12), // July 12th
+        createdAt: new Date(
+          today.getFullYear(),
+          today.getMonth(),
+          today.getDate() - 15
+        ), // 15 days ago
       },
       {
         name: 'Take Vitamins',
         icon: '💊',
         goalType: 'binary',
-        createdAt: new Date(2025, 6, 15), // July 15th
+        createdAt: new Date(
+          today.getFullYear(),
+          today.getMonth(),
+          today.getDate() - 12
+        ), // 12 days ago
       },
       {
         name: 'Walk 10k Steps',
         icon: '👟',
         goalType: 'count',
         targetCount: 10000,
-        createdAt: new Date(2025, 6, 16), // July 16th
+        createdAt: new Date(
+          today.getFullYear(),
+          today.getMonth(),
+          today.getDate() - 10
+        ), // 10 days ago
       },
       {
         name: 'Practice Guitar',
         icon: '🎸',
         goalType: 'count',
         targetCount: 20, // minutes
-        createdAt: new Date(2025, 6, 17), // July 17th
+        createdAt: new Date(
+          today.getFullYear(),
+          today.getMonth(),
+          today.getDate() - 8
+        ), // 8 days ago
       },
       {
         name: 'Journal',
         icon: '📝',
         goalType: 'binary',
-        createdAt: new Date(2025, 6, 18), // July 18th
+        createdAt: new Date(
+          today.getFullYear(),
+          today.getMonth(),
+          today.getDate() - 5
+        ), // 5 days ago
       },
     ];
 
@@ -79,8 +112,15 @@ export const seedFakeData = async () => {
       );
       if (id) {
         habitIds.push(id);
+
+        // Use local date string instead of UTC to avoid timezone issues
+        const year = habit.createdAt.getFullYear();
+        const month = String(habit.createdAt.getMonth() + 1).padStart(2, '0');
+        const day = String(habit.createdAt.getDate()).padStart(2, '0');
+        const createdDateStr = `${year}-${month}-${day}`;
+
         console.log(
-          `✅ Created habit: ${habit.name} (created: ${habit.createdAt.toISOString().slice(0, 10)})`
+          `✅ Created habit: ${habit.name} (created: ${createdDateStr})`
         );
       }
     }
@@ -91,9 +131,8 @@ export const seedFakeData = async () => {
     );
 
     // Generate completion data for the last 30 days
-    const today = new Date();
     const completionData = [
-      // Water drinking - varies daily (created July 1st)
+      // Water drinking - varies daily (created 30 days ago)
       {
         habitId: validHabitIds[0],
         days: [
@@ -101,79 +140,64 @@ export const seedFakeData = async () => {
           21, 22, 23, 24, 25, 26, 27, 28, 29, 30,
         ],
         counts: [
-          6, 8, 7, 5, 8, 9, 8, 7, 6, 8, 9, 8, 7, 8, 9, 8, 7, 6, 8, 9, 8, 7, 8,
-          9, 8, 7, 6, 8, 9, 8,
+          8, 6, 8, 7, 8, 5, 8, 8, 7, 8, 6, 8, 8, 7, 8, 8, 6, 8, 7, 8, 8, 7, 8,
+          6, 8, 8, 7, 8, 8, 6,
         ],
       },
 
-      // Exercise - mostly consistent (created July 5th)
+      // Exercise - mostly consistent (created 25 days ago)
       {
         habitId: validHabitIds[1],
         days: [
           1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
-          21, 22, 23, 24, 25, 26, 27, 28, 29, 30,
+          21, 22, 23, 24, 25,
         ],
       },
 
-      // Reading - some missed days (created July 10th)
+      // Reading - some missed days (created 20 days ago)
       {
         habitId: validHabitIds[2],
         days: [
           1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
-          21, 22, 23, 24, 25, 26, 27, 28, 29, 30,
         ],
         counts: [
-          25, 30, 35, 20, 30, 40, 30, 25, 30, 35, 30, 20, 30, 40, 30, 25, 30,
-          35, 30, 20, 30, 40, 30, 25, 30, 35, 30, 20, 30, 40,
+          30, 25, 30, 0, 30, 20, 30, 30, 25, 30, 0, 30, 30, 25, 30, 20, 30, 30,
+          25, 30,
         ],
       },
 
-      // Meditation - good streak (created July 12th)
+      // Meditation - every other day (created 15 days ago)
       {
         habitId: validHabitIds[3],
-        days: [
-          1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
-          21, 22, 23, 24, 25, 26, 27, 28, 29, 30,
-        ],
+        days: [1, 3, 5, 7, 9, 11, 13, 15],
       },
 
-      // Vitamins - perfect streak (created July 15th)
+      // Vitamins - mostly consistent (created 12 days ago)
       {
         habitId: validHabitIds[4],
-        days: [
-          1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
-          21, 22, 23, 24, 25, 26, 27, 28, 29, 30,
-        ],
+        days: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
       },
 
-      // Walking - some missed days (created July 16th)
+      // Walking - varies daily (created 10 days ago)
       {
         habitId: validHabitIds[5],
-        days: [
-          1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
-          21, 22, 23, 24, 25, 26, 27, 28, 29, 30,
-        ],
+        days: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
         counts: [
-          8500, 12000, 11000, 9500, 13000, 11500, 10500, 12000, 11000, 9500,
-          13000, 11500, 10500, 12000, 11000, 9500, 13000, 11500, 10500, 12000,
-          11000, 9500, 13000, 11500, 10500, 12000, 11000, 9500, 13000, 11500,
+          8500, 12000, 7500, 11000, 9500, 8000, 13000, 9000, 10500, 11500,
         ],
       },
 
-      // Guitar - inconsistent (created July 17th)
+      // Guitar - some missed days (created 8 days ago)
       {
         habitId: validHabitIds[6],
-        days: [
-          1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
-          21, 22, 23, 24, 25, 26, 27, 28, 29, 30,
-        ],
+        days: [1, 2, 3, 4, 5, 6, 7, 8],
         counts: [
           15, 20, 25, 10, 20, 30, 15, 20, 25, 10, 20, 30, 15, 20, 25, 10, 20,
           30, 15, 20, 25, 10, 20, 30, 15, 20, 25, 10, 20, 30,
         ],
       },
 
-      // Journal - some missed days (created July 18th)
+      // Journal - some missed days (created 5 days ago)
       {
         habitId: validHabitIds[7],
         days: [
@@ -194,7 +218,12 @@ export const seedFakeData = async () => {
 
         const date = new Date(today);
         date.setDate(today.getDate() - daysAgo);
-        const dateStr = date.toISOString().slice(0, 10);
+
+        // Use local date string instead of UTC to avoid timezone issues
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        const dateStr = `${year}-${month}-${day}`;
 
         if (data.counts && data.counts[i] !== undefined) {
           // For count-based habits, add the specific count
@@ -212,7 +241,11 @@ export const seedFakeData = async () => {
     }
 
     // Add some partial progress for today
-    const todayStr = today.toISOString().slice(0, 10);
+    // Use local date string instead of UTC to avoid timezone issues
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const day = String(today.getDate()).padStart(2, '0');
+    const todayStr = `${year}-${month}-${day}`;
 
     // Water: 5/8 glasses today
     if (validHabitIds.length > 0) {

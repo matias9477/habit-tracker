@@ -13,6 +13,17 @@ interface ProgressWidgetProps {
 }
 
 /**
+ * Helper function to convert a Date to a local date string (YYYY-MM-DD)
+ * Avoids timezone issues by using local date instead of UTC
+ */
+const toLocalDateString = (date: Date): string => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
+/**
  * Enhanced progress widget component that displays weekly or monthly progress
  * with a toggle between views and a cool calendar design for monthly view.
  */
@@ -22,7 +33,7 @@ export const ProgressWidget: React.FC<ProgressWidgetProps> = ({
 }) => {
   const { isDarkMode } = useTheme();
   const colors = getThemeColors(isDarkMode);
-  console.log('[ProgressWidget] Rendered:', { habit });
+  console.log('[ProgressWidget] Rendered:', { habit, weeklyData });
   const [viewMode, setViewMode] = useState<ProgressView>('weekly');
   const [monthlyData, setMonthlyData] = useState<
     {
@@ -42,6 +53,13 @@ export const ProgressWidget: React.FC<ProgressWidgetProps> = ({
       const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
       const habitCreatedAt = new Date(habit.created_at);
 
+      console.log('[ProgressWidget] Generating monthly data:', {
+        today: toLocalDateString(today),
+        habitCreatedAt: toLocalDateString(habitCreatedAt),
+        daysInMonth,
+        habitId: habit.id,
+      });
+
       for (let day = 1; day <= daysInMonth; day++) {
         const date = new Date(currentYear, currentMonth, day);
         const isPast = date <= today;
@@ -49,12 +67,27 @@ export const ProgressWidget: React.FC<ProgressWidgetProps> = ({
 
         // Only show completion data for dates on or after the habit was created
         if (isPast && isAfterCreation) {
-          const dateString = date.toISOString().slice(0, 10);
+          // Use local date string instead of UTC to avoid timezone issues
+          const year = date.getFullYear();
+          const month = String(date.getMonth() + 1).padStart(2, '0');
+          const day = String(date.getDate()).padStart(2, '0');
+          const dateString = `${year}-${month}-${day}`;
+
           const completions = await getCompletionsForDate(dateString);
           const completion = completions.find(c => c.habit_id === habit.id);
 
           const completed = !!completion;
           const count = completion?.count;
+
+          console.log(`[ProgressWidget] Day ${day}:`, {
+            date: dateString,
+            isPast,
+            isAfterCreation,
+            completionsFound: completions.length,
+            completion,
+            completed,
+            count,
+          });
 
           const dayData: {
             date: Date;
@@ -82,62 +115,104 @@ export const ProgressWidget: React.FC<ProgressWidgetProps> = ({
           });
         }
       }
+
+      console.log('[ProgressWidget] Final monthly data:', data);
       setMonthlyData(data);
     };
 
     generateMonthlyData();
   }, [habit]);
 
-  const renderWeeklyView = () => (
-    <View style={styles.weeklyContainer}>
-      <View style={styles.weeklyChart}>
-        {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day, index) => {
-          const value = weeklyData[index] || 0;
-          const maxValue =
-            habit.goal_type === 'count' ? habit.targetCount || 1 : 1;
-          const height = (value / maxValue) * 100;
-          const isToday = index === new Date().getDay() - 1;
+  const renderWeeklyView = () => {
+    console.log(
+      '[ProgressWidget] Rendering weekly view with data:',
+      weeklyData
+    );
 
-          return (
-            <View key={day} style={styles.chartBar}>
-              <View
-                style={[
-                  styles.chartBarContainer,
-                  { backgroundColor: colors.border },
-                ]}
-              >
+    // Debug: Show the mapping of days to data
+    const dayLabels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+    console.log(
+      '[ProgressWidget] Day mapping:',
+      dayLabels.map((day, index) => ({
+        day,
+        index,
+        value: weeklyData[index] || 0,
+      }))
+    );
+
+    return (
+      <View style={styles.weeklyContainer}>
+        <View style={styles.weeklyChart}>
+          {dayLabels.map((day, index) => {
+            const value = weeklyData[index] || 0;
+            const maxValue =
+              habit.goal_type === 'count' ? habit.targetCount || 1 : 1;
+            // Ensure height is exactly 0 for zero values, and cap at 100%
+            const height =
+              value === 0 ? 0 : Math.min((value / maxValue) * 100, 100);
+
+            // Calculate which day of the week today is
+            // Our array is [Mon, Tue, Wed, Thu, Fri, Sat, Sun] (index 0-6)
+            // getDay() returns 0=Sunday, 1=Monday, 2=Tuesday, etc.
+            const today = new Date();
+            const todayDayOfWeek = today.getDay(); // 0 = Sunday, 1 = Monday, etc.
+            // Convert to our array index (0 = Monday, 6 = Sunday)
+            const todayIndex = todayDayOfWeek === 0 ? 6 : todayDayOfWeek - 1;
+            const isToday = index === todayIndex;
+
+            console.log(`[ProgressWidget] Day ${day} (index ${index}):`, {
+              value,
+              maxValue,
+              height,
+              isToday,
+              todayDayOfWeek,
+              todayIndex,
+              todayDate: toLocalDateString(today),
+            });
+
+            return (
+              <View key={day} style={styles.chartBar}>
                 <View
                   style={[
-                    styles.chartBarFill,
-                    {
-                      height: `${height}%`,
-                      backgroundColor: colors.primary,
-                    },
+                    styles.chartBarContainer,
+                    { backgroundColor: colors.border },
                   ]}
-                />
-                {isToday && (
-                  <View
-                    style={[
-                      styles.todayIndicator,
-                      { backgroundColor: colors.primary },
-                    ]}
-                  />
-                )}
+                >
+                  {value > 0 && (
+                    <View
+                      style={[
+                        styles.chartBarFill,
+                        {
+                          height: `${height}%`,
+                          backgroundColor: colors.primary,
+                        },
+                      ]}
+                    />
+                  )}
+                  {isToday && (
+                    <View
+                      style={[
+                        styles.todayIndicator,
+                        { backgroundColor: colors.primary },
+                      ]}
+                    />
+                  )}
+                </View>
+                <Text
+                  style={[styles.chartLabel, { color: colors.textSecondary }]}
+                >
+                  {day}
+                </Text>
+                <Text style={[styles.chartValue, { color: colors.text }]}>
+                  {value}
+                </Text>
               </View>
-              <Text
-                style={[styles.chartLabel, { color: colors.textSecondary }]}
-              >
-                {day}
-              </Text>
-              <Text style={[styles.chartValue, { color: colors.text }]}>
-                {value}
-              </Text>
-            </View>
-          );
-        })}
+            );
+          })}
+        </View>
       </View>
-    </View>
-  );
+    );
+  };
 
   const renderMonthlyView = () => {
     const today = new Date();

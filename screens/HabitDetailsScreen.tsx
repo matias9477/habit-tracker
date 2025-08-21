@@ -16,9 +16,24 @@ import { useHabitStore, HabitWithCompletion } from '../store/habitStore';
 import { getThemeColors, useTheme } from '../utils/theme';
 import { EditHabitModal } from '../components/EditHabitModal';
 import { ProgressWidget } from '../components/ProgressWidget';
+import {
+  getCompletionsForDate,
+  getAllCompletionsForHabit,
+} from '../db/completions';
 // import { LineChart } from 'react-native-chart-kit';
 
 const { width } = Dimensions.get('window');
+
+/**
+ * Helper function to convert a Date to a local date string (YYYY-MM-DD)
+ * Avoids timezone issues by using local date instead of UTC
+ */
+const toLocalDateString = (date: Date): string => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
 
 type RootStackParamList = {
   MainTabs: undefined;
@@ -51,6 +66,7 @@ export const HabitDetailsScreen: React.FC = () => {
   const [weeklyData, setWeeklyData] = useState<number[]>([]);
   const [latestHabit, setLatestHabit] = useState<HabitWithCompletion>(habit);
   const [editHabit, setEditHabit] = useState<HabitWithCompletion | null>(null);
+  const [allCompletions, setAllCompletions] = useState<any[]>([]);
 
   // When the modal closes, update the latest habit from the store
   useEffect(() => {
@@ -60,27 +76,102 @@ export const HabitDetailsScreen: React.FC = () => {
     }
   }, [editHabit, habits, habit.id]);
 
-  // Generate weekly data for the chart
+  // Load all completions for debugging
   useEffect(() => {
-    const generateWeeklyData = () => {
-      const data = [];
-      for (let i = 6; i >= 0; i--) {
-        // Simulate realistic data based on streak
-        const baseCompletion =
-          latestHabit.streak > 20 ? 0.8 : latestHabit.streak > 10 ? 0.6 : 0.4;
-        const randomFactor = Math.random() * 0.4 - 0.2; // ±20% variation
-        const completion = Math.max(
-          0,
-          Math.min(1, baseCompletion + randomFactor)
-        );
+    const loadAllCompletions = async () => {
+      const completions = await getAllCompletionsForHabit(latestHabit.id);
+      setAllCompletions(completions);
+      console.log(
+        '[HabitDetailsScreen] All completions for habit:',
+        completions
+      );
+    };
 
-        if (latestHabit.goal_type === 'count') {
-          const targetCount = latestHabit.targetCount || 1;
-          data.push(Math.round(completion * targetCount));
+    loadAllCompletions();
+  }, [latestHabit.id]);
+
+  // Generate weekly data from real completion data
+  useEffect(() => {
+    const generateWeeklyData = async () => {
+      const data = [];
+      const today = new Date();
+
+      console.log('[HabitDetailsScreen] Generating weekly data for habit:', {
+        habitId: latestHabit.id,
+        habitName: latestHabit.name,
+        today: toLocalDateString(today),
+        habitCreatedAt: latestHabit.created_at,
+      });
+
+      // Get data for the last 7 days (Monday to Sunday)
+      // We need to find the most recent Monday and work forward
+      const todayDayOfWeek = today.getDay(); // 0 = Sunday, 1 = Monday, etc.
+      const daysSinceMonday = todayDayOfWeek === 0 ? 6 : todayDayOfWeek - 1;
+      const monday = new Date(today);
+      monday.setDate(today.getDate() - daysSinceMonday);
+
+      console.log('[HabitDetailsScreen] Week calculation:', {
+        todayDayOfWeek,
+        daysSinceMonday,
+        monday: toLocalDateString(monday),
+      });
+
+      // Generate data for Monday through Sunday
+      for (let i = 0; i < 7; i++) {
+        const date = new Date(monday);
+        date.setDate(monday.getDate() + i);
+
+        // Use local date string instead of UTC to avoid timezone issues
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        const dateString = `${year}-${month}-${day}`;
+
+        // Check if habit was created before or on this date
+        const habitCreatedAt = new Date(latestHabit.created_at);
+        if (date >= habitCreatedAt) {
+          // Get real completion data from database
+          const completions = await getCompletionsForDate(dateString);
+          const completion = completions.find(
+            c => c.habit_id === latestHabit.id
+          );
+
+          let value = 0;
+          if (latestHabit.goal_type === 'count') {
+            // For count goals, show the actual count or 0
+            value = completion?.count || 0;
+          } else {
+            // For binary goals, show 1 if completed, 0 if not
+            value = completion ? 1 : 0;
+          }
+
+          const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+          console.log(
+            `[HabitDetailsScreen] Day ${i} (${dayNames[date.getDay()]} ${dateString}):`,
+            {
+              date: dateString,
+              dayOfWeek: date.getDay(),
+              dayName: dayNames[date.getDay()],
+              isAfterCreation: date >= habitCreatedAt,
+              completionsFound: completions.length,
+              completion,
+              value,
+              goalType: latestHabit.goal_type,
+            }
+          );
+
+          data.push(value);
         } else {
-          data.push(completion > 0.5 ? 1 : 0);
+          // Habit didn't exist on this date
+          const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+          console.log(
+            `[HabitDetailsScreen] Day ${i} (${dayNames[date.getDay()]} ${dateString}): Habit didn't exist yet`
+          );
+          data.push(0);
         }
       }
+
+      console.log('[HabitDetailsScreen] Final weekly data:', data);
       setWeeklyData(data);
     };
 
@@ -343,6 +434,28 @@ export const HabitDetailsScreen: React.FC = () => {
         {renderProgressSection()}
         {renderStatsSection()}
         {renderProgressWidget()}
+
+        {/* Debug Section - Remove in production */}
+        <View style={[styles.section, { backgroundColor: colors.surface }]}>
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>
+            Debug Info
+          </Text>
+          <Text style={[styles.debugText, { color: colors.textSecondary }]}>
+            Habit ID: {latestHabit.id}
+          </Text>
+          <Text style={[styles.debugText, { color: colors.textSecondary }]}>
+            Created: {latestHabit.created_at}
+          </Text>
+          <Text style={[styles.debugText, { color: colors.textSecondary }]}>
+            Total Completions: {allCompletions.length}
+          </Text>
+          <Text style={[styles.debugText, { color: colors.textSecondary }]}>
+            Weekly Data: {JSON.stringify(weeklyData)}
+          </Text>
+          <Text style={[styles.debugText, { color: colors.textSecondary }]}>
+            All Completions: {JSON.stringify(allCompletions.slice(0, 5))}
+          </Text>
+        </View>
       </ScrollView>
 
       {/* Edit Modal */}
@@ -495,5 +608,10 @@ const styles = StyleSheet.create({
   statsGrid: {
     flexDirection: 'row',
     justifyContent: 'space-around',
+  },
+  debugText: {
+    fontSize: 12,
+    marginBottom: 4,
+    fontFamily: 'monospace',
   },
 });

@@ -31,7 +31,14 @@ export const insertHabit = async (
 ): Promise<number | null> => {
   try {
     const db = await getDatabase();
-    const now = new Date().toISOString();
+
+    // Use local date instead of UTC to avoid timezone issues
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const day = String(today.getDate()).padStart(2, '0');
+    const now = `${year}-${month}-${day}`;
+
     const finalTargetCount = targetCount || (goalType === 'count' ? 1 : null);
 
     const result = await db.runAsync(
@@ -72,7 +79,13 @@ export const insertHabitWithDate = async (
 ): Promise<number | null> => {
   try {
     const db = await getDatabase();
-    const createdAtString = createdAt.toISOString();
+
+    // Convert to local date string instead of UTC to avoid timezone issues
+    const year = createdAt.getFullYear();
+    const month = String(createdAt.getMonth() + 1).padStart(2, '0');
+    const day = String(createdAt.getDate()).padStart(2, '0');
+    const createdAtString = `${year}-${month}-${day}`;
+
     const finalTargetCount = targetCount || (goalType === 'count' ? 1 : null);
 
     const result = await db.runAsync(
@@ -113,7 +126,13 @@ export const updateHabit = async (
   try {
     const db = await getDatabase();
     const finalTargetCount = targetCount || (goalType === 'count' ? 1 : null);
-    const now = new Date().toISOString();
+
+    // Use local date instead of UTC to avoid timezone issues
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const day = String(today.getDate()).padStart(2, '0');
+    const now = `${year}-${month}-${day}`;
 
     await db.runAsync(
       'UPDATE habits SET name = ?, icon = ?, category = ?, custom_emoji = ?, goal_type = ?, target_count = ?, target_time_minutes = ?, updated_at = ? WHERE id = ?',
@@ -143,8 +162,14 @@ export const updateHabit = async (
 export const softDeleteHabit = async (id: number): Promise<boolean> => {
   try {
     const db = await getDatabase();
-    const now = new Date().toISOString();
-    
+
+    // Use local date instead of UTC to avoid timezone issues
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const day = String(today.getDate()).padStart(2, '0');
+    const now = `${year}-${month}-${day}`;
+
     await db.runAsync(
       'UPDATE habits SET is_active = 0, updated_at = ? WHERE id = ?',
       [now, id]
@@ -162,8 +187,14 @@ export const softDeleteHabit = async (id: number): Promise<boolean> => {
 export const reactivateHabit = async (id: number): Promise<boolean> => {
   try {
     const db = await getDatabase();
-    const now = new Date().toISOString();
-    
+
+    // Use local date instead of UTC to avoid timezone issues
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const day = String(today.getDate()).padStart(2, '0');
+    const now = `${year}-${month}-${day}`;
+
     await db.runAsync(
       'UPDATE habits SET is_active = 1, updated_at = ? WHERE id = ?',
       [now, id]
@@ -227,7 +258,12 @@ export const getAllHabitsIncludingInactive = async (): Promise<Habit[]> => {
 export const getHabitsForDate = async (date: Date): Promise<Habit[]> => {
   try {
     const db = await getDatabase();
-    const dateString = date.toISOString().slice(0, 10); // YYYY-MM-DD format
+
+    // Use local date instead of UTC to avoid timezone issues
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const dateString = `${year}-${month}-${day}`;
 
     const habits = await db.getAllAsync<Habit>(
       'SELECT * FROM habits WHERE DATE(created_at) <= ? AND is_active = 1 ORDER BY created_at DESC',

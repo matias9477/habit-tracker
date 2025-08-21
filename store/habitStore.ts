@@ -7,6 +7,7 @@ import {
   incrementHabitCount,
   decrementHabitCount,
   getStreakForHabit,
+  getAllCompletionsForHabit,
 } from '../db/completions';
 import {
   getAllHabits,
@@ -16,6 +17,17 @@ import {
   updateHabit,
   deleteHabit,
 } from '../db/habits';
+
+/**
+ * Helper function to convert a Date to a local date string (YYYY-MM-DD)
+ * Avoids timezone issues by using local date instead of UTC
+ */
+const toLocalDateString = (date: Date): string => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
 
 /**
  * Type representing a habit with its completion status for today.
@@ -109,7 +121,7 @@ export const useHabitStore = create<HabitState & HabitActions>((set, get) => ({
       const habits = await getAllHabits();
       const earliestDate = await getEarliestHabitDate();
 
-      const today = new Date().toISOString().slice(0, 10);
+      const today = toLocalDateString(new Date());
       const completions = await getCompletionsForDate(today);
 
       // Combine habits with completion status and count data
@@ -159,7 +171,7 @@ export const useHabitStore = create<HabitState & HabitActions>((set, get) => ({
     try {
       // Use getHabitsForDate to only get habits created on or before the selected date
       const habits = await getHabitsForDate(date);
-      const dateString = date.toISOString().slice(0, 10);
+      const dateString = toLocalDateString(date);
       const completions = await getCompletionsForDate(dateString);
 
       // Combine habits with completion status and count data for the specific date
@@ -201,7 +213,7 @@ export const useHabitStore = create<HabitState & HabitActions>((set, get) => ({
     const habit = get().habits.find(h => h.id === habitId);
     if (!habit) return false;
 
-    const dateString = date.toISOString().slice(0, 10);
+    const dateString = toLocalDateString(date);
 
     if (habit.goal_type === 'count') {
       const currentCount = habit.currentCount || 0;
@@ -272,29 +284,26 @@ export const useHabitStore = create<HabitState & HabitActions>((set, get) => ({
   },
 
   markHabitCompletedForDate: async (habitId: number, date: Date) => {
-    try {
-      const dateString = date.toISOString().slice(0, 10);
-      const result = await markHabitCompleted(habitId, dateString);
-      const success = result !== null;
-      if (success) {
-        // Update local state
-        set(state => ({
-          habits: state.habits.map(habit =>
-            habit.id === habitId ? { ...habit, isCompletedToday: true } : habit
-          ),
-        }));
-      }
-      return success;
-    } catch (error) {
-      console.error('Error marking habit completed for date:', error);
-      set({ error: 'Failed to mark habit as completed' });
-      return false;
+    const habit = get().habits.find(h => h.id === habitId);
+    if (!habit) return false;
+
+    const dateString = toLocalDateString(date);
+    const result = await markHabitCompleted(habitId, dateString);
+    const success = result !== null;
+    if (success) {
+      // Update local state
+      set(state => ({
+        habits: state.habits.map(habit =>
+          habit.id === habitId ? { ...habit, isCompletedToday: true } : habit
+        ),
+      }));
     }
+    return success;
   },
 
   unmarkHabitCompletedForDate: async (habitId: number, date: Date) => {
     try {
-      const dateString = date.toISOString().slice(0, 10);
+      const dateString = toLocalDateString(date);
       const success = await unmarkHabitCompleted(habitId, dateString);
       if (success) {
         // Update local state
@@ -317,7 +326,7 @@ export const useHabitStore = create<HabitState & HabitActions>((set, get) => ({
       const habit = get().habits.find(h => h.id === habitId);
       if (!habit || habit.goal_type !== 'count') return false;
 
-      const dateString = date.toISOString().slice(0, 10);
+      const dateString = toLocalDateString(date);
       const newCount = await incrementHabitCount(habitId, dateString);
       const targetCount = habit.targetCount || 1;
 
@@ -348,7 +357,7 @@ export const useHabitStore = create<HabitState & HabitActions>((set, get) => ({
       const habit = get().habits.find(h => h.id === habitId);
       if (!habit || habit.goal_type !== 'count') return false;
 
-      const dateString = date.toISOString().slice(0, 10);
+      const dateString = toLocalDateString(date);
       const newCount = await decrementHabitCount(habitId, dateString);
       const targetCount = habit.targetCount || 1;
 
