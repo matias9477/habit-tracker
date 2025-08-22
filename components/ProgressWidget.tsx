@@ -147,7 +147,7 @@ export const ProgressWidget: React.FC<ProgressWidgetProps> = ({
                       ]}
                     />
                   )}
-                  {isToday && (
+                  {isToday && value > 0 && (
                     <View
                       style={[
                         styles.todayIndicator,
