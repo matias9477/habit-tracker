@@ -55,7 +55,6 @@ type HabitDetailsScreenRouteProp = RouteProp<
  * Displays progress, analytics, charts, and provides edit/delete functionality.
  */
 export const HabitDetailsScreen: React.FC = () => {
-  console.log('[HabitDetailsScreen] Rendered');
   const navigation = useNavigation<HabitDetailsScreenNavigationProp>();
   const route = useRoute<HabitDetailsScreenRouteProp>();
   const habit = route.params.habit;
@@ -81,10 +80,6 @@ export const HabitDetailsScreen: React.FC = () => {
     const loadAllCompletions = async () => {
       const completions = await getAllCompletionsForHabit(latestHabit.id);
       setAllCompletions(completions);
-      console.log(
-        '[HabitDetailsScreen] All completions for habit:',
-        completions
-      );
     };
 
     loadAllCompletions();
@@ -96,26 +91,12 @@ export const HabitDetailsScreen: React.FC = () => {
       const data = [];
       const today = new Date();
 
-      console.log('[HabitDetailsScreen] Generating weekly data for habit:', {
-        habitId: latestHabit.id,
-        habitName: latestHabit.name,
-        today: toLocalDateString(today),
-        habitCreatedAt: latestHabit.created_at,
-      });
-
       // Get data for the current week (Monday to Sunday)
       // Find the most recent Monday
       const todayDayOfWeek = today.getDay(); // 0 = Sunday, 1 = Monday, etc.
       const daysSinceMonday = todayDayOfWeek === 0 ? 6 : todayDayOfWeek - 1;
       const monday = new Date(today);
       monday.setDate(today.getDate() - daysSinceMonday);
-
-      console.log('[HabitDetailsScreen] Week calculation:', {
-        todayDayOfWeek,
-        daysSinceMonday,
-        monday: toLocalDateString(monday),
-        today: toLocalDateString(today),
-      });
 
       // Generate data for Monday through Sunday
       for (let i = 0; i < 7; i++) {
@@ -147,34 +128,16 @@ export const HabitDetailsScreen: React.FC = () => {
           }
 
           const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-          console.log(
-            `[HabitDetailsScreen] Day ${i} (${dayNames[date.getDay()]} ${dateString}):`,
-            {
-              date: dateString,
-              dayOfWeek: date.getDay(),
-              dayName: dayNames[date.getDay()],
-              isAfterCreation: date >= habitCreatedAt,
-              completionsFound: completions.length,
-              allCompletions: completions, // Show all completions found for this date
-              completion,
-              value,
-              goalType: latestHabit.goal_type,
-              isToday: date.toDateString() === today.toDateString(),
-            }
-          );
 
           data.push(value);
         } else {
           // Habit didn't exist on this date
           const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-          console.log(
-            `[HabitDetailsScreen] Day ${i} (${dayNames[date.getDay()]} ${dateString}): Habit didn't exist yet`
-          );
+
           data.push(0);
         }
       }
 
-      console.log('[HabitDetailsScreen] Final weekly data:', data);
       setWeeklyData(data);
     };
 

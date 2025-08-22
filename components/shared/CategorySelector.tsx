@@ -24,7 +24,6 @@ export const CategorySelector: React.FC<CategorySelectorProps> = ({
 }) => {
   const { isDarkMode } = useTheme();
   const colors = getThemeColors(isDarkMode);
-  console.log('[CategorySelector] Rendered:', { selectedCategory });
 
   const renderCategoryItem = (category: Category) => {
     const isSelected = selectedCategory === category.id;

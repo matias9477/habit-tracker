@@ -221,8 +221,6 @@ export const getAllCompletionsForHabit = async (
       [habitId]
     );
 
-    console.log(`[getAllCompletionsForHabit] Habit ${habitId}, Found:`, result);
-
     return result;
   } catch (error) {
     console.error('Get all completions for habit error', error);

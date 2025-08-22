@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { getThemeColors, useTheme } from '../utils/theme';
 
@@ -12,7 +12,6 @@ interface DateHeaderProps {
   onTodayPress: () => void;
   canGoBack: boolean;
   canGoForward: boolean;
-  earliestHabitDate?: Date | null;
 }
 
 /**
@@ -26,11 +25,9 @@ export const DateHeader: React.FC<DateHeaderProps> = ({
   onTodayPress,
   canGoBack,
   canGoForward,
-  earliestHabitDate,
 }) => {
   const { isDarkMode } = useTheme();
   const colors = getThemeColors(isDarkMode);
-  console.log('[DateHeader] Rendered:', { date });
 
   const formatDayOfWeek = (date: Date) => {
     const options: Intl.DateTimeFormatOptions = {
@@ -52,19 +49,34 @@ export const DateHeader: React.FC<DateHeaderProps> = ({
     );
   };
 
-  const formatRelativeDate = (date: Date) => {
+  const formatRelativeDate = (date: Date): string => {
     const today = new Date();
-    const yesterday = new Date(today);
-    yesterday.setDate(yesterday.getDate() - 1);
-    const tomorrow = new Date(today);
-    tomorrow.setDate(tomorrow.getDate() + 1);
 
-    if (date.toDateString() === today.toDateString()) {
+    // Reset time to start of day for accurate comparison
+    const todayStart = new Date(
+      today.getFullYear(),
+      today.getMonth(),
+      today.getDate()
+    );
+    const dateStart = new Date(
+      date.getFullYear(),
+      date.getMonth(),
+      date.getDate()
+    );
+
+    const diffTime = dateStart.getTime() - todayStart.getTime();
+    const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
+
+    if (diffDays === 0) {
       return 'Today';
-    } else if (date.toDateString() === yesterday.toDateString()) {
-      return 'Yesterday';
-    } else if (date.toDateString() === tomorrow.toDateString()) {
+    } else if (diffDays === 1) {
       return 'Tomorrow';
+    } else if (diffDays === -1) {
+      return 'Yesterday';
+    } else if (diffDays > 1 && diffDays <= 7) {
+      return `In ${diffDays} days`;
+    } else if (diffDays < -1 && diffDays >= -7) {
+      return `${Math.abs(diffDays)} days ago`;
     } else {
       return date.toLocaleDateString('en-US', {
         weekday: 'long',
@@ -72,23 +84,6 @@ export const DateHeader: React.FC<DateHeaderProps> = ({
         day: 'numeric',
       });
     }
-  };
-
-  const showNavigationInfo = () => {
-    let message = 'Navigation limits:\n';
-
-    if (earliestHabitDate) {
-      message += `• Earliest: ${earliestHabitDate.toLocaleDateString()}\n`;
-    } else {
-      message += '• Earliest: Today (no habits yet)\n';
-    }
-
-    const today = new Date();
-    const maxFuture = new Date(today);
-    maxFuture.setDate(maxFuture.getDate() + 2);
-    message += `• Latest: ${maxFuture.toLocaleDateString()}`;
-
-    Alert.alert('Navigation Info', message, [{ text: 'OK' }]);
   };
 
   return (
@@ -130,17 +125,6 @@ export const DateHeader: React.FC<DateHeaderProps> = ({
             <Text style={[styles.dayNumber, { color: colors.text }]}>
               {formatDayNumber(date)}
             </Text>
-            <TouchableOpacity
-              style={styles.infoButton}
-              onPress={showNavigationInfo}
-              activeOpacity={0.7}
-            >
-              <Ionicons
-                name="information-circle-outline"
-                size={16}
-                color={colors.textTertiary}
-              />
-            </TouchableOpacity>
           </View>
           <Text style={[styles.relativeDate, { color: colors.textSecondary }]}>
             {formatRelativeDate(date)}
@@ -232,8 +216,5 @@ const styles = StyleSheet.create({
   limitMessage: {
     fontSize: 10,
     marginTop: 4,
-  },
-  infoButton: {
-    marginLeft: 8,
   },
 });

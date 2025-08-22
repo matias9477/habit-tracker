@@ -28,7 +28,6 @@ interface OnboardingScreenProps {
 export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({
   onComplete,
 }) => {
-  console.log('[OnboardingScreen] Rendered');
   const { isDarkMode } = useThemeStore();
   const colors = getThemeColors(isDarkMode);
   const insets = useSafeAreaInsets();

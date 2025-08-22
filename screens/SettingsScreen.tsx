@@ -418,11 +418,6 @@ export const SettingsScreen: React.FC = () => {
             'information-circle-outline'
           )}
           {renderSettingItem(
-            'Environment',
-            getEnvironment(),
-            'information-circle-outline'
-          )}
-          {renderSettingItem(
             'Privacy Policy',
             'Read our privacy policy',
             'shield-outline',
@@ -448,6 +443,11 @@ export const SettingsScreen: React.FC = () => {
             <Text style={[styles.sectionTitle, { color: colors.text }]}>
               Development
             </Text>
+            {renderSettingItem(
+              'Environment',
+              getEnvironment(),
+              'information-circle-outline'
+            )}
             {renderSettingItem(
               'Database Info',
               'Show database structure and version',

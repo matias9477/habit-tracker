@@ -32,12 +32,6 @@ export const ThemedButton: React.FC<ThemedButtonProps> = ({
 }) => {
   const { isDarkMode } = useThemeStore();
   const colors = getThemeColors(isDarkMode);
-  console.log('[ThemedButton] Rendered:', {
-    title,
-    variant,
-    disabled,
-    loading,
-  });
 
   const getButtonStyle = () => {
     const baseStyle: ViewStyle[] = [styles.button];

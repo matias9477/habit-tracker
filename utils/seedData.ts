@@ -118,10 +118,6 @@ export const seedFakeData = async () => {
         const month = String(habit.createdAt.getMonth() + 1).padStart(2, '0');
         const day = String(habit.createdAt.getDate()).padStart(2, '0');
         const createdDateStr = `${year}-${month}-${day}`;
-
-        console.log(
-          `✅ Created habit: ${habit.name} (created: ${createdDateStr})`
-        );
       }
     }
 

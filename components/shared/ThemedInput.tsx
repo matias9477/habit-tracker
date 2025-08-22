@@ -14,7 +14,6 @@ interface ThemedInputProps extends TextInputProps {
 export const ThemedInput: React.FC<ThemedInputProps> = props => {
   const { isDarkMode } = useThemeStore();
   const colors = getThemeColors(isDarkMode);
-  console.log('[ThemedInput] Rendered with props:', props);
 
   return (
     <TextInput

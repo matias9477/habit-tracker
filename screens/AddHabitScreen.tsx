@@ -26,7 +26,6 @@ import { useHabitStore } from '../store/habitStore';
  * Supports both light and dark themes.
  */
 export const AddHabitScreen: React.FC = () => {
-  console.log('[AddHabitScreen] Rendered');
   const { isDarkMode } = useThemeStore();
   const colors = getThemeColors(isDarkMode);
   const insets = useSafeAreaInsets();

@@ -24,7 +24,6 @@ export const GoalTypeSelector: React.FC<GoalTypeSelectorProps> = ({
 }) => {
   const { isDarkMode } = useThemeStore();
   const colors = getThemeColors(isDarkMode);
-  console.log('[GoalTypeSelector] Rendered:', { goalType });
 
   const goalTypes: GoalType[] = [
     {

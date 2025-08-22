@@ -28,7 +28,6 @@ export const CustomEmojiInput: React.FC<CustomEmojiInputProps> = ({
   const [isExpanded, setIsExpanded] = useState(!!value);
   const { isDarkMode } = useTheme();
   const colors = getThemeColors(isDarkMode);
-  console.log('[CustomEmojiInput] Rendered:', { value });
 
   // Update inputValue when value prop changes
   useEffect(() => {

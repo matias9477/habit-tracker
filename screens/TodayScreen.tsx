@@ -35,7 +35,6 @@ type TodayScreenNavigationProp = StackNavigationProp<
  * Supports date navigation to view and edit past days.
  */
 export const TodayScreen: React.FC = () => {
-  console.log('[TodayScreen] Rendered');
   const [isAddModalVisible, setIsAddModalVisible] = useState(false);
   const [isEditModalVisible, setIsEditModalVisible] = useState(false);
   const [selectedHabit, setSelectedHabit] =
@@ -403,7 +402,6 @@ export const TodayScreen: React.FC = () => {
           onTodayPress={handleTodayPress}
           canGoBack={canGoBack()}
           canGoForward={canGoForward()}
-          earliestHabitDate={earliestHabitDate}
         />
       </View>
 

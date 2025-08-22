@@ -33,7 +33,6 @@ export const ProgressWidget: React.FC<ProgressWidgetProps> = ({
 }) => {
   const { isDarkMode } = useTheme();
   const colors = getThemeColors(isDarkMode);
-  console.log('[ProgressWidget] Rendered:', { habit, weeklyData });
   const [viewMode, setViewMode] = useState<ProgressView>('weekly');
   const [monthlyData, setMonthlyData] = useState<
     {
@@ -53,13 +52,6 @@ export const ProgressWidget: React.FC<ProgressWidgetProps> = ({
       const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
       const habitCreatedAt = new Date(habit.created_at);
 
-      console.log('[ProgressWidget] Generating monthly data:', {
-        today: toLocalDateString(today),
-        habitCreatedAt: toLocalDateString(habitCreatedAt),
-        daysInMonth,
-        habitId: habit.id,
-      });
-
       for (let day = 1; day <= daysInMonth; day++) {
         const date = new Date(currentYear, currentMonth, day);
         const isPast = date <= today;
@@ -78,16 +70,6 @@ export const ProgressWidget: React.FC<ProgressWidgetProps> = ({
 
           const completed = !!completion;
           const count = completion?.count;
-
-          console.log(`[ProgressWidget] Day ${day}:`, {
-            date: dateString,
-            isPast,
-            isAfterCreation,
-            completionsFound: completions.length,
-            completion,
-            completed,
-            count,
-          });
 
           const dayData: {
             date: Date;
@@ -116,7 +98,6 @@ export const ProgressWidget: React.FC<ProgressWidgetProps> = ({
         }
       }
 
-      console.log('[ProgressWidget] Final monthly data:', data);
       setMonthlyData(data);
     };
 
@@ -124,21 +105,8 @@ export const ProgressWidget: React.FC<ProgressWidgetProps> = ({
   }, [habit]);
 
   const renderWeeklyView = () => {
-    console.log(
-      '[ProgressWidget] Rendering weekly view with data:',
-      weeklyData
-    );
-
     // Debug: Show the mapping of days to data
     const dayLabels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-    console.log(
-      '[ProgressWidget] Day mapping:',
-      dayLabels.map((day, index) => ({
-        day,
-        index,
-        value: weeklyData[index] || 0,
-      }))
-    );
 
     return (
       <View style={styles.weeklyContainer}>
@@ -159,16 +127,6 @@ export const ProgressWidget: React.FC<ProgressWidgetProps> = ({
             // Convert to our array index (0 = Monday, 6 = Sunday)
             const todayIndex = todayDayOfWeek === 0 ? 6 : todayDayOfWeek - 1;
             const isToday = index === todayIndex;
-
-            console.log(`[ProgressWidget] Day ${day} (index ${index}):`, {
-              value,
-              maxValue,
-              height,
-              isToday,
-              todayDayOfWeek,
-              todayIndex,
-              todayDate: toLocalDateString(today),
-            });
 
             return (
               <View key={day} style={styles.chartBar}>

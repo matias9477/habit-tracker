@@ -53,7 +53,6 @@ export const EditHabitModal: React.FC<EditHabitModalProps> = ({
   const { isDarkMode } = useTheme();
   const colors = getThemeColors(isDarkMode);
   const insets = useSafeAreaInsets();
-  console.log('[EditHabitModal] Rendered:', { visible, habit });
 
   const [name, setName] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('fitness');

@@ -19,7 +19,6 @@ import {
  * Focuses on helping users understand their habit patterns and improve their routines.
  */
 export const StatsScreen: React.FC = () => {
-  console.log('[StatsScreen] Rendered');
   const { isDarkMode } = useTheme();
   const { habits } = useHabitStore();
   const colors = getThemeColors(isDarkMode);
