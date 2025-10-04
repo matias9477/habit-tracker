@@ -39,7 +39,9 @@ export const GoalTypeSelector: React.FC<GoalTypeSelectorProps> = ({
 
   return (
     <View style={styles.section}>
-      <Text style={[styles.sectionTitle, { color: 'white' }]}>Goal Type</Text>
+      <Text style={[styles.sectionTitle, { color: colors.text }]}>
+        Goal Type
+      </Text>
       {goalTypes.map(type => (
         <TouchableOpacity
           key={type.key}
