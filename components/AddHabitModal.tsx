@@ -186,17 +186,9 @@ export const AddHabitModal: React.FC<AddHabitModalProps> = ({
 
             {/* Reminder Settings */}
             <View style={styles.section}>
-              <Text style={[styles.sectionTitle, { color: colors.text }]}>
-                Daily Reminder
-              </Text>
-              <View
-                style={[
-                  styles.reminderToggle,
-                  { backgroundColor: colors.background },
-                ]}
-              >
-                <Text style={[styles.reminderLabel, { color: colors.text }]}>
-                  Get reminded daily
+              <View style={styles.reminderTitleRow}>
+                <Text style={[styles.sectionTitle, { color: colors.text }]}>
+                  Daily Reminder
                 </Text>
                 <TouchableOpacity
                   style={[
@@ -560,18 +552,11 @@ const styles = StyleSheet.create({
   submitButtonTextDisabled: {
     color: '#999',
   },
-  reminderToggle: {
+  reminderTitleRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     marginBottom: 12,
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    borderRadius: 8,
-  },
-  reminderLabel: {
-    fontSize: 14,
-    fontWeight: '500',
   },
   toggleButton: {
     width: 51,
