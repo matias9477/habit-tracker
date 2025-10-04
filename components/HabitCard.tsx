@@ -133,7 +133,9 @@ export const HabitCard: React.FC<HabitCardProps> = ({
               {habit.name}
             </Text>
             <Text style={[styles.streak, { color: colors.text }]}>
-              {habit.streak} day{habit.streak !== 1 ? 's' : ''} streak
+              {habit.streak > 0
+                ? `${habit.streak} day${habit.streak !== 1 ? 's' : ''} streak`
+                : 'Start your streak today!'}
               {habit.goal_type === 'count' && (
                 <Text style={[styles.countInline, { color: colors.text }]}>
                   {' • '}
