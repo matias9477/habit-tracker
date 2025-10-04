@@ -52,6 +52,7 @@ export const AddHabitModal: React.FC<AddHabitModalProps> = ({
   const colors = getThemeColors(isDarkMode);
   const insets = useSafeAreaInsets();
 
+  //TODO: find a better way to handle this, maybe creating a custom hook for the form? and also typify the category and goal type
   const [name, setName] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('fitness');
   const [goalType, setGoalType] = useState('binary');

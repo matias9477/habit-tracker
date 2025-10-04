@@ -1,5 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  TouchableOpacity,
+} from 'react-native';
 
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -33,6 +39,7 @@ export const StatsScreen: React.FC = () => {
     { category: string; count: number; completed: number }[]
   >([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [showAllTrends, setShowAllTrends] = useState(false);
 
   useEffect(() => {
     const loadStats = async () => {
@@ -290,7 +297,37 @@ export const StatsScreen: React.FC = () => {
             >
               See how each habit is performing and get personalized insights
             </Text>
-            {trends.map(renderHabitInsight)}
+
+            {/* Show top 4 trends initially, or all if showAllTrends is true */}
+            {(showAllTrends ? trends : trends.slice(0, 4)).map(
+              renderHabitInsight
+            )}
+
+            {/* Show More/Less button if there are more than 4 trends */}
+            {trends.length > 4 && (
+              <TouchableOpacity
+                style={[
+                  styles.showMoreButton,
+                  {
+                    backgroundColor: colors.surface,
+                    borderColor: colors.border,
+                  },
+                ]}
+                onPress={() => setShowAllTrends(!showAllTrends)}
+                activeOpacity={0.7}
+              >
+                <Text style={[styles.showMoreText, { color: colors.primary }]}>
+                  {showAllTrends
+                    ? 'Show Less'
+                    : `Show All ${trends.length} Habits`}
+                </Text>
+                <Ionicons
+                  name={showAllTrends ? 'chevron-up' : 'chevron-down'}
+                  size={16}
+                  color={colors.primary}
+                />
+              </TouchableOpacity>
+            )}
           </View>
         )}
 
@@ -666,5 +703,20 @@ const styles = StyleSheet.create({
     fontSize: 16,
     textAlign: 'center',
     lineHeight: 24,
+  },
+  showMoreButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    marginTop: 16,
+    borderRadius: 8,
+    borderWidth: 1,
+  },
+  showMoreText: {
+    fontSize: 14,
+    fontWeight: '600',
+    marginRight: 8,
   },
 });
