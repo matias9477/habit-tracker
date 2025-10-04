@@ -43,7 +43,7 @@ export const ThemedButton: React.FC<ThemedButtonProps> = ({
       });
     } else {
       baseStyle.push({
-        backgroundColor: isDarkMode ? '#2E7D32' : colors.primary,
+        backgroundColor: isDarkMode ? '#fcba03' : colors.primary,
         borderColor: isDarkMode ? '#fcba03' : colors.primary,
       });
     }

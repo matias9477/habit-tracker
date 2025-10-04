@@ -402,7 +402,7 @@ export const HabitDetailsScreen: React.FC = () => {
         {renderProgressWidget()}
 
         {/* Debug Section - Remove in production */}
-        <View style={[styles.section, { backgroundColor: colors.surface }]}>
+        {/* <View style={[styles.section, { backgroundColor: colors.surface }]}>
           <Text style={[styles.sectionTitle, { color: colors.text }]}>
             Debug Info
           </Text>
@@ -421,7 +421,7 @@ export const HabitDetailsScreen: React.FC = () => {
           <Text style={[styles.debugText, { color: colors.textSecondary }]}>
             All Completions: {JSON.stringify(allCompletions.slice(0, 5))}
           </Text>
-        </View>
+        </View> */}
       </ScrollView>
 
       {/* Edit Modal */}

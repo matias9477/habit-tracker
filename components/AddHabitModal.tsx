@@ -253,7 +253,7 @@ export const AddHabitModal: React.FC<AddHabitModalProps> = ({
               )}
             </View>
 
-            {/* Debug Section - Remove in production */}
+            {/* Debug Section - Remove in production
             {shouldShowDebugFeatures() && (
               <View style={styles.debugSection}>
                 <Text
@@ -264,7 +264,7 @@ export const AddHabitModal: React.FC<AddHabitModalProps> = ({
                   {showTimePicker.toString()}
                 </Text>
               </View>
-            )}
+            )} */}
 
             {/* Target Count for Count Goals */}
             {goalType === 'count' && (

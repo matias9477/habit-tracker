@@ -109,10 +109,12 @@ npx eas-cli submit --platform ios --latest
 
 ## 🛠️ Development Commands
 
-### **Local Development**
+### **Local Development & Preview**
+
+#### **Development Server (Hot Reload)**
 
 ```bash
-# Start development server
+# Start development server with hot reload
 npm start
 
 # Run on iOS simulator
@@ -121,8 +123,89 @@ npm run ios
 # Run on Android emulator
 npm run android
 
-# Run on web
+# Run on web browser
 npm run web
+```
+
+#### **Preview Builds (Local Testing)**
+
+Preview builds allow you to test your app on physical devices without going through the App Store or TestFlight:
+
+```bash
+# Create a preview build for iOS (installable on physical devices)
+npx eas-cli build --platform ios --profile preview
+
+# Create a preview build for Android (installable on physical devices)
+npx eas-cli build --platform android --profile preview
+
+# Create preview builds for both platforms
+npx eas-cli build --platform all --profile preview
+```
+
+#### **Development Builds (With Native Code)**
+
+For testing native modules or custom native code:
+
+```bash
+# Create development build for iOS
+npx eas-cli build --platform ios --profile development
+
+# Create development build for Android
+npx eas-cli build --platform android --profile development
+```
+
+#### **Local Preview Setup**
+
+1. **Install EAS CLI** (if not already installed):
+
+   ```bash
+   npm install -g @expo/eas-cli
+   ```
+
+2. **Login to Expo**:
+
+   ```bash
+   eas login
+   ```
+
+3. **Configure EAS** (if not already done):
+
+   ```bash
+   eas build:configure
+   ```
+
+4. **Create Preview Build**:
+
+   ```bash
+   npx eas-cli build --platform ios --profile preview
+   ```
+
+5. **Install on Device**:
+   - iOS: Scan QR code with Camera app or use TestFlight link
+   - Android: Download APK directly or use Google Play internal testing
+
+#### **Preview vs Development vs Production**
+
+| Build Type      | Purpose                     | Native Code | Distribution       |
+| --------------- | --------------------------- | ----------- | ------------------ |
+| **Preview**     | Testing on physical devices | No          | Direct install     |
+| **Development** | Testing native modules      | Yes         | Direct install     |
+| **Production**  | App Store/Play Store        | Yes         | Store distribution |
+
+#### **Quick Preview Commands**
+
+```bash
+# Most common: iOS preview build
+npx eas-cli build --platform ios --profile preview
+
+# Android preview build
+npx eas-cli build --platform android --profile preview
+
+# Check build status
+eas build:list
+
+# View build logs
+eas build:view [BUILD_ID]
 ```
 
 ### **Building**
@@ -237,6 +320,46 @@ npx eas-cli build --platform ios
 # 3. Submit
 npx eas-cli submit --platform ios
 ```
+
+### **Preview Build Commands**
+
+```bash
+# Quick preview build for testing
+npx eas-cli build --platform ios --profile preview
+
+# Check all builds
+eas build:list
+
+# View specific build
+eas build:view [BUILD_ID]
+```
+
+## 🎯 When to Use Each Build Type
+
+### **Development Server (`npm start`)**
+
+- ✅ **Use for**: Quick iterations, UI changes, debugging
+- ✅ **Best for**: Active development with hot reload
+- ❌ **Not for**: Testing on physical devices, production features
+
+### **Preview Builds (`--profile preview`)**
+
+- ✅ **Use for**: Testing on physical devices, sharing with team
+- ✅ **Best for**: Final testing before production release
+- ✅ **Installation**: Direct install via QR code or link
+- ❌ **Not for**: Native module testing
+
+### **Development Builds (`--profile development`)**
+
+- ✅ **Use for**: Testing native modules, custom native code
+- ✅ **Best for**: When you need native functionality
+- ❌ **Not for**: Quick iterations (slower build time)
+
+### **Production Builds (`--profile production`)**
+
+- ✅ **Use for**: App Store/Play Store releases
+- ✅ **Best for**: Final release to users
+- ❌ **Not for**: Development or testing
 
 ---
 

@@ -365,13 +365,14 @@ export const SettingsScreen: React.FC = () => {
               }
             />
           )}
-          {notificationsEnabled &&
+          {/* Commented out in production */}
+          {/* {notificationsEnabled &&
             renderSettingItem(
               'Test Notification',
               'Send a test notification',
               'send-outline',
               handleTestNotification
-            )}
+            )} */}
         </View>
 
         <View style={styles.section}>
@@ -437,8 +438,10 @@ export const SettingsScreen: React.FC = () => {
           )}
         </View>
 
-        {/* Development section - only show in development */}
-        {shouldShowDebugFeatures() && (
+        {/* Development section - only show in development 
+        Commented out in production
+        */}
+        {/* {shouldShowDebugFeatures() && (
           <View style={styles.section}>
             <Text style={[styles.sectionTitle, { color: colors.text }]}>
               Development
@@ -479,7 +482,7 @@ export const SettingsScreen: React.FC = () => {
               handleTestSeedData
             )}
           </View>
-        )}
+        )} */}
       </ScrollView>
 
       {/* Privacy Policy Modal */}
