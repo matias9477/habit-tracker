@@ -37,7 +37,7 @@ export const ThemedButton: React.FC<ThemedButtonProps> = ({
 
     if (variant === 'danger') {
       baseStyle.push({
-        backgroundColor: isDarkMode ? '#8B0000' : '#f44336',
+        backgroundColor: isDarkMode ? '#DC143C' : '#f44336',
         borderColor: isDarkMode ? '#DC143C' : '#f44336',
       });
     } else {
