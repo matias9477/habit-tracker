@@ -23,6 +23,7 @@ export const GoalTypeSelector: React.FC<GoalTypeSelectorProps> = ({
   onGoalTypeChange,
 }) => {
   const { isDarkMode } = useThemeStore();
+  console.log('isDarkMode', isDarkMode);
   const colors = getThemeColors(isDarkMode);
 
   const goalTypes: GoalType[] = [
@@ -40,9 +41,7 @@ export const GoalTypeSelector: React.FC<GoalTypeSelectorProps> = ({
 
   return (
     <View style={styles.section}>
-      <Text style={[styles.sectionTitle, { color: colors.text }]}>
-        Goal Type
-      </Text>
+      <Text style={[styles.sectionTitle, { color: 'white' }]}>Goal Type</Text>
       {goalTypes.map(type => (
         <TouchableOpacity
           key={type.key}

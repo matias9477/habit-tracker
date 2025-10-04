@@ -118,7 +118,8 @@ export const TodayScreen: React.FC = () => {
     goalType: string,
     customEmoji?: string,
     targetCount?: number,
-    targetTimeMinutes?: number
+    reminderEnabled?: boolean,
+    reminderTime?: string
   ) => {
     const success = await updateHabit(
       id,
@@ -127,7 +128,9 @@ export const TodayScreen: React.FC = () => {
       goalType,
       customEmoji,
       targetCount,
-      targetTimeMinutes
+      undefined, // targetTimeMinutes
+      reminderEnabled,
+      reminderTime
     );
     if (success) {
       setIsEditModalVisible(false);

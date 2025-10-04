@@ -175,7 +175,9 @@ export const HabitDetailsScreen: React.FC = () => {
     category: string,
     goalType: string,
     customEmoji?: string,
-    targetCount?: number
+    targetCount?: number,
+    reminderEnabled?: boolean,
+    reminderTime?: string
   ) => {
     const success = await updateHabit(
       id,
@@ -183,7 +185,10 @@ export const HabitDetailsScreen: React.FC = () => {
       category,
       goalType,
       customEmoji,
-      targetCount
+      targetCount,
+      undefined, // targetTimeMinutes
+      reminderEnabled,
+      reminderTime
     );
     if (success) {
       setEditHabit(null);
