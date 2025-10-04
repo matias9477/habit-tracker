@@ -132,19 +132,44 @@ export const HabitCard: React.FC<HabitCardProps> = ({
             >
               {habit.name}
             </Text>
-            <Text style={[styles.streak, { color: colors.text }]}>
+            <Text
+              style={[
+                styles.streak,
+                {
+                  color: habit.isCompletedToday ? colors.surface : colors.text,
+                },
+              ]}
+            >
               {habit.streak > 0
                 ? `${habit.streak} day${habit.streak !== 1 ? 's' : ''} streak`
                 : 'Start your streak today!'}
               {habit.goal_type === 'count' && (
-                <Text style={[styles.countInline, { color: colors.text }]}>
+                <Text
+                  style={[
+                    styles.countInline,
+                    {
+                      color: habit.isCompletedToday
+                        ? colors.surface
+                        : colors.text,
+                    },
+                  ]}
+                >
                   {' • '}
                   {habit.currentCount || 0}/{habit.targetCount || 1}
                 </Text>
               )}
             </Text>
             {onPress && (
-              <Text style={[styles.editHint, { color: colors.text }]}>
+              <Text
+                style={[
+                  styles.editHint,
+                  {
+                    color: habit.isCompletedToday
+                      ? colors.surface
+                      : colors.text,
+                  },
+                ]}
+              >
                 Tap to view details
               </Text>
             )}
