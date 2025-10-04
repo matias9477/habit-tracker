@@ -1,8 +1,7 @@
 import React, { Component, ErrorInfo, ReactNode } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useThemeStore } from '../store/themeStore';
-import { getThemeColors } from '../utils/theme';
+import { getThemeColors, useTheme } from '../utils/theme';
 
 interface Props {
   children: ReactNode;
@@ -67,7 +66,7 @@ export class ErrorBoundary extends Component<Props, State> {
  * Fallback UI component shown when an error occurs.
  */
 const ErrorFallback: React.FC<{ onRestart: () => void }> = ({ onRestart }) => {
-  const { isDarkMode } = useThemeStore();
+  const { isDarkMode } = useTheme();
   const colors = getThemeColors(isDarkMode);
 
   return (

@@ -8,8 +8,7 @@ import {
   ViewStyle,
   TextStyle,
 } from 'react-native';
-import { useThemeStore } from '../../store/themeStore';
-import { getThemeColors } from '../../utils/theme';
+import { getThemeColors, useTheme } from '../../utils/theme';
 
 interface ThemedButtonProps extends TouchableOpacityProps {
   title: string;
@@ -30,7 +29,7 @@ export const ThemedButton: React.FC<ThemedButtonProps> = ({
   style,
   ...props
 }) => {
-  const { isDarkMode } = useThemeStore();
+  const { isDarkMode } = useTheme();
   const colors = getThemeColors(isDarkMode);
 
   const getButtonStyle = () => {

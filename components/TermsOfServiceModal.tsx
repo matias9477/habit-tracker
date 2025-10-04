@@ -8,8 +8,7 @@ import {
   StyleSheet,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useThemeStore } from '../store/themeStore';
-import { getThemeColors } from '../utils/theme';
+import { getThemeColors, useTheme } from '../utils/theme';
 
 interface TermsOfServiceModalProps {
   visible: boolean;
@@ -26,7 +25,7 @@ const TermsOfServiceModal: React.FC<TermsOfServiceModalProps> = ({
   visible,
   onClose,
 }) => {
-  const { isDarkMode } = useThemeStore();
+  const { isDarkMode } = useTheme();
   const colors = getThemeColors(isDarkMode);
 
   return (

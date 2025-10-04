@@ -8,8 +8,7 @@ import {
   Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useThemeStore } from '../../store/themeStore';
-import { getThemeColors } from '../../utils/theme';
+import { getThemeColors, useTheme } from '../../utils/theme';
 
 interface CustomTimeInputProps {
   value: string; // Format: "HH:MM"
@@ -30,7 +29,7 @@ export const CustomTimeInput: React.FC<CustomTimeInputProps> = ({
   placeholder = '09:00',
   disabled = false,
 }) => {
-  const { isDarkMode } = useThemeStore();
+  const { isDarkMode } = useTheme();
   const colors = getThemeColors(isDarkMode);
   const [inputValue, setInputValue] = useState(value);
   const [isEditing, setIsEditing] = useState(false);

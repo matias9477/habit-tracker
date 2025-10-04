@@ -8,8 +8,7 @@ import {
   Platform,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useThemeStore } from '../../store/themeStore';
-import { getThemeColors } from '../../utils/theme';
+import { getThemeColors, useTheme } from '../../utils/theme';
 
 interface TimePickerProps {
   value: string; // Format: "HH:MM"
@@ -28,7 +27,7 @@ export const TimePicker: React.FC<TimePickerProps> = ({
   label = 'Time',
   disabled = false,
 }) => {
-  const { isDarkMode } = useThemeStore();
+  const { isDarkMode } = useTheme();
   const colors = getThemeColors(isDarkMode);
   const [showPicker, setShowPicker] = useState(false);
 

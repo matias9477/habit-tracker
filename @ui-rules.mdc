@@ -141,14 +141,13 @@
 ### **Required Imports**
 
 ```typescript
-import { useThemeStore } from '@/store/themeStore';
-import { getThemeColors } from '@/utils/theme';
+import { useTheme, getThemeColors } from '@/utils/theme';
 ```
 
 ### **Theme Integration Pattern**
 
 ```typescript
-const { isDarkMode } = useThemeStore();
+const { isDarkMode } = useTheme();
 const colors = getThemeColors(isDarkMode);
 ```
 

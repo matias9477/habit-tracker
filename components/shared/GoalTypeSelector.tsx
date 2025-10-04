@@ -1,7 +1,6 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { useThemeStore } from '../../store/themeStore';
-import { getThemeColors } from '../../utils/theme';
+import { getThemeColors, useTheme } from '../../utils/theme';
 
 interface GoalType {
   key: string;
@@ -22,8 +21,7 @@ export const GoalTypeSelector: React.FC<GoalTypeSelectorProps> = ({
   goalType,
   onGoalTypeChange,
 }) => {
-  const { isDarkMode } = useThemeStore();
-  console.log('isDarkMode', isDarkMode);
+  const { isDarkMode } = useTheme();
   const colors = getThemeColors(isDarkMode);
 
   const goalTypes: GoalType[] = [
