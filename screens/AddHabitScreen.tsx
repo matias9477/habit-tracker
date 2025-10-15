@@ -13,11 +13,11 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { getThemeColors, useTheme } from '../utils/theme';
-import { GoalTypeSelector } from '../components/shared/GoalTypeSelector';
-import { ThemedInput } from '../components/shared/ThemedInput';
-import { ThemedButton } from '../components/shared/ThemedButton';
-import { useHabitStore } from '../store/habitStore';
+import { getThemeColors, useTheme } from '@/utils/theme';
+import { GoalTypeSelector } from '@/components/shared/GoalTypeSelector';
+import { ThemedInput } from '@/components/shared/ThemedInput';
+import { ThemedButton } from '@/components/shared/ThemedButton';
+import { useHabitStore } from '@/store/habitStore';
 
 /**
  * A screen component for adding new habits.

@@ -17,7 +17,7 @@
   },
   "config": {
     "commitizen": {
-      "path": "cz-conventional-changelog"
+      "path": "./commitizen.config.js"
     }
   },
   "dependencies": {
@@ -46,6 +46,7 @@
     "@babel/core": "^7.25.2",
     "@commitlint/cli": "^19.2.1",
     "@commitlint/config-conventional": "^19.1.0",
+    "@digitalroute/cz-conventional-changelog-for-jira": "7.3.0",
     "@types/react": "~19.0.10",
     "@typescript-eslint/eslint-plugin": "^8.37.0",
     "@typescript-eslint/parser": "^8.37.0",
